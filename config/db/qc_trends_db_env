@@ -1,0 +1,3 @@
+POSTGRES_USER=qc_trends_db_user
+POSTGRES_PASSWORD=qc_trends_db_password
+POSTGRES_DB=qc_trends_db

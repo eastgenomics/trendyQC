@@ -1,0 +1,63 @@
+# resources:
+# http://www.ameyalokare.com/docker/2017/09/20/nginx-flask-postgres-docker-compose.html
+# https://github.com/juggernaut/nginx-flask-postgres-docker-compose-example
+# https://serverfault.com/questions/783806/docker-how-to-django-uwsgi-gunicorn-nginx/787402
+# https://github.com/andrecp/django-tutorial-docker-nginx-postgres
+# https://github.com/realpython/dockerizing-django
+# http://ruddra.com/2016/08/14/docker-django-nginx-postgres/index.html
+# https://stackoverflow.com/questions/32180589/docker-how-to-expose-a-socket-over-a-port-for-a-django-application
+
+
+version: '3'
+
+services:
+
+  # database containers, one for each db
+  qc_trends_db:
+    image: postgres:10
+    volumes:
+      - qc_trends_db_volume:/var/lib/postgresql/data
+    env_file:
+      - config/db/qc_trends_db_env
+    networks:
+      - qc_trends_db_network
+
+  # web container, with django + gunicorn
+  trendyqc:
+    build: .
+    environment:
+      - DJANGO_SETTINGS_MODULE
+    volumes:
+      - .:/opt/services/trendyqc/src
+      - static:/opt/services/trendyqc/static
+      - media:/opt/services/trendyqc/media
+    networks:
+      - qc_trends_db_network
+      - nginx_network
+    depends_on:
+      - qc_trends_db
+
+  # reverse proxy container (nginx)
+  nginx:
+    image: nginx:1.13
+    ports:
+      - 8000:80
+    volumes:
+      - ./config/nginx/conf.d:/etc/nginx/conf.d
+      - static:/opt/services/trendyqc/static
+      - media:/opt/services/trendyqc/media
+    networks:
+      - nginx_network
+    depends_on:
+      - trendyqc
+
+networks:
+  qc_trends_db_network:
+    driver: bridge
+  nginx_network:
+    driver: bridge
+
+volumes:
+  qc_trends_db_volume:
+  static:
+  media:
