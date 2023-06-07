@@ -16,7 +16,7 @@ services:
   qc_trends_db:
     image: postgres:15.2
     volumes:
-      - qc_trends_db_volume:/var/lib/postgresql/data
+      - trendyqc_db_volume:/var/lib/postgresql/data/
     env_file:
       - config/db/qc_trends_db_env
     networks:
@@ -27,13 +27,11 @@ services:
     build: .
     environment:
       - DJANGO_SETTINGS_MODULE
-    volumes:
-      - .:/opt/services/trendyqc/src
-      - static:/opt/services/trendyqc/static
-      - media:/opt/services/trendyqc/media
     networks:
       - qc_trends_db_network
       - nginx_network
+    volumes:
+      - trendyqc_static:/app/trendyqc/staticfiles
     depends_on:
       - qc_trends_db
 
@@ -44,8 +42,7 @@ services:
       - 8000:80
     volumes:
       - ./config/nginx/conf.d:/etc/nginx/conf.d
-      - static:/opt/services/trendyqc/static
-      - media:/opt/services/trendyqc/media
+      - trendyqc_static:/staticfiles
     networks:
       - nginx_network
     depends_on:
@@ -58,6 +55,5 @@ networks:
     driver: bridge
 
 volumes:
-  qc_trends_db_volume:
-  static:
-  media:
+  trendyqc_db_volume:
+  trendyqc_static:
