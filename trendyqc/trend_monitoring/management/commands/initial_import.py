@@ -1,4 +1,7 @@
 from django.core.management.base import BaseCommand
+
+import regex
+
 from ._dnanexus_utils import (
     login_to_dnanexus, search_multiqc_data, get_all_002_projects
 )
@@ -34,4 +37,7 @@ class Command(BaseCommand):
         assert project_ids is not None, "Please use -a or -p_id"
 
         for p_id in project_ids:
+            assert regex.fullmatch(r"project-[a-zA-Z0-9]{24}", p_id), (
+                f"{p_id} is not a correctly formatted DNAnexus project id"
+            )
             report_ids = search_multiqc_data(p_id)
