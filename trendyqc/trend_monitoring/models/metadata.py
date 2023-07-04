@@ -36,9 +36,6 @@ class Report_Sample(models.Model):
     assay = models.CharField(max_length=50)
     report = models.ForeignKey(Report, on_delete=models.DO_NOTHING)
     sample = models.ForeignKey(Sample, on_delete=models.DO_NOTHING)
-    fastqc_data = models.ForeignKey(
-        Fastqc_data, on_delete=models.DO_NOTHING
-    )
     bcl2fastq_data = models.ForeignKey(
         Bcl2fastq_data, on_delete=models.DO_NOTHING
     )
