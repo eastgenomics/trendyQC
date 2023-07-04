@@ -1,0 +1,16 @@
+{
+    "total": "total",
+    "total_yield": "total_yield",
+    "perfectIndex": "perfect_index",
+    "yieldQ30": "yield_Q30",
+    "qscore_sum": "qscore_sum",
+    "R1_yield": "r1_yield",
+    "R1_Q30": "r1_Q30",
+    "R1_trimmed_bases": "r1_trimmed_bases",
+    "R2_yield": "r2_yield",
+    "R2_Q30": "r2_Q30",
+    "R2_trimmed_bases": "r2_trimmed_bases",
+    "percent_Q30": "pct_Q30",
+    "percent_perfectIndex": "pct_perfect_index",
+    "mean_qscore": "mean_qscore"
+}
