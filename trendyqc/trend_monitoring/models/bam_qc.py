@@ -1,26 +1,25 @@
 from django.db import models
-from .metadata import Report_Sample
 
 
 class VerifyBAMid_data(models.Model):
-    rg = models.CharField(max_length=50)
-    chip_id = models.CharField(max_length=50)
+    rg = models.CharField(max_length=10)
+    chip_id = models.CharField(max_length=10)
     nb_snps = models.IntegerField()
     nb_reads = models.IntegerField()
     avg_dp = models.FloatField()
     freemix = models.FloatField()
     freelk1 = models.FloatField()
     freelk0 = models.FloatField()
-    free_rh = models.CharField(max_length=50)
-    free_ra = models.CharField(max_length=50)
-    chipmix = models.CharField(max_length=50)
-    chiplk1 = models.CharField(max_length=50)
-    chiplk0 = models.CharField(max_length=50)
-    chip_rh = models.CharField(max_length=50)
-    chip_ra = models.CharField(max_length=50)
-    dpref = models.CharField(max_length=50)
-    rdphet = models.CharField(max_length=50)
-    rdpalt = models.CharField(max_length=50)
+    free_rh = models.CharField(max_length=10)
+    free_ra = models.CharField(max_length=10)
+    chipmix = models.CharField(max_length=10)
+    chiplk1 = models.CharField(max_length=10)
+    chiplk0 = models.CharField(max_length=10)
+    chip_rh = models.CharField(max_length=10)
+    chip_ra = models.CharField(max_length=10)
+    dpref = models.CharField(max_length=10)
+    rdphet = models.CharField(max_length=10)
+    rdpalt = models.CharField(max_length=10)
 
     class Meta:
         db_table = "verifybamid_data"
@@ -72,7 +71,7 @@ class Sentieon_data(models.Model):
     mean_insert_size = models.FloatField()
     standard_deviation = models.FloatField()
     read_pairs = models.FloatField()
-    pair_orientation = models.CharField(max_length=10)
+    pair_orientation = models.CharField(max_length=5)
     width_of_10_percent = models.FloatField()
     width_of_20_percent = models.FloatField()
     width_of_30_percent = models.FloatField()
