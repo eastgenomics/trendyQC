@@ -81,10 +81,10 @@ WSGI_APPLICATION = 'trendyqc.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'qc_trends',
-        'USER': 'qc_trends_user',
-        'PASSWORD': 'qc_trends_password',
-        'HOST': 'qc_trends',
+        'NAME': 'qc_trends_db',
+        'USER': 'qc_trends_db_user',
+        'PASSWORD': 'qc_trends_db_password',
+        'HOST': 'qc_trends_db',
         'PORT': '5432',
     }
 }
