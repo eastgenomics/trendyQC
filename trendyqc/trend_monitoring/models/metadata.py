@@ -1,9 +1,9 @@
 from django.db import models
-from .fastq_qc import Fastqc_data, Bcl2fastq_data
+from .fastq_qc import Bcl2fastq_data
 from .bam_qc import (
     VerifyBAMid_data, Samtools_data, Sentieon_data, Picard_hs_data
 )
-from vcf_qc import Somalier_data, Sompy_data
+from .vcf_qc import Somalier_data, Sompy_data
 
 
 class Report(models.Model):
