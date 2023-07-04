@@ -6,7 +6,7 @@ class Fastqc_data(models.Model):
     report_sample = models.ForeignKey(
         Report_Sample, on_delete=models.DO_NOTHING
     )
-    sample_read = models.CharField(max_length=20)
+    sample_read = models.CharField(max_length=50)
     lane = models.CharField(max_length=20)
     file_type = models.CharField(max_length=50)
     encoding = models.CharField(max_length=50)
