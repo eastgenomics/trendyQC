@@ -1,11 +1,13 @@
 from django.db import models
-from .metadata import Report_Sample
 
 
 class Somalier_data(models.Model):
+    paternal_id = models.CharField(max_length=50)
+    maternal_id = models.CharField(max_length=50)
+    family_id = models.CharField(max_length=50)
     sex = models.FloatField()
     phenotype = models.FloatField()
-    original_pedigree_sex = models.CharField(max_length=5)
+    original_pedigree_sex = models.CharField(max_length=10)
     gt_depth_mean = models.FloatField()
     gt_depth_sd = models.FloatField()
     depth_mean = models.FloatField()
@@ -24,7 +26,7 @@ class Somalier_data(models.Model):
     x_hom_alt = models.FloatField()
     y_depth_mean = models.FloatField()
     y_n = models.FloatField()
-    predicted_sex = models.CharField(max_length=5)
+    predicted_sex = models.CharField(max_length=10)
     match_sexes = models.BooleanField()
 
     class Meta:
