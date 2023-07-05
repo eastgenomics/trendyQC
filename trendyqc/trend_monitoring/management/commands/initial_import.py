@@ -1,5 +1,7 @@
 from django.core.management.base import BaseCommand
-from ._dnanexus_utils import login, search_multiqc_data, get_all_002_projects
+from ._dnanexus_utils import (
+    login_to_dnanexus, search_multiqc_data, get_all_002_projects
+)
 
 
 class Command(BaseCommand):
@@ -21,7 +23,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         project_ids = None
 
-        login()
+        login_to_dnanexus()
 
         if options["project_id"]:
             project_ids = options["project_id"]
