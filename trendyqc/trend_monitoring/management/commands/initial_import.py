@@ -7,7 +7,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "-p_id", "--project_id",
+            "-p_id", "--project_id", nargs="+",
             help=(
                 "Project id(s) from which to import MultiQC reports. Mainly "
                 "for testing purposes"
