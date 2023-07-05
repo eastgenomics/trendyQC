@@ -21,8 +21,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         project_ids = None
 
-        if options["p_id"]:
-            project_ids = options["p_id"]
+        if options["project_id"]:
+            project_ids = options["project_id"]
 
         if options["all"]:
             project_ids = get_all_002_projects()
