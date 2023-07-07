@@ -19,7 +19,16 @@ def login_to_dnanexus():
 
 
 def search_multiqc_data(project_id):
-    pass
+    data = []
+
+    files = dxpy.find_data_objects(
+        project=project_id, name="multiqc_data.json"
+    )
+
+    for file in files:
+        data.append(dxpy.DXFile(file["id"], file["project"]))
+
+    return data
 
 
 def get_all_002_projects():
