@@ -13,6 +13,7 @@ class Report(models.Model):
     job_date = models.DateTimeField()
 
     class Meta:
+        app_label = "trend_monitoring"
         db_table = "report"
 
 
@@ -21,6 +22,7 @@ class Patient(models.Model):
     sex = models.CharField(max_length=1)
 
     class Meta:
+        app_label = "trend_monitoring"
         db_table = "patient"
 
 
@@ -29,6 +31,7 @@ class Sample(models.Model):
     sample_id = models.CharField(max_length=15)
 
     class Meta:
+        app_label = "trend_monitoring"
         db_table = "sample"
 
 
@@ -57,4 +60,5 @@ class Report_Sample(models.Model):
     sompy_data = models.ForeignKey(Sompy_data, on_delete=models.DO_NOTHING)
 
     class Meta:
+        app_label = "trend_monitoring"
         db_table = "report_sample"

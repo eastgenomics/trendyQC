@@ -30,6 +30,7 @@ class Somalier_data(models.Model):
     match_sexes = models.BooleanField()
 
     class Meta:
+        app_label = "trend_monitoring"
         db_table = "somalier_data"
 
 
@@ -90,6 +91,7 @@ class Sompy_data(models.Model):
     records_fp_rate = models.FloatField()
 
     class Meta:
+        app_label = "trend_monitoring"
         db_table = "sompy_data"
 
 
@@ -100,12 +102,20 @@ class Vcfqc_data(models.Model):
     X_hom_het_ratio = models.FloatField()
     gender = models.CharField(max_length=10)
 
+    class Meta:
+        app_label = "trend_monitoring"
+        db_table = "vcfqc_data"
+
 
 class Happy(models.Model):
     snp_all = models.ForeignKey("Happy_snp_all", on_delete=models.DO_NOTHING)
     snp_pass = models.ForeignKey("Happy_snp_pass", on_delete=models.DO_NOTHING)
     indel_all = models.ForeignKey("Happy_indel_all", on_delete=models.DO_NOTHING)
     indel_pass = models.ForeignKey("Happy_indel_pass", on_delete=models.DO_NOTHING)
+
+    class Meta:
+        app_label = "trend_monitoring"
+        db_table = "happy"
 
 
 class Happy_snp_all(models.Model):
@@ -126,6 +136,10 @@ class Happy_snp_all(models.Model):
     truth_total_het_hom_ratio_snp = models.FloatField()
     query_total_het_hom_ratio_snp = models.FloatField()
 
+    class Meta:
+        app_label = "trend_monitoring"
+        db_table = "happy_snp_all"
+
 
 class Happy_snp_pass(models.Model):
     filter_snp = models.CharField(max_length=10)
@@ -144,6 +158,10 @@ class Happy_snp_pass(models.Model):
     query_total_titv_ratio_snp = models.FloatField()
     truth_total_het_hom_ratio_snp = models.FloatField()
     query_total_het_hom_ratio_snp = models.FloatField()
+
+    class Meta:
+        app_label = "trend_monitoring"
+        db_table = "happy_snp_pass"
 
 
 class Happy_indel_all(models.Model):
@@ -164,6 +182,10 @@ class Happy_indel_all(models.Model):
     truth_total_het_hom_ratio_indel = models.FloatField()
     query_total_het_hom_ratio_indel = models.FloatField()
 
+    class Meta:
+        app_label = "trend_monitoring"
+        db_table = "happy_indel_all"
+
 
 class Happy_indel_pass(models.Model):
     filter_indel = models.CharField(max_length=10)
@@ -182,3 +204,7 @@ class Happy_indel_pass(models.Model):
     query_total_titv_ratio_indel = models.FloatField()
     truth_total_het_hom_ratio_indel = models.FloatField()
     query_total_het_hom_ratio_indel = models.FloatField()
+
+    class Meta:
+        app_label = "trend_monitoring"
+        db_table = "happy_indel_pass"

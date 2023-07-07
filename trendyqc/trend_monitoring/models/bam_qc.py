@@ -22,6 +22,7 @@ class VerifyBAMid_data(models.Model):
     rdpalt = models.CharField(max_length=10)
 
     class Meta:
+        app_label = "trend_monitoring"
         db_table = "verifybamid_data"
 
 
@@ -60,6 +61,7 @@ class Samtools_data(models.Model):
     flagstat_total = models.IntegerField()
 
     class Meta:
+        app_label = "trend_monitoring"
         db_table = "samtools_data"
 
 
@@ -81,6 +83,10 @@ class Picard(models.Model):
     quality_yield_metrics = models.ForeignKey(
         "Picard_quality_yield_metrics", on_delete=models.DO_NOTHING
     )
+
+    class Meta:
+        app_label = "trend_monitoring"
+        db_table = "picard"
 
 
 class Picard_hs_metrics(models.Model):
@@ -140,6 +146,7 @@ class Picard_hs_metrics(models.Model):
     read_group = models.CharField(max_length=10)
 
     class Meta:
+        app_label = "trend_monitoring"
         db_table = "picard_hs_metrics"
 
 
@@ -168,6 +175,7 @@ class Picard_alignment_summary_metrics(models.Model):
     pct_adapter = models.FloatField()
 
     class Meta:
+        app_label = "trend_monitoring"
         db_table = "picard_alignment_summary_metrics"
 
 
@@ -181,6 +189,7 @@ class Picard_base_distribution_by_cycle_metrics(models.Model):
     pct_n = models.FloatField()
 
     class Meta:
+        app_label = "trend_monitoring"
         db_table = "picard_base_distribution_by_cycle_metrics"
 
 
@@ -199,6 +208,7 @@ class Picard_gc_bias_metrics(models.Model):
     gc_nc_80_100 = models.FloatField()
 
     class Meta:
+        app_label = "trend_monitoring"
         db_table = "picard_gc_bias_metrics"
 
 
@@ -223,6 +233,7 @@ class Picard_insert_size_metrics(models.Model):
     width_of_99_percent = models.FloatField()
 
     class Meta:
+        app_label = "trend_monitoring"
         db_table = "picard_insert_size_metrics"
 
 
@@ -240,4 +251,5 @@ class Picard_quality_yield_metrics(models.Model):
     pf_q20_equivalent_yield = models.FloatField()
 
     class Meta:
+        app_label = "trend_monitoring"
         db_table = "picard_quality_yield_metrics"

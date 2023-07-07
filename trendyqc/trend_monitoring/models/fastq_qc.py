@@ -29,6 +29,7 @@ class Fastqc_data(models.Model):
     adapter_content = models.CharField(max_length=10)
 
     class Meta:
+        app_label = "trend_monitoring"
         db_table = "fastqc_data"
 
 
@@ -49,4 +50,5 @@ class Bcl2fastq_data(models.Model):
     mean_qscore = models.FloatField()
 
     class Meta:
+        app_label = "trend_monitoring"
         db_table = "bcl2fastq_data"
