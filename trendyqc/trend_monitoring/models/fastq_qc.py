@@ -1,10 +1,9 @@
 from django.db import models
-from .metadata import Report_Sample
 
 
 class Fastqc_data(models.Model):
-    report_sample = models.ForeignKey(
-        Report_Sample, on_delete=models.DO_NOTHING
+    report_sample_link = models.ForeignKey(
+        "Report_Sample", on_delete=models.DO_NOTHING
     )
     sample_read = models.CharField(max_length=50)
     lane = models.CharField(max_length=20)
