@@ -66,7 +66,9 @@ class Samtools_data(models.Model):
 
 
 class Picard(models.Model):
-    hs_metrics = models.ForeignKey("Picard_hs_metrics", on_delete=models.DO_NOTHING)
+    hs_metrics = models.ForeignKey(
+        "Picard_hs_metrics", on_delete=models.DO_NOTHING
+    )
     alignment_summary_metrics = models.ForeignKey(
         "Picard_alignment_summary_metrics", on_delete=models.DO_NOTHING
     )
