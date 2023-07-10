@@ -48,12 +48,7 @@ class Report_Sample(models.Model):
     samtools_data = models.ForeignKey(
         Samtools_data, on_delete=models.DO_NOTHING
     )
-    sentieon_data = models.ForeignKey(
-        Sentieon_data, on_delete=models.DO_NOTHING
-    )
-    picard_hs_data = models.ForeignKey(
-        Picard_hs_data, on_delete=models.DO_NOTHING
-    )
+    picard = models.ForeignKey(Picard, on_delete=models.DO_NOTHING)
     somalier_data = models.ForeignKey(
         Somalier_data, on_delete=models.DO_NOTHING
     )
