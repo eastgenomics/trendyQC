@@ -43,10 +43,10 @@ class Command(BaseCommand):
             assert regex.fullmatch(r"project-[a-zA-Z0-9]{24}", p_id), (
                 f"{p_id} is not a correctly formatted DNAnexus project id"
             )
-            report_ids = search_multiqc_reports(p_id)
+            report_objects = search_multiqc_reports(p_id)
 
-            data[p_id] = report_ids
+            data[p_id] = report_objects
 
         for p_id in data:
-            for report_id in data[p_id]:
-                report_data = parse_multiqc_report(report_id)
+            for report_object in data[p_id]:
+                report_data = parse_multiqc_report(report_object)
