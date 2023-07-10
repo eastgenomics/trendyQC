@@ -32,4 +32,10 @@ def search_multiqc_reports(project_id):
 
 
 def get_all_002_projects():
-    pass
+    prod_projects = []
+    projects = dxpy.find_projects(name="^002", name_mode="regexp")
+
+    for project in projects:
+        prod_projects.append(project["id"])
+
+    return prod_projects
