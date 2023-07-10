@@ -18,7 +18,7 @@ def login_to_dnanexus():
         print(err)
 
 
-def search_multiqc_data(project_id):
+def search_multiqc_reports(project_id):
     data = []
 
     files = dxpy.find_data_objects(
