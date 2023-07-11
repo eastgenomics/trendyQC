@@ -30,6 +30,7 @@ class Somalier_data(models.Model):
     match_sexes = models.BooleanField()
 
     class Meta:
+        app_label = "trend_monitoring"
         db_table = "somalier_data"
 
 
@@ -90,4 +91,120 @@ class Sompy_data(models.Model):
     records_fp_rate = models.FloatField()
 
     class Meta:
+        app_label = "trend_monitoring"
         db_table = "sompy_data"
+
+
+class Vcfqc_data(models.Model):
+    mean_het_ratio = models.FloatField()
+    mean_hom_ratio = models.FloatField()
+    het_hom_ratio = models.FloatField()
+    X_hom_het_ratio = models.FloatField()
+    gender = models.CharField(max_length=10)
+
+    class Meta:
+        app_label = "trend_monitoring"
+        db_table = "vcfqc_data"
+
+
+class Happy(models.Model):
+    snp_all = models.ForeignKey("Happy_snp_all", on_delete=models.DO_NOTHING)
+    snp_pass = models.ForeignKey("Happy_snp_pass", on_delete=models.DO_NOTHING)
+    indel_all = models.ForeignKey("Happy_indel_all", on_delete=models.DO_NOTHING)
+    indel_pass = models.ForeignKey("Happy_indel_pass", on_delete=models.DO_NOTHING)
+
+    class Meta:
+        app_label = "trend_monitoring"
+        db_table = "happy"
+
+
+class Happy_snp_all(models.Model):
+    filter_snp = models.CharField(max_length=10)
+    truth_total_snp = models.IntegerField()
+    truth_tp_snp = models.IntegerField()
+    truth_fn_snp = models.IntegerField()
+    query_total_snp = models.IntegerField()
+    query_fp_snp = models.IntegerField()
+    query_unk_snp = models.IntegerField()
+    fp_get_snp = models.IntegerField()
+    metric_recall_snp = models.FloatField()
+    metric_precision_snp = models.FloatField()
+    metric_frac_na_snp = models.FloatField()
+    metric_f1_score_snp = models.FloatField()
+    truth_total_titv_ratio_snp = models.FloatField()
+    query_total_titv_ratio_snp = models.FloatField()
+    truth_total_het_hom_ratio_snp = models.FloatField()
+    query_total_het_hom_ratio_snp = models.FloatField()
+
+    class Meta:
+        app_label = "trend_monitoring"
+        db_table = "happy_snp_all"
+
+
+class Happy_snp_pass(models.Model):
+    filter_snp = models.CharField(max_length=10)
+    truth_total_snp = models.IntegerField()
+    truth_tp_snp = models.IntegerField()
+    truth_fn_snp = models.IntegerField()
+    query_total_snp = models.IntegerField()
+    query_fp_snp = models.IntegerField()
+    query_unk_snp = models.IntegerField()
+    fp_get_snp = models.IntegerField()
+    metric_recall_snp = models.FloatField()
+    metric_precision_snp = models.FloatField()
+    metric_frac_na_snp = models.FloatField()
+    metric_f1_score_snp = models.FloatField()
+    truth_total_titv_ratio_snp = models.FloatField()
+    query_total_titv_ratio_snp = models.FloatField()
+    truth_total_het_hom_ratio_snp = models.FloatField()
+    query_total_het_hom_ratio_snp = models.FloatField()
+
+    class Meta:
+        app_label = "trend_monitoring"
+        db_table = "happy_snp_pass"
+
+
+class Happy_indel_all(models.Model):
+    filter_indel = models.CharField(max_length=10)
+    truth_total_indel = models.IntegerField()
+    truth_tp_indel = models.IntegerField()
+    truth_fn_indel = models.IntegerField()
+    query_total_indel = models.IntegerField()
+    query_fp_indel = models.IntegerField()
+    query_unk_indel = models.IntegerField()
+    fp_get_indel = models.IntegerField()
+    metric_recall_indel = models.FloatField()
+    metric_precision_indel = models.FloatField()
+    metric_frac_na_indel = models.FloatField()
+    metric_f1_score_indel = models.FloatField()
+    truth_total_titv_ratio_indel = models.FloatField()
+    query_total_titv_ratio_indel = models.FloatField()
+    truth_total_het_hom_ratio_indel = models.FloatField()
+    query_total_het_hom_ratio_indel = models.FloatField()
+
+    class Meta:
+        app_label = "trend_monitoring"
+        db_table = "happy_indel_all"
+
+
+class Happy_indel_pass(models.Model):
+    filter_indel = models.CharField(max_length=10)
+    truth_total_indel = models.IntegerField()
+    truth_tp_indel = models.IntegerField()
+    truth_fn_indel = models.IntegerField()
+    query_total_indel = models.IntegerField()
+    query_fp_indel = models.IntegerField()
+    query_unk_indel = models.IntegerField()
+    fp_get_indel = models.IntegerField()
+    metric_recall_indel = models.FloatField()
+    metric_precision_indel = models.FloatField()
+    metric_frac_na_indel = models.FloatField()
+    metric_f1_score_indel = models.FloatField()
+    truth_total_titv_ratio_indel = models.FloatField()
+    query_total_titv_ratio_indel = models.FloatField()
+    truth_total_het_hom_ratio_indel = models.FloatField()
+    query_total_het_hom_ratio_indel = models.FloatField()
+
+    class Meta:
+        app_label = "trend_monitoring"
+        db_table = "happy_indel_pass"

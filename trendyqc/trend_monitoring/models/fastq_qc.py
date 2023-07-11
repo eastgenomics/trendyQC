@@ -1,10 +1,9 @@
 from django.db import models
-from .metadata import Report_Sample
 
 
 class Fastqc_data(models.Model):
-    report_sample = models.ForeignKey(
-        Report_Sample, on_delete=models.DO_NOTHING
+    report_sample_link = models.ForeignKey(
+        "Report_Sample", on_delete=models.DO_NOTHING
     )
     sample_read = models.CharField(max_length=50)
     lane = models.CharField(max_length=20)
@@ -13,8 +12,8 @@ class Fastqc_data(models.Model):
     total_sequences = models.FloatField()
     sequences_flagged_as_poor_quality = models.FloatField()
     sequence_length = models.FloatField()
-    gc_perc = models.FloatField()
-    total_deduplicated_percentage = models.FloatField()
+    gc_pct = models.FloatField()
+    total_deduplicated_pct = models.FloatField()
     avg_sequence_length = models.FloatField()
     basic_statistics = models.CharField(max_length=10)
     per_base_sequence_quality = models.CharField(max_length=10)
@@ -29,6 +28,7 @@ class Fastqc_data(models.Model):
     adapter_content = models.CharField(max_length=10)
 
     class Meta:
+        app_label = "trend_monitoring"
         db_table = "fastqc_data"
 
 
@@ -49,4 +49,5 @@ class Bcl2fastq_data(models.Model):
     mean_qscore = models.FloatField()
 
     class Meta:
+        app_label = "trend_monitoring"
         db_table = "bcl2fastq_data"
