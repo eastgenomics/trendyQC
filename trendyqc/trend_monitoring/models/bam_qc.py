@@ -66,6 +66,9 @@ class Samtools_data(models.Model):
 
 
 class Picard(models.Model):
+    sample = models.CharField(max_length=10)
+    library = models.CharField(max_length=10)
+    read_group = models.CharField(max_length=10)
     hs_metrics = models.ForeignKey(
         "Picard_hs_metrics", on_delete=models.DO_NOTHING
     )
@@ -149,9 +152,6 @@ class Picard_hs_metrics(models.Model):
     gc_dropout = models.FloatField()
     het_snp_sensitivity = models.FloatField()
     het_snp_q = models.FloatField()
-    sample = models.CharField(max_length=10)
-    library = models.CharField(max_length=10)
-    read_group = models.CharField(max_length=10)
 
     class Meta:
         app_label = "trend_monitoring"
@@ -183,9 +183,6 @@ class Picard_alignment_summary_metrics(models.Model):
     strand_balance = models.FloatField()
     pct_chimeras = models.FloatField()
     pct_adapter = models.FloatField()
-    sample = models.CharField(max_length=10)
-    library = models.CharField(max_length=10)
-    read_group = models.CharField(max_length=10)
 
     class Meta:
         app_label = "trend_monitoring"
