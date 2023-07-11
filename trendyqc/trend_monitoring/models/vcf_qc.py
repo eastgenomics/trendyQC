@@ -99,7 +99,7 @@ class Vcfqc_data(models.Model):
     mean_het_ratio = models.FloatField()
     mean_hom_ratio = models.FloatField()
     het_hom_ratio = models.FloatField()
-    X_hom_het_ratio = models.FloatField()
+    x_hom_het_ratio = models.FloatField()
     gender = models.CharField(max_length=10)
 
     class Meta:
