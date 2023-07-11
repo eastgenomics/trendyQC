@@ -65,6 +65,17 @@ class Samtools_data(models.Model):
         db_table = "samtools_data"
 
 
+class Custom_coverage(models.Model):
+    cov_250x = models.FloatField()
+    cov_500x = models.FloatField()
+    cov_1000x = models.FloatField()
+    usable_unique_bases_on_target = models.FloatField()
+
+    class Meta:
+        app_label = "trend_monitoring"
+        db_table = "custom_coverage"
+
+
 class Picard(models.Model):
     sample = models.CharField(max_length=10)
     library = models.CharField(max_length=10)
