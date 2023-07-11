@@ -1,0 +1,20 @@
+{
+    "RG": "rg",
+    "CHIP_ID": "chip_id",
+    "#SNPS": "nb_snps",
+    "#READS": "nb_reads",
+    "AVG_DP": "avg_dp",
+    "FREEMIX": "freemix",
+    "FREELK1": "freelk1",
+    "FREELK0": "freelk0",
+    "FREE_RH": "free_rh",
+    "FREE_RA": "free_ra",
+    "CHIPMIX": "chipmix",
+    "CHIPLK1": "chiplk1",
+    "CHIPLK0": "chiplk0",
+    "CHIP_RH": "chip_rh",
+    "CHIP_RA": "chip_ra",
+    "DPREF": "dpref",
+    "RDPHET": "rdphet",
+    "RDPALT": "rdpalt"
+}

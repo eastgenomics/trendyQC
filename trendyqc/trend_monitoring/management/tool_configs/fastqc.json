@@ -1,0 +1,21 @@
+{
+    "File type": "file_type",
+    "Encoding": "encoding",
+    "Total Sequences": "total_sequences",
+    "Sequences flagged as poor quality": "sequences_flagged_as_poor_quality",
+    "Sequence length": "sequence_length",
+    "%GC": "gc_pct",
+    "total_deduplicated_percentage": "total_deduplicated_pct",
+    "avg_sequence_length": "avg_sequence_length",
+    "basic_statistics": "basic_statistics",
+    "per_base_sequence_quality": "per_base_sequence_quality",
+    "per_tile_sequence_quality": "per_tile_sequence_quality",
+    "per_sequence_quality_score": "per_sequence_quality_score",
+    "per_base_sequence_content": "per_base_sequence_content",
+    "per_sequence_gc_content": "per_sequence_gc_content",
+    "per_base_n_content": "per_base_n_content",
+    "sequence_length_distribution": "sequence_length_distribution",
+    "sequence_duplication_levels": "sequence_duplication_levels",
+    "overrepresented_sequences": "overrepresented_sequences",
+    "adapter_content": "adapter_content"
+}

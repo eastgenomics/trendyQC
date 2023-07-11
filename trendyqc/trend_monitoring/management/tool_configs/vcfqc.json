@@ -1,0 +1,7 @@
+{
+    "mean het ratio": "mean_het_ratio",
+    "mean homo ratio": "mean_hom_ratio",
+    "het:homo ratio": "het_hom_ratio",
+    "X homo:het ratio": "x_hom_het_ratio",
+    "gender": "gender"
+}

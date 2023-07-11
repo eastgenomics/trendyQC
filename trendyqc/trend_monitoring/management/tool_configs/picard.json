@@ -1,0 +1,10 @@
+{
+    "BAIT_SET": "bait_set",
+    "BAIT_TERRITORY": "bait_territory",
+    "BAIT_DESIGN_EFFICIENCY": "bait_design_efficiency",
+    "ON_BAIT_BASES": "on_bait_bases",
+    "NEAR_BAIT_BASES": "near_bait_bases",
+    "OFF_BAIT_BASES": "off_bait_bases",
+    "PCT_SELECTED_BASES": "pct_selected_bases",
+    ""
+}
