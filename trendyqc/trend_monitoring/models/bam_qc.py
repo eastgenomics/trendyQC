@@ -177,10 +177,15 @@ class Picard_alignment_summary_metrics(models.Model):
     mean_read_length = models.FloatField()
     reads_aligned_in_pairs = models.FloatField()
     pct_reads_aligned_in_pairs = models.FloatField()
+    pf_reads_improper_pairs = models.FloatField()
+    pct_pf_reads_improper_pairs = models.FloatField()
     bad_cycles = models.FloatField()
     strand_balance = models.FloatField()
     pct_chimeras = models.FloatField()
     pct_adapter = models.FloatField()
+    sample = models.CharField(max_length=10)
+    library = models.CharField(max_length=10)
+    read_group = models.CharField(max_length=10)
 
     class Meta:
         app_label = "trend_monitoring"
