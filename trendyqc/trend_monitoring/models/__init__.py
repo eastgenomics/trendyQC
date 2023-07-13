@@ -1,6 +1,7 @@
 from .bam_qc import (
     VerifyBAMid_data,
     Samtools_data,
+    Custom_coverage,
     Picard,
     Picard_hs_metrics,
     Picard_alignment_summary_metrics,
