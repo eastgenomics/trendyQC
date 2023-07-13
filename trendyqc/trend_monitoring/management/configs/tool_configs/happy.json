@@ -15,7 +15,7 @@
         "TRUTH.TOTAL.TiTv_ratio_indel": "truth_total_titv_ratio_indel",
         "QUERY.TOTAL.TiTv_ratio_indel": "query_total_titv_ratio_indel",
         "TRUTH.TOTAL.het_hom_ratio_indel": "truth_total_het_hom_ratio_indel",
-        "QUERY.TOTAL.het_hom_ratio_indel": "query_total_het_hom_ratio_indel",
+        "QUERY.TOTAL.het_hom_ratio_indel": "query_total_het_hom_ratio_indel"
     },
     "snp": {
         "Filter_snp": "filter_snp",
