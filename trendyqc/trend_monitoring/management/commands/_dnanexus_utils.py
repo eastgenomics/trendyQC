@@ -16,6 +16,7 @@ def login_to_dnanexus():
         print("DNAnexus login successful")
     except Exception as err:
         print(err)
+        exit()
 
 
 def search_multiqc_reports(project_id):
