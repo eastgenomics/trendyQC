@@ -11,6 +11,19 @@ CONFIG_DIR = BASE_DIR_MANAGEMENT / "configs"
 
 def parse_multiqc_report(multiqc_report: dxpy.DXFile) -> Dict:
     """ Parse the multiqc report for easy import
+    Output should look like:
+    {
+        "sample_id": {
+            "tool_name": {
+                "field_name": data
+            },
+            "other_tool_name": {
+                "lane_read": {
+                    "field_name": data
+                }
+            }
+        }
+    }
 
     Args:
         multiqc_report (dxpy.DXFile): DXFile object pointing to a MultiQC
@@ -62,6 +75,18 @@ def parse_multiqc_report(multiqc_report: dxpy.DXFile) -> Dict:
 def convert_tool_fields(tool_data: Dict, tool_config: Dict) -> Dict:
     """ Convert the field names from MultiQC to ones that are written in the
     Django models
+    i.e.
+    {
+        "Filter_indel": data,
+        "TRUTH.TOTAL_indel": data_also
+    }
+
+    to
+
+    {
+        "filter_indel": data,
+        "truth_total_indel": data_also
+    }
 
     Args:
         tool_data (dict): Dict containing the MultiQC data for a specific tool
