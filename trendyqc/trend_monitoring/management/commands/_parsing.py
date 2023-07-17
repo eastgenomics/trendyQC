@@ -1,16 +1,19 @@
 import json
 from pathlib import Path
+from typing import Dict
+
+import dxpy
 
 # returns the /trendyqc/trend_monitoring/management folder
 BASE_DIR_MANAGEMENT = Path(__file__).resolve().parent.parent
 CONFIG_DIR = BASE_DIR_MANAGEMENT / "configs"
 
 
-def parse_multiqc_report(multiqc_report):
+def parse_multiqc_report(multiqc_report: dxpy.DXFile) -> Dict:
     """ Parse the multiqc report for easy import
 
     Args:
-        multiqc_report (DNAnexus.DXFile): DXFile object pointing to a MultiQC
+        multiqc_report (dxpy.DXFile): DXFile object pointing to a MultiQC
         report
 
     Returns:
@@ -56,8 +59,8 @@ def parse_multiqc_report(multiqc_report):
     return data
 
 
-def convert_tool_fields(tool_data, tool_config):
-    """ Convert the field names from MultiQC to ones that are written in the 
+def convert_tool_fields(tool_data: Dict, tool_config: Dict) -> Dict:
+    """ Convert the field names from MultiQC to ones that are written in the
     Django models
 
     Args:
@@ -78,7 +81,7 @@ def convert_tool_fields(tool_data, tool_config):
     return converted_data
 
 
-def load_tool_config(tool_name, subtool=None):
+def load_tool_config(tool_name: str, subtool: str = None) -> Dict:
     """ Read in the tool config and store it as a json
 
     Args:
@@ -99,7 +102,7 @@ def load_tool_config(tool_name, subtool=None):
     return data
 
 
-def load_assay_config(assay_name):
+def load_assay_config(assay_name: str) -> Dict:
     """ Read and load the assays.json
 
     Args:
