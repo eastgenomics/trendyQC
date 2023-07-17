@@ -141,4 +141,7 @@ def load_assay_config(assay_name: str) -> Dict:
 
     assay_config = CONFIG_DIR / "assays.json"
     data = json.loads(assay_config.read_text())
+    assert assay_name in data, (
+        f"{assay_name} is not present in the assay config file"
+    )
     return data[assay_name]
