@@ -44,6 +44,9 @@ def parse_multiqc_report(multiqc_report: dxpy.DXFile) -> Dict:
 
     for multiqc_field, tool_metadata in suite_of_tools.items():
         tool, subtool = tool_metadata
+        assert multiqc_field in raw_data, (
+            f"{multiqc_field} doesn't exist in the multiqc report"
+        )
         data_all_samples = raw_data[multiqc_field]
         # load multiqc fields and the models fields that they will be replaced
         # with
