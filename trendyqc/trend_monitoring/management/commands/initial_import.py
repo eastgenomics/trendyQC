@@ -5,7 +5,7 @@ import regex
 from ._dnanexus_utils import (
     login_to_dnanexus, search_multiqc_reports, get_all_002_projects
 )
-from ._parsing import parse_multiqc_report
+from ._multiqc import MultiQC_report
 
 
 class Command(BaseCommand):
@@ -49,4 +49,4 @@ class Command(BaseCommand):
 
         for p_id in data:
             for report_object in data[p_id]:
-                report_data = parse_multiqc_report(report_object)
+                multiqc_report = MultiQC_report(report_object)
