@@ -8,6 +8,7 @@ from ._parsing import load_assay_config, load_tool_config
 
 class MultiQC_report():
     def __init__(self, multiqc_report: dxpy.DXFile) -> None:
+        self.dnanexus_report = multiqc_report
         self.original_data = json.loads(multiqc_report.read())
         self.assay = self.original_data["config_subtitle"]
         # load the suite of tools that is used for the report's assay
@@ -119,3 +120,20 @@ class MultiQC_report():
                 converted_data[tool_config[field]] = data
 
         return converted_data
+
+    def get_metadata(self) -> Dict:
+        """ Get the metadata from the MultiQC DNAnexus object """
+
+        self.report_name = self.dnanexus_report.describe()["name"],
+        self.project_name = self.dnanexus_report.describe()["project"],
+        self.report_id = self.dnanexus_report.describe()["id"]
+
+        # Get the job ID from the multiqc report
+        self.job_id = self.dnanexus_report.describe()["createdBy"]["job"]
+        # DNAnexus returns a timestamp that includes milliseconds which Python
+        # does not handle. So striping the last 3 characters
+        self.creation_timestamp = int(
+            str(
+                dxpy.DXJob(self.job_id).describe()["created"]
+            )[:-3]
+        )
