@@ -65,7 +65,21 @@ class Samtools_data(models.Model):
         db_table = "samtools_data"
 
 
+class Custom_coverage(models.Model):
+    cov_250x = models.FloatField()
+    cov_500x = models.FloatField()
+    cov_1000x = models.FloatField()
+    usable_unique_bases_on_target = models.FloatField()
+
+    class Meta:
+        app_label = "trend_monitoring"
+        db_table = "custom_coverage"
+
+
 class Picard(models.Model):
+    sample = models.CharField(max_length=10)
+    library = models.CharField(max_length=10)
+    read_group = models.CharField(max_length=10)
     hs_metrics = models.ForeignKey(
         "Picard_hs_metrics", on_delete=models.DO_NOTHING
     )
@@ -93,32 +107,45 @@ class Picard(models.Model):
 
 class Picard_hs_metrics(models.Model):
     bait_set = models.CharField(max_length=10)
-    genome_size = models.FloatField()
     bait_territory = models.FloatField()
-    target_territory = models.FloatField()
     bait_design_efficiency = models.FloatField()
-    total_reads = models.FloatField()
-    pf_reads = models.FloatField()
-    pf_unique_reads = models.FloatField()
-    pct_pf_reads = models.FloatField()
-    pct_pf_uq_reads = models.FloatField()
-    pf_uq_reads_aligned = models.FloatField()
-    pct_pf_uq_reads_aligned = models.FloatField()
-    pf_bases_aligned = models.FloatField()
-    pf_uq_bases_aligned = models.FloatField()
     on_bait_bases = models.FloatField()
     near_bait_bases = models.FloatField()
     off_bait_bases = models.FloatField()
-    on_target_bases = models.FloatField()
+    pct_selected_bases = models.FloatField()
+    pct_off_bait = models.FloatField()
+    on_bait_vs_selected = models.FloatField()
     mean_bait_coverage = models.FloatField()
-    mean_target_coverage = models.FloatField()
-    median_target_coverage = models.FloatField()
-    max_target_coverage = models.FloatField()
     pct_usable_bases_on_bait = models.FloatField()
     pct_usable_bases_on_target = models.FloatField()
     fold_enrichment = models.FloatField()
+    hs_library_size = models.FloatField()
+    hs_penalty_10x = models.FloatField()
+    hs_penalty_20x = models.FloatField()
+    hs_penalty_30x = models.FloatField()
+    hs_penalty_40x = models.FloatField()
+    hs_penalty_50x = models.FloatField()
+    hs_penalty_100x = models.FloatField()
+    target_territory = models.FloatField()
+    genome_size = models.FloatField()
+    total_reads = models.FloatField()
+    pf_reads = models.FloatField()
+    pf_bases = models.FloatField()
+    pf_unique_reads = models.FloatField()
+    pf_uq_reads_aligned = models.FloatField()
+    pf_bases_aligned = models.FloatField()
+    pf_uq_bases_aligned = models.FloatField()
+    on_target_bases = models.FloatField()
+    pct_pf_reads = models.FloatField()
+    pct_pf_uq_reads = models.FloatField()
+    pct_pf_uq_reads_aligned = models.FloatField()
+    mean_target_coverage = models.FloatField()
+    median_target_coverage = models.FloatField()
+    max_target_coverage = models.FloatField()
+    min_target_coverage = models.FloatField()
     zero_cvg_targets_pct = models.FloatField()
     pct_exc_dupe = models.FloatField()
+    pct_exc_adapter = models.FloatField()
     pct_exc_mapq = models.FloatField()
     pct_exc_baseq = models.FloatField()
     pct_exc_overlap = models.FloatField()
@@ -132,20 +159,10 @@ class Picard_hs_metrics(models.Model):
     pct_target_bases_40x = models.FloatField()
     pct_target_bases_50x = models.FloatField()
     pct_target_bases_100x = models.FloatField()
-    hs_library_size = models.FloatField()
-    hs_penalty_10x = models.FloatField()
-    hs_penalty_20x = models.FloatField()
-    hs_penalty_30x = models.FloatField()
-    hs_penalty_40x = models.FloatField()
-    hs_penalty_50x = models.FloatField()
-    hs_penalty_100x = models.FloatField()
     at_dropout = models.FloatField()
     gc_dropout = models.FloatField()
     het_snp_sensitivity = models.FloatField()
     het_snp_q = models.FloatField()
-    sample = models.CharField(max_length=10)
-    library = models.CharField(max_length=10)
-    read_group = models.CharField(max_length=10)
 
     class Meta:
         app_label = "trend_monitoring"
@@ -171,6 +188,8 @@ class Picard_alignment_summary_metrics(models.Model):
     mean_read_length = models.FloatField()
     reads_aligned_in_pairs = models.FloatField()
     pct_reads_aligned_in_pairs = models.FloatField()
+    pf_reads_improper_pairs = models.FloatField()
+    pct_pf_reads_improper_pairs = models.FloatField()
     bad_cycles = models.FloatField()
     strand_balance = models.FloatField()
     pct_chimeras = models.FloatField()
@@ -216,6 +235,7 @@ class Picard_gc_bias_metrics(models.Model):
 
 class Picard_insert_size_metrics(models.Model):
     median_insert_size = models.FloatField()
+    mode_insert_size = models.FloatField()
     median_absolute_deviation = models.FloatField()
     min_insert_size = models.FloatField()
     max_insert_size = models.FloatField()
@@ -223,16 +243,16 @@ class Picard_insert_size_metrics(models.Model):
     standard_deviation = models.FloatField()
     read_pairs = models.FloatField()
     pair_orientation = models.CharField(max_length=5)
-    width_of_10_percent = models.FloatField()
-    width_of_20_percent = models.FloatField()
-    width_of_30_percent = models.FloatField()
-    width_of_40_percent = models.FloatField()
-    width_of_50_percent = models.FloatField()
-    width_of_60_percent = models.FloatField()
-    width_of_70_percent = models.FloatField()
-    width_of_80_percent = models.FloatField()
-    width_of_90_percent = models.FloatField()
-    width_of_99_percent = models.FloatField()
+    width_of_10_pct = models.FloatField()
+    width_of_20_pct = models.FloatField()
+    width_of_30_pct = models.FloatField()
+    width_of_40_pct = models.FloatField()
+    width_of_50_pct = models.FloatField()
+    width_of_60_pct = models.FloatField()
+    width_of_70_pct = models.FloatField()
+    width_of_80_pct = models.FloatField()
+    width_of_90_pct = models.FloatField()
+    width_of_99_pct = models.FloatField()
 
     class Meta:
         app_label = "trend_monitoring"
