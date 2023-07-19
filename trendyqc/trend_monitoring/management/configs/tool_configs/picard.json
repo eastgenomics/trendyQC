@@ -169,5 +169,18 @@
         "GC_NC_40_59": "gc_nc_40_59",
         "GC_NC_60_79": "gc_nc_60_79",
         "GC_NC_80_100": "gc_nc_80_100",
+    },
+    "quality_yield_metrics": {
+        "TOTAL_READS": "total_reads",
+        "PF_READS": "pf_reads",
+        "READ_LENGTH": "read_length",
+        "TOTAL_BASES": "total_bases",
+        "PF_BASES": "pf_bases",
+        "Q20_BASES": "q20_bases",
+        "PF_Q20_BASES": "pf_q20_bases",
+        "Q30_BASES": "q30_bases",
+        "PF_Q30_BASES": "pf_q30_bases",
+        "Q20_EQUIVALENT_YIELD": "q20_equivalent_yield",
+        "PF_Q20_EQUIVALENT_YIELD": "pf_q20_equivalent_yield"
     }
 }
