@@ -38,6 +38,9 @@ class MultiQC_report():
         multiqc_raw_data = self.original_data["report_saved_raw_data"]
 
         for multiqc_field_in_config, tool_metadata in self.suite_of_tools.items():
+            # subtool is used to specify for example, HSMetrics or insertSize
+            # for Picard. It will equal None if the main tool doesn't have a
+            # subtool
             tool, subtool = tool_metadata
             assert multiqc_field_in_config in multiqc_raw_data, (
                 f"{multiqc_field_in_config} doesn't exist in the multiqc "
