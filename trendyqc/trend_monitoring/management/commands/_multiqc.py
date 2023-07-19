@@ -35,14 +35,15 @@ class MultiQC_report():
         """
 
         data = {}
-        raw_data = self.original_data["report_saved_raw_data"]
+        multiqc_raw_data = self.original_data["report_saved_raw_data"]
 
-        for multiqc_field, tool_metadata in self.suite_of_tools.items():
+        for multiqc_field_in_config, tool_metadata in self.suite_of_tools.items():
             tool, subtool = tool_metadata
-            assert multiqc_field in raw_data, (
-                f"{multiqc_field} doesn't exist in the multiqc report"
+            assert multiqc_field_in_config in multiqc_raw_data, (
+                f"{multiqc_field_in_config} doesn't exist in the multiqc "
+                "report"
             )
-            data_all_samples = raw_data[multiqc_field]
+            data_all_samples = multiqc_raw_data[multiqc_field_in_config]
             # load multiqc fields and the models fields that they will be
             # replaced with
             tool_config = load_tool_config(tool, subtool)
