@@ -39,7 +39,7 @@ class Command(BaseCommand):
         if options["all"]:
             project_ids = get_all_002_projects()
 
-        assert project_ids is not None, "Please use -a or -p_id"
+        assert project_ids, "Please use -a or -p_id"
 
         data = {}
 
