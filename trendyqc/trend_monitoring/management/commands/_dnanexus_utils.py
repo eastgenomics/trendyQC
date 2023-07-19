@@ -33,16 +33,11 @@ def search_multiqc_reports(project_id: str) -> List:
         project
     """
 
-    data = []
-
     files = dxpy.find_data_objects(
-        project=project_id, name="multiqc_data.json"
+        project=project_id, name="multiqc_data.json", return_handler=True
     )
 
-    for file in files:
-        data.append(dxpy.DXFile(file["id"], file["project"]))
-
-    return data
+    return [file for file in files]
 
 
 def get_all_002_projects() -> List:
@@ -52,10 +47,6 @@ def get_all_002_projects() -> List:
         List: List of all the 002 DNAnexus project IDs
     """
 
-    prod_projects = []
     projects = dxpy.find_projects(name="^002", name_mode="regexp")
 
-    for project in projects:
-        prod_projects.append(project["id"])
-
-    return prod_projects
+    return [project["id"] for project in projects]
