@@ -1,12 +1,14 @@
 from .bam_qc import (
     VerifyBAMid_data,
     Samtools_data,
+    Custom_coverage,
     Picard,
     Picard_hs_metrics,
     Picard_alignment_summary_metrics,
     Picard_base_distribution_by_cycle_metrics,
     Picard_gc_bias_metrics,
     Picard_insert_size_metrics,
+    Picard_pcr_metrics
 )
 from .fastq_qc import (
     Fastqc_data,
