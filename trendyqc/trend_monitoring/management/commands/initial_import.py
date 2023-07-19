@@ -41,16 +41,11 @@ class Command(BaseCommand):
 
         assert project_ids, "Please use -a or -p_id"
 
-        data = {}
-
         for p_id in project_ids:
             assert regex.fullmatch(r"project-[a-zA-Z0-9]{24}", p_id), (
                 f"{p_id} is not a correctly formatted DNAnexus project id"
             )
             report_objects = search_multiqc_reports(p_id)
 
-            data[p_id] = report_objects
-
-        for p_id in data:
-            for report_object in data[p_id]:
+            for report_object in report_objects:
                 multiqc_report = MultiQC_report(report_object)
