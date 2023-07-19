@@ -107,9 +107,9 @@ class MultiQC_report():
 
         Args:
             tool_data (dict): Dict containing the MultiQC data for a specific
-            tool
+                tool
             tool_config (dict): Dict containing the field names from MultiQC
-            and what they need to be replaced with for that specific tool
+                and what they need to be replaced with for that specific tool
 
         Returns:
             dict: Same dict as the tool data but with the appropriate field
