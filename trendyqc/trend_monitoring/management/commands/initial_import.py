@@ -25,6 +25,10 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        """ Handle options given through the CLI using the add_arguments
+        function
+        """
+
         project_ids = None
 
         login_to_dnanexus()
