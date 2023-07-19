@@ -72,13 +72,13 @@ class MultiQC_report():
                 else:
                     sample_id = sample_data[0]
 
-                data.setdefault(sample_id, {})
-                data[sample_id].setdefault(tool, {})
-
                 if subtool:
                     tool_key = f"{tool}-{subtool}"
                 else:
                     tool_key = tool
+
+                data.setdefault(sample_id, {})
+                data[sample_id].setdefault(tool_key, {})
 
                 # fastqc needs a new level to take into account the lane and
                 # the read
