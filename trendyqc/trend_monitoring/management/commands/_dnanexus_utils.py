@@ -29,7 +29,8 @@ def search_multiqc_reports(project_id: str) -> List:
         project_id (str): DNAnexus project ID
 
     Returns:
-        List: List of all the project IDs found in the DNAnexus project
+        List: List of all the MultiQC reports objects found in the DNAnexus
+        project
     """
 
     data = []
