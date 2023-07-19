@@ -45,11 +45,11 @@
         "multiqc_het-hom_analysis": ["vcfqc", null],
         "multiqc_picard_AlignmentSummaryMetrics": ["picard", "alignment_summary_metrics"],
         "multiqc_picard_HsMetrics": ["picard", "hs_metrics"],
-        "multiqc_picard_QualityYieldMetrics": [],
+        "multiqc_picard_QualityYieldMetrics": ["picard", "quality_yield_metrics"],
         "multiqc_picard_baseContent": [],
-        "multiqc_picard_gcbias": [],
+        "multiqc_picard_gcbias": ["picard", "gc_bias_metrics"],
         "multiqc_picard_insertSize": ["picard", "insert_size_metrics"],
-        "multiqc_picard_pcrmetrics": [],
+        "multiqc_picard_pcrmetrics": ["picard", "pcr_metrics"],
         "multiqc_samtools_flagstat": ["samtools", null]
     }
 }
