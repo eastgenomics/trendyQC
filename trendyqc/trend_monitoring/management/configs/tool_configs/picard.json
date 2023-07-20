@@ -182,5 +182,17 @@
         "PF_Q30_BASES": "pf_q30_bases",
         "Q20_EQUIVALENT_YIELD": "q20_equivalent_yield",
         "PF_Q20_EQUIVALENT_YIELD": "pf_q20_equivalent_yield"
+    },
+    "base_distribution_by_cycle_metrics": {
+        "sum_pct_a": "sum_pct_a",
+        "sum_pct_c": "sum_pct_c",
+        "sum_pct_g": "sum_pct_g",
+        "sum_pct_t": "sum_pct_t",
+        "sum_pct_n": "sum_pct_n",
+        "cycle_count": "cycle_count",
+        "mean_pct_a": "mean_pct_a",
+        "mean_pct_c": "mean_pct_c",
+        "mean_pct_g": "mean_pct_g",
+        "mean_pct_t": "mean_pct_t"
     }
 }
