@@ -1,0 +1,38 @@
+{
+    "indel": {
+        "Filter_indel": "filter_indel",
+        "TRUTH.TOTAL_indel": "truth_total_indel",
+        "TRUTH.TP_indel": "truth_tp_indel",
+        "TRUTH.FN_indel": "truth_fn_indel",
+        "QUERY.TOTAL_indel": "query_total_indel",
+        "QUERY.FP_indel": "query_fp_indel",
+        "QUERY.UNK_indel": "query_unk_indel",
+        "FP.gt_indel": "fp_gt_indel",
+        "METRIC.Recall_indel": "metric_recall_indel",
+        "METRIC.Precision_indel": "metric_precision_indel",
+        "METRIC.Frac_NA_indel": "metric_frac_na_indel",
+        "METRIC.F1_Score_indel": "metric_f1_score_indel",
+        "TRUTH.TOTAL.TiTv_ratio_indel": "truth_total_titv_ratio_indel",
+        "QUERY.TOTAL.TiTv_ratio_indel": "query_total_titv_ratio_indel",
+        "TRUTH.TOTAL.het_hom_ratio_indel": "truth_total_het_hom_ratio_indel",
+        "QUERY.TOTAL.het_hom_ratio_indel": "query_total_het_hom_ratio_indel"
+    },
+    "snp": {
+        "Filter_snp": "filter_snp",
+        "TRUTH.TOTAL_snp": "truth_total_snp",
+        "TRUTH.TP_snp": "truth_tp_snp",
+        "TRUTH.FN_snp": "truth_fn_snp",
+        "QUERY.TOTAL_snp": "query_total_snp",
+        "QUERY.FP_snp": "query_fp_snp",
+        "QUERY.UNK_snp": "query_unk_snp",
+        "FP.gt_snp": "fp_gt_snp",
+        "METRIC.Recall_snp": "metric_recall_snp",
+        "METRIC.Precision_snp": "metric_precision_snp",
+        "METRIC.Frac_NA_snp": "metric_frac_na_snp",
+        "METRIC.F1_Score_snp": "metric_f1_score_snp",
+        "TRUTH.TOTAL.TiTv_ratio_snp": "truth_total_titv_ratio_snp",
+        "QUERY.TOTAL.TiTv_ratio_snp": "query_total_titv_ratio_snp",
+        "TRUTH.TOTAL.het_hom_ratio_snp": "truth_total_het_hom_ratio_snp",
+        "QUERY.TOTAL.het_hom_ratio_snp": "query_total_het_hom_ratio_snp"
+    }
+}
