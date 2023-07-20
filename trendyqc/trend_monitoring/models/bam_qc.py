@@ -201,13 +201,16 @@ class Picard_alignment_summary_metrics(models.Model):
 
 
 class Picard_base_distribution_by_cycle_metrics(models.Model):
-    read_end = models.CharField(max_length=5)
-    cycle = models.IntegerField()
-    pct_a = models.FloatField()
-    pct_c = models.FloatField()
-    pct_g = models.FloatField()
-    pct_t = models.FloatField()
-    pct_n = models.FloatField()
+    sum_pct_a = models.FloatField()
+    sum_pct_c = models.FloatField()
+    sum_pct_g = models.FloatField()
+    sum_pct_t = models.FloatField()
+    sum_pct_n = models.FloatField()
+    cycle_count = models.IntegerField()
+    mean_pct_a = models.FloatField()
+    mean_pct_c = models.FloatField()
+    mean_pct_g = models.FloatField()
+    mean_pct_t = models.FloatField()
 
     class Meta:
         app_label = "trend_monitoring"
