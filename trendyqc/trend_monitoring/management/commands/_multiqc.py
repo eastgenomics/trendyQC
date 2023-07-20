@@ -60,6 +60,9 @@ class MultiQC_report():
                     tool_data, tool_config
                 )
 
+                # SNP genotyping adds a "sorted" in the sample name
+                sample = sample.replace("_sorted", "")
+
                 sample_data = sample.split("_")
                 assert len(sample_data) <= 4, (
                     "Unexpected number of fields when splitting using _: "
