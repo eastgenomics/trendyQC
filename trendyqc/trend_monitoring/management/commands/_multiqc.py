@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 from typing import Dict
 
@@ -14,6 +15,7 @@ class MultiQC_report():
         # load the suite of tools that is used for the report's assay
         self.suite_of_tools = load_assay_config(self.assay)
         self.data = self.parse_multiqc_report()
+        self.get_metadata()
 
     def parse_multiqc_report(self) -> Dict:
         """ Parse the multiqc report for easy import
@@ -132,8 +134,11 @@ class MultiQC_report():
         self.job_id = self.dnanexus_report.describe()["createdBy"]["job"]
         # DNAnexus returns a timestamp that includes milliseconds which Python
         # does not handle. So striping the last 3 characters
-        self.creation_timestamp = int(
+        creation_timestamp = int(
             str(
                 dxpy.DXJob(self.job_id).describe()["created"]
             )[:-3]
+        )
+        self.datetime_job = datetime.fromtimestamp(
+            creation_timestamp
         )
