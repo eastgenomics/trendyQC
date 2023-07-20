@@ -46,7 +46,7 @@
         "multiqc_picard_AlignmentSummaryMetrics": ["picard", "alignment_summary_metrics"],
         "multiqc_picard_HsMetrics": ["picard", "hs_metrics"],
         "multiqc_picard_QualityYieldMetrics": ["picard", "quality_yield_metrics"],
-        "multiqc_picard_baseContent": [],
+        "multiqc_picard_baseContent": ["picard", "base_distribution_by_cycle_metrics"],
         "multiqc_picard_gcbias": ["picard", "gc_bias_metrics"],
         "multiqc_picard_insertSize": ["picard", "insert_size_metrics"],
         "multiqc_picard_pcrmetrics": ["picard", "pcr_metrics"],
