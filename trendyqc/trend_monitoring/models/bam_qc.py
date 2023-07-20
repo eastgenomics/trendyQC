@@ -99,6 +99,9 @@ class Picard(models.Model):
     quality_yield_metrics = models.ForeignKey(
         "Picard_quality_yield_metrics", on_delete=models.DO_NOTHING
     )
+    pcr_metrics = models.ForeignKey(
+        "Picard_pcr_metrics", on_delete=models.DO_NOTHING
+    )
 
     class Meta:
         app_label = "trend_monitoring"
