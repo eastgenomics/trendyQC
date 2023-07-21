@@ -49,3 +49,4 @@ class Command(BaseCommand):
 
             for report_object in report_objects:
                 multiqc_report = MultiQC_report(report_object)
+                multiqc_report.import_in_db()
