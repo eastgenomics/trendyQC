@@ -17,12 +17,12 @@
     "n_unknown": "nb_unknown",
     "p_middling_ab": "p_middling_ab",
     "X_depth_mean": "x_depth_mean",
-    "X_n": "x_n",
+    "X_n": "x_nb",
     "X_hom_ref": "x_hom_ref",
     "X_het": "x_het",
     "X_hom_alt": "x_hom_alt",
     "Y_depth_mean": "y_depth_mean",
-    "Y_n": "y_n",
+    "Y_n": "y_nb",
     "Predicted_Sex": "predicted_sex",
     "Match_Sexes": "match_sexes"
 }
