@@ -4,10 +4,12 @@ from pathlib import Path
 from typing import Dict
 
 import dxpy
+import regex
+
+from django.apps import apps
 
 from ._parsing import load_assay_config
 from ._tool import Tool
-
 
 # returns the /trendyqc/trend_monitoring/management folder
 BASE_DIR_MANAGEMENT = Path(__file__).resolve().parent.parent
@@ -81,7 +83,10 @@ class MultiQC_report():
         self.data = {}
         multiqc_raw_data = self.original_data["report_saved_raw_data"]
 
-        for multiqc_field_in_config, tool_metadata in self.suite_of_tools.items():
+        for multiqc_field_in_config, tool_metadata in self.assay_data.items():
+            # subtool is used to specify for example, HSMetrics or insertSize
+            # for Picard. It will equal None if the main tool doesn't have a
+            # subtool
             tool, subtool = tool_metadata
             data_all_samples = multiqc_raw_data[multiqc_field_in_config]
 
@@ -149,3 +154,57 @@ class MultiQC_report():
         self.datetime_job = datetime.fromtimestamp(
             creation_timestamp
         )
+
+    def map_models_to_tools(self):
+        models = {
+            model.__name__: model for model in apps.get_models()
+        }
+
+        self.mapping_models_tools = {}
+
+        for tool, subtool in self.set_of_tools:
+            if subtool:
+                tool_name = subtool
+                tool_key = f"{tool}-{subtool}"
+            else:
+                tool_name = tool
+                tool_key = tool
+
+            tool_regex = regex.compile(f"{tool_name}", regex.IGNORECASE)
+            matches = list(filter(tool_regex.search, models.keys()))
+
+            if len(matches) == 1:
+                self.mapping_models_tools[tool_key] = models[matches[0]]
+            # TO-DO: log if there are multiple matches, probably warning or
+            # something
+
+    def import_in_db(self):
+        for sample in self.data:
+            sample_data = self.data[sample]
+            self.import_metadata()
+
+            for tool in sample_data:
+                # print(tool)
+                tool_instances = self.import_tool_data(tool, sample_data[tool])
+
+                if tool == "happy-indel_all":
+                    print(tool_instances)
+
+    def import_tool_data(self, tool_name, tool_data):
+        instances = []
+        model = self.mapping_models_tools[tool_name]
+
+        # check if the tool data has a level for the reads i.e.
+        # {read: {field: data, field: data}} vs {field: data, field: data}
+        if any(isinstance(i, dict) for i in tool_data.values()):
+            for read, data in tool_data.items():
+                model_instance = model(**data)
+                instances.append(model_instance)
+        else:
+            model_instance = model(**tool_data)
+            instances.append(model_instance)
+
+        return instances
+
+    def import_metadata(self):
+        pass
