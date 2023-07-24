@@ -32,6 +32,8 @@ class MultiQC_report():
         self.setup_tools()
         self.parse_multiqc_report()
         self.get_metadata()
+        self.map_models_to_tools()
+        self.create_all_instances()
 
     def setup_tools(self):
         """ Setup tools for use when parsing the MultiQC data """
@@ -156,7 +158,7 @@ class MultiQC_report():
         )
 
     def map_models_to_tools(self):
-        models = {
+        self.models = {
             model.__name__: model for model in apps.get_models()
         }
 
@@ -171,27 +173,30 @@ class MultiQC_report():
                 tool_key = tool
 
             tool_regex = regex.compile(f"{tool_name}", regex.IGNORECASE)
-            matches = list(filter(tool_regex.search, models.keys()))
+            matches = list(filter(tool_regex.search, self.models.keys()))
 
             if len(matches) == 1:
-                self.mapping_models_tools[tool_key] = models[matches[0]]
+                self.mapping_models_tools[tool_key] = self.models[matches[0]]
             # TO-DO: log if there are multiple matches, probably warning or
             # something
 
-    def import_in_db(self):
+    def create_all_instances(self):
+        # this dict will contain the data for all the instances created
+        # the key will be the name of the table from which they depend upon
+        self.instances = {}
+        self.create_report_instance()
+
         for sample in self.data:
             sample_data = self.data[sample]
-            self.import_metadata()
+            self.create_sample_instance(sample)
 
             for tool in sample_data:
-                # print(tool)
-                tool_instances = self.import_tool_data(tool, sample_data[tool])
+                self.create_tool_data_instance(tool, sample_data[tool])
 
-                if tool == "happy-indel_all":
-                    print(tool_instances)
+            self.create_link_table_instance("qc")
+            self.create_link_table_instance("picard")
 
-    def import_tool_data(self, tool_name, tool_data):
-        instances = []
+    def create_tool_data_instance(self, tool_name, tool_data):
         model = self.mapping_models_tools[tool_name]
 
         # check if the tool data has a level for the reads i.e.
@@ -199,12 +204,27 @@ class MultiQC_report():
         if any(isinstance(i, dict) for i in tool_data.values()):
             for read, data in tool_data.items():
                 model_instance = model(**data)
-                instances.append(model_instance)
+                self.instances["report_sample"].append(model_instance)
         else:
             model_instance = model(**tool_data)
-            instances.append(model_instance)
+            self.instances["standalone"].append(model_instance)
 
-        return instances
+    def create_sample_instance(self, sample):
+        sample = self.models["Sample"]
+        sample_instance = sample(sample_id=sample)
 
-    def import_metadata(self):
-        pass
+    def create_report_instance(self):
+        report = self.models["Report"]
+        self.instances["standalone"].append(
+            report(
+                name=self.report_name, run=self.project_name,
+                dnanexus_file_id=self.report_id, job_date=self.datetime_job
+            )
+        )
+
+    def create_link_table_instance(self, type_table):
+        if type_table == "qc":
+            report_sample = self.models["Report_sample"]
+            report_sample_instance = ""
+        elif type_table == "picard":
+            pass
