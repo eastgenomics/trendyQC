@@ -1,10 +1,17 @@
 from datetime import datetime
 import json
+from pathlib import Path
 from typing import Dict
 
 import dxpy
 
-from ._parsing import load_assay_config, load_tool_config
+from ._parsing import load_assay_config
+from ._tool import Tool
+
+
+# returns the /trendyqc/trend_monitoring/management folder
+BASE_DIR_MANAGEMENT = Path(__file__).resolve().parent.parent
+CONFIG_DIR = BASE_DIR_MANAGEMENT / "configs"
 
 
 class MultiQC_report():
@@ -13,7 +20,7 @@ class MultiQC_report():
         self.original_data = json.loads(multiqc_report.read())
         self.assay = self.original_data["config_subtitle"]
         # load the suite of tools that is used for the report's assay
-        self.suite_of_tools = load_assay_config(self.assay)
+        self.suite_of_tools = load_assay_config(self.assay, CONFIG_DIR)
         self.data = self.parse_multiqc_report()
         self.get_metadata()
 
@@ -52,16 +59,14 @@ class MultiQC_report():
             data_all_samples = multiqc_raw_data[multiqc_field_in_config]
             # load multiqc fields and the models fields that they will be
             # replaced with
-            tool_config = load_tool_config(tool, subtool)
+            tool_obj = Tool(tool, CONFIG_DIR, subtool)
 
             for sample, tool_data in data_all_samples.items():
                 if sample == "undetermined":
                     continue
 
                 # convert the multiqc fields name for ease the import in the db
-                converted_fields = self.convert_tool_fields(
-                    tool_data, tool_config
-                )
+                converted_fields = tool_obj.convert_tool_fields(tool_data)
 
                 # SNP genotyping adds a "sorted" in the sample name
                 sample = sample.replace("_sorted", "")
@@ -94,41 +99,6 @@ class MultiQC_report():
                     data[sample_id][tool_key] = converted_fields
 
         return data
-
-    def convert_tool_fields(self, tool_data: Dict, tool_config: Dict) -> Dict:
-        """ Convert the field names from MultiQC to ones that are written in
-        the Django models
-        i.e.
-        {
-            "Filter_indel": data,
-            "TRUTH.TOTAL_indel": data_also
-        }
-
-        to
-
-        {
-            "filter_indel": data,
-            "truth_total_indel": data_also
-        }
-
-        Args:
-            tool_data (dict): Dict containing the MultiQC data for a specific
-                tool
-            tool_config (dict): Dict containing the field names from MultiQC
-                and what they need to be replaced with for that specific tool
-
-        Returns:
-            dict: Same dict as the tool data but with the appropriate field
-            names
-        """
-
-        converted_data = {}
-
-        for field, data in tool_data.items():
-            if field in tool_config:
-                converted_data[tool_config[field]] = data
-
-        return converted_data
 
     def get_metadata(self) -> Dict:
         """ Get the metadata from the MultiQC DNAnexus object """
