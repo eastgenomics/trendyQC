@@ -32,8 +32,8 @@ class MultiQC_report():
         self.setup_tools()
         self.parse_multiqc_report()
         self.get_metadata()
-        self.map_models_to_tools()
-        self.create_all_instances()
+        # self.map_models_to_tools()
+        # self.create_all_instances()
 
     def setup_tools(self):
         """ Setup tools for use when parsing the MultiQC data """
