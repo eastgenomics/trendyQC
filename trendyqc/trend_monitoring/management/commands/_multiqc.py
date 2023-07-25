@@ -57,8 +57,6 @@ class MultiQC_report():
                 "report"
             )
             data_all_samples = multiqc_raw_data[multiqc_field_in_config]
-            # load multiqc fields and the models fields that they will be
-            # replaced with
             tool_obj = Tool(tool, CONFIG_DIR, subtool)
 
             for sample, tool_data in data_all_samples.items():
