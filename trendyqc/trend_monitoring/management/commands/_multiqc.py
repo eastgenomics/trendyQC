@@ -27,12 +27,12 @@ class MultiQC_report():
         self.dnanexus_report = multiqc_report
         self.original_data = json.loads(multiqc_report.read())
         self.assay = self.original_data["config_subtitle"]
-        # load the suite of tools that is used for the report's assay
-        self.suite_of_tools = load_assay_config(self.assay, CONFIG_DIR)
+        # load the report's assay tools and the fields they are associated with
+        self.assay_data = load_assay_config(self.assay, CONFIG_DIR)
         self.setup_tools()
         self.parse_multiqc_report()
         self.get_metadata()
-        # self.map_models_to_tools()
+        self.map_models_to_tools()
         # self.create_all_instances()
 
     def setup_tools(self):
@@ -41,7 +41,7 @@ class MultiQC_report():
         self.tools = []
         multiqc_raw_data = self.original_data["report_saved_raw_data"]
 
-        for multiqc_field_in_config, tool_metadata in self.suite_of_tools.items():
+        for multiqc_field_in_config, tool_metadata in self.assay_data.items():
             # subtool is used to specify for example, HSMetrics or insertSize
             # for Picard. It will equal None if the main tool doesn't have a
             # subtool
@@ -162,23 +162,23 @@ class MultiQC_report():
             model.__name__: model for model in apps.get_models()
         }
 
-        self.mapping_models_tools = {}
-
-        for tool, subtool in self.set_of_tools:
-            if subtool:
-                tool_name = subtool
-                tool_key = f"{tool}-{subtool}"
+        for tool in self.tools:
+            if tool.happy_type:
+                tool_regex = f"{tool.subtool}_{tool.happy_type}"
+            elif tool.subtool:
+                tool_regex = tool.subtool
             else:
-                tool_name = tool
-                tool_key = tool
+                tool_regex = tool.name
 
-            tool_regex = regex.compile(f"{tool_name}", regex.IGNORECASE)
-            matches = list(filter(tool_regex.search, self.models.keys()))
+            compiled_regex = regex.compile(tool_regex, regex.IGNORECASE)
+            matches = list(filter(compiled_regex.search, self.models.keys()))
 
             if len(matches) == 1:
-                self.mapping_models_tools[tool_key] = self.models[matches[0]]
-            # TO-DO: log if there are multiple matches, probably warning or
-            # something
+                tool.set_model(self.models[matches[0]])
+            else:
+                # TO-DO: log if there are multiple matches, probably warning or
+                # something
+                print("no")
 
     def create_all_instances(self):
         # this dict will contain the data for all the instances created
