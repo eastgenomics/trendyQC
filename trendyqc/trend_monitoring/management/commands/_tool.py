@@ -18,6 +18,7 @@ class Tool:
         self.subtool = subtool
         self.parent = None
         self.children = []
+        self.happy_type = ""
 
         if subtool:
             self.parent = tool_name
@@ -71,3 +72,6 @@ class Tool:
                 converted_data[self.fields[field]] = data
 
         return converted_data
+
+    def set_happy_type(self, happy_type):
+        self.happy_type = happy_type
