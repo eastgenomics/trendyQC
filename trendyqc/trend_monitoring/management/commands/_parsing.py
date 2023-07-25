@@ -1,17 +1,20 @@
 import json
+from pathlib import Path
 from typing import Dict
 
 
-def load_assay_config(assay_name: str, config_dir) -> Dict:
-    """ Read and load the assays.json
+def load_assay_config(assay_name: str, config_dir: Path) -> Dict:
+    """ Read in the assay configuration file data
 
     Args:
         assay_name (str): Assay name to return the appropriate data in the
-        assays.json
+            assays.json
+        config_dir (Path): Path to the config directory where the assay config
+            is located
 
     Returns:
-        dict: Dict with the MultiQC fields and tool names to load the
-        appropriate subsequent JSON
+        Dict: Dict with the MultiQC fields and tool names to load the
+            appropriate subsequent JSON
     """
 
     assay_config = config_dir / "assays.json"
