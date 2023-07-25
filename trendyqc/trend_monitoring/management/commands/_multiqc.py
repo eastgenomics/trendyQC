@@ -83,20 +83,15 @@ class MultiQC_report():
                 else:
                     sample_id = sample_data[0]
 
-                if subtool:
-                    tool_key = f"{tool}-{subtool}"
-                else:
-                    tool_key = tool
-
                 data.setdefault(sample_id, {})
-                data[sample_id].setdefault(tool_key, {})
+                data[sample_id].setdefault(tool_obj, {})
 
                 # fastqc needs a new level to take into account the lane and
                 # the read
                 if tool == "fastqc":
-                    data[sample_id][tool_key][f"{lane}_{read}"] = converted_fields
+                    data[sample_id][tool_obj][f"{lane}_{read}"] = converted_fields
                 else:
-                    data[sample_id][tool_key] = converted_fields
+                    data[sample_id][tool_obj] = converted_fields
 
         return data
 
