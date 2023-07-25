@@ -52,8 +52,8 @@ class Tool:
         }
 
         Args:
-            tool_data (dict): Dict containing the MultiQC data for a specific
-                tool
+            multiqc_data (dict): Dict containing the MultiQC data for a
+                specific tool
 
         Returns:
             dict: Same dict as the tool data but with the appropriate field
