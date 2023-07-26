@@ -189,19 +189,27 @@ class MultiQC_report():
                 print("no")
 
     def create_all_instances(self):
-        """ Create instances for everything that needs to get imported """
+        """ Create instances for everything that needs to get imported
+
+        Creates:
+            - self.all_instances: Dict containing the sample as keys and the
+            values are lists of the instances to import in the correct order
+        """
 
         self.all_instances = {}
         report_instance = self.create_report_instance()
 
         for sample in self.data:
-            # reset the self.instances_one_sample variable to keep instances per sample
+            # reset the self.instances_one_sample variable to keep instances
+            # per sample
             self.instances_one_sample = defaultdict(list)
             self.instances_one_sample["report_sample"].append(report_instance)
             self.all_instances.setdefault(sample, [])
             self.all_instances[sample].append(report_instance)
             sample_data = self.data[sample]
-            self.all_instances[sample].append(self.create_sample_instance(sample))
+            self.all_instances[sample].append(
+                self.create_sample_instance(sample)
+            )
 
             for tool in sample_data:
                 self.all_instances[sample].extend(
