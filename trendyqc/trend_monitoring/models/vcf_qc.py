@@ -108,10 +108,10 @@ class Vcfqc_data(models.Model):
 
 
 class Happy(models.Model):
-    snp_all = models.ForeignKey("Happy_snp_all", on_delete=models.DO_NOTHING)
-    snp_pass = models.ForeignKey("Happy_snp_pass", on_delete=models.DO_NOTHING)
-    indel_all = models.ForeignKey("Happy_indel_all", on_delete=models.DO_NOTHING)
-    indel_pass = models.ForeignKey("Happy_indel_pass", on_delete=models.DO_NOTHING)
+    happy_snp_all = models.ForeignKey("Happy_snp_all", on_delete=models.DO_NOTHING)
+    happy_snp_pass = models.ForeignKey("Happy_snp_pass", on_delete=models.DO_NOTHING)
+    happy_indel_all = models.ForeignKey("Happy_indel_all", on_delete=models.DO_NOTHING)
+    happy_indel_pass = models.ForeignKey("Happy_indel_pass", on_delete=models.DO_NOTHING)
 
     class Meta:
         app_label = "trend_monitoring"

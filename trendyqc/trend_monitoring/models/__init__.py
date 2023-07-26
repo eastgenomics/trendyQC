@@ -8,10 +8,12 @@ from .bam_qc import (
     Picard_base_distribution_by_cycle_metrics,
     Picard_gc_bias_metrics,
     Picard_insert_size_metrics,
+    Picard_quality_yield_metrics,
     Picard_pcr_metrics
 )
 from .fastq_qc import (
-    Fastqc_data,
+    Fastqc,
+    Fastqc_read_data,
     Bcl2fastq_data
 )
 from .metadata import (

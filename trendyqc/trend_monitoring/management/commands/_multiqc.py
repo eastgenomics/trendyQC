@@ -1,13 +1,17 @@
+from collections import defaultdict
 from datetime import datetime
 import json
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 
 import dxpy
+import regex
+
+from django.apps import apps
+from django.db.models import Model
 
 from ._parsing import load_assay_config
 from ._tool import Tool
-
 
 # returns the /trendyqc/trend_monitoring/management folder
 BASE_DIR_MANAGEMENT = Path(__file__).resolve().parent.parent
@@ -25,11 +29,13 @@ class MultiQC_report():
         self.dnanexus_report = multiqc_report
         self.original_data = json.loads(multiqc_report.read())
         self.assay = self.original_data["config_subtitle"]
-        # load the suite of tools that is used for the report's assay
-        self.suite_of_tools = load_assay_config(self.assay, CONFIG_DIR)
+        # load the report's assay tools and the fields they are associated with
+        self.assay_data = load_assay_config(self.assay, CONFIG_DIR)
         self.setup_tools()
         self.parse_multiqc_report()
         self.get_metadata()
+        self.map_models_to_tools()
+        self.create_all_instances()
 
     def setup_tools(self):
         """ Setup tools for use when parsing the MultiQC data """
@@ -37,7 +43,7 @@ class MultiQC_report():
         self.tools = []
         multiqc_raw_data = self.original_data["report_saved_raw_data"]
 
-        for multiqc_field_in_config, tool_metadata in self.suite_of_tools.items():
+        for multiqc_field_in_config, tool_metadata in self.assay_data.items():
             # subtool is used to specify for example, HSMetrics or insertSize
             # for Picard. It will equal None if the main tool doesn't have a
             # subtool
@@ -81,7 +87,10 @@ class MultiQC_report():
         self.data = {}
         multiqc_raw_data = self.original_data["report_saved_raw_data"]
 
-        for multiqc_field_in_config, tool_metadata in self.suite_of_tools.items():
+        for multiqc_field_in_config, tool_metadata in self.assay_data.items():
+            # subtool is used to specify for example, HSMetrics or insertSize
+            # for Picard. It will equal None if the main tool doesn't have a
+            # subtool
             tool, subtool = tool_metadata
             data_all_samples = multiqc_raw_data[multiqc_field_in_config]
 
@@ -149,3 +158,197 @@ class MultiQC_report():
         self.datetime_job = datetime.fromtimestamp(
             creation_timestamp
         )
+
+    def map_models_to_tools(self):
+        """ Map Django models to tools """
+
+        # Store the Django models as a dict of model names to model objects
+        self.models = {
+            model.__name__.lower(): model for model in apps.get_models()
+        }
+
+        # loop through the tools that we have for this MultiQC report
+        for tool in self.tools:
+            if tool.happy_type:
+                tool_regex = f"{tool.subtool}_{tool.happy_type}"
+            elif tool.subtool:
+                tool_regex = tool.subtool
+            else:
+                tool_regex = tool.name
+
+            compiled_regex = regex.compile(tool_regex, regex.IGNORECASE)
+            # look for the tool in the self.models, get a list of the matches
+            matches = list(filter(compiled_regex.search, self.models.keys()))
+
+            if len(matches) == 1:
+                # store the model in the tool object
+                tool.set_model(self.models[matches[0]])
+            else:
+                # TO-DO: log if there are multiple matches, probably warning or
+                # something
+                print("no")
+
+    def create_all_instances(self):
+        """ Create instances for everything that needs to get imported
+
+        Creates:
+            - self.all_instances: Dict containing the sample as keys and the
+            values are lists of the instances to import in the correct order
+        """
+
+        self.all_instances = {}
+        report_instance = self.create_report_instance()
+
+        for sample in self.data:
+            # reset the self.instances_one_sample variable to keep instances
+            # per sample
+            self.instances_one_sample = defaultdict(list)
+            self.instances_one_sample["report_sample"].append(report_instance)
+            self.all_instances.setdefault(sample, [])
+            self.all_instances[sample].append(report_instance)
+            sample_data = self.data[sample]
+            self.all_instances[sample].append(
+                self.create_sample_instance(sample)
+            )
+
+            for tool in sample_data:
+                self.all_instances[sample].extend(
+                    self.create_tool_data_instance(tool, sample_data[tool])
+                )
+
+            self.all_instances[sample].append(
+                self.create_link_table_instance("fastqc")
+            )
+
+            picard_instance = self.create_link_table_instance("picard")
+            happy_instance = self.create_link_table_instance("happy")
+
+            if picard_instance:
+                self.all_instances[sample].append(picard_instance)
+
+            if happy_instance:
+                self.all_instances[sample].append(happy_instance)
+
+            # get the report sample model object and instanciate using the
+            # instances that were gathered previously
+            report_sample_instance = self.models["report_sample"](
+                self.gather_instances_for("report_sample")
+            )
+
+            self.all_instances[sample].append(report_sample_instance)
+
+    def create_tool_data_instance(self, tool_obj: Tool, tool_data: dict) -> List:
+        """ Create tool data instance. Uses the tool data structure to check
+        how to create model instances
+
+        Args:
+            tool_obj (Tool): Tool object
+            tool_data (dict): Data that is stored for that tool
+
+        Returns:
+            List: List of the model instances created
+        """
+
+        instances_to_return = []
+        model = tool_obj.model
+
+        # check if the tool data has a level for the reads i.e.
+        # {read: {field: data, field: data}} vs {field: data, field: data}
+        if all(isinstance(i, dict) for i in tool_data.values()):
+            for read, data in tool_data.items():
+                model_instance = model(**data)
+                # store the fastqc instances using their parent table i.e.
+                # fastqc as key
+                self.instances_one_sample["fastqc"].append(model_instance)
+                instances_to_return.append(model_instance)
+        else:
+            model_instance = model(**tool_data)
+
+            if tool_obj.parent:
+                # store these tools using their parent table name as key
+                self.instances_one_sample[tool_obj.parent].append(model_instance)
+            else:
+                # if they have no parent that means that their parent is
+                # directly the report sample table so use that as the key
+                self.instances_one_sample["report_sample"].append(model_instance)
+
+            instances_to_return.append(model_instance)
+
+        return instances_to_return
+
+    def create_sample_instance(self, sample: str) -> Model:
+        """ Create the sample instance
+
+        Args:
+            sample (str): Sample id
+
+        Returns:
+            Model: Instance object of Sample Model
+        """
+
+        sample = self.models["sample"]
+        sample_instance = sample(sample_id=sample)
+        self.instances_one_sample["report_sample"].append(sample_instance)
+        return sample_instance
+
+    def create_report_instance(self) -> Model:
+        """ Create the report instance using data gathered when initialising
+        the report
+
+        Returns:
+            Model: Instance object of Report Model
+        """
+
+        report = self.models["report"]
+        report_instance = report(
+            name=self.report_name, run=self.project_name,
+            dnanexus_file_id=self.report_id, job_date=self.datetime_job
+        )
+        return report_instance
+
+    def create_link_table_instance(self, type_table: str) -> Model:
+        """ Create the instances for the tables that have foreign keys i.e.
+        picard, happy, fastqc
+
+        Args:
+            type_table (str): Name of the link table
+
+        Returns:
+            Model: Instance object of link table Model (Picard, FastQC, Happy)
+        """
+
+        # get the model object using the type table variable
+        model = self.models[type_table]
+        instances = self.gather_instances_for(type_table)
+
+        if instances:
+            # instantiate the link table by gathering the data from the
+            # self.instances_one_sample dict
+            link_table_instance = model(
+                **self.gather_instances_for(type_table)
+            )
+            # all those tables are linked to the report sample table to store them
+            # accordingly
+            self.instances_one_sample["report_sample"].append(link_table_instance)
+            return link_table_instance
+        else:
+            return
+
+    def gather_instances_for(self, type_table: str) -> Dict:
+        """ Gather the instances for the given type table using the
+        self.instances_one_sample keys
+
+        Args:
+            type_table (str): Name of the table
+
+        Returns:
+            Dict: Dict containing the instance name and the instance itself for
+            the given type table
+        """
+
+        return {
+            instance._meta.model.__name__.lower(): instance
+            for link_table, instances in self.instances_one_sample.items()
+            for instance in instances
+            if link_table == type_table
+        }

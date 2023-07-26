@@ -1,10 +1,11 @@
 from django.db import models
 
 
-class Fastqc_data(models.Model):
-    report_sample_link = models.ForeignKey(
-        "Report_Sample", on_delete=models.DO_NOTHING
-    )
+class Fastqc(models.Model):
+    fastqc_read_data = models.ForeignKey("Fastqc_read_data", on_delete=models.DO_NOTHING)
+
+
+class Fastqc_read_data(models.Model):
     sample_read = models.CharField(max_length=50)
     lane = models.CharField(max_length=20)
     file_type = models.CharField(max_length=50)

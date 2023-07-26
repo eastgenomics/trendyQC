@@ -19,6 +19,7 @@ class Tool:
         self.parent = None
         self.children = []
         self.happy_type = ""
+        self.model = None
 
         if subtool:
             self.parent = tool_name
@@ -75,3 +76,6 @@ class Tool:
 
     def set_happy_type(self, happy_type):
         self.happy_type = happy_type
+
+    def set_model(self, model):
+        self.model = model

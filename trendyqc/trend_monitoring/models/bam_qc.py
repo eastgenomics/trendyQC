@@ -34,16 +34,17 @@ class Samtools_data(models.Model):
     supplementary_passed = models.IntegerField()
     supplementary_failed = models.IntegerField()
     duplicates_passed = models.IntegerField()
-    duplicated_failed = models.IntegerField()
+    duplicates_failed = models.IntegerField()
+    mapped_passed = models.IntegerField()
     mapped_failed = models.IntegerField()
     mapped_passed_pct = models.FloatField()
     mapped_failed_pct = models.FloatField()
     paired_in_sequencing_passed = models.IntegerField()
     paired_in_sequencing_failed = models.IntegerField()
-    read1_passed = models.IntegerField()
-    read1_failed = models.IntegerField()
-    read2_passed = models.IntegerField()
-    read2_failed = models.IntegerField()
+    r1_passed = models.IntegerField()
+    r1_failed = models.IntegerField()
+    r2_passed = models.IntegerField()
+    r2_failed = models.IntegerField()
     properly_paired_passed = models.IntegerField()
     properly_paired_failed = models.IntegerField()
     properly_paired_passed_pct = models.FloatField()
@@ -80,26 +81,26 @@ class Picard(models.Model):
     sample = models.CharField(max_length=10)
     library = models.CharField(max_length=10)
     read_group = models.CharField(max_length=10)
-    hs_metrics = models.ForeignKey(
+    picard_hs_metrics = models.ForeignKey(
         "Picard_hs_metrics", on_delete=models.DO_NOTHING
     )
-    alignment_summary_metrics = models.ForeignKey(
+    picard_alignment_summary_metrics = models.ForeignKey(
         "Picard_alignment_summary_metrics", on_delete=models.DO_NOTHING
     )
-    base_distribution_by_cycle_metrics = models.ForeignKey(
+    picard_base_distribution_by_cycle_metrics = models.ForeignKey(
         "Picard_base_distribution_by_cycle_metrics",
         on_delete=models.DO_NOTHING
     )
-    gc_bias_metrics = models.ForeignKey(
+    picard_gc_bias_metrics = models.ForeignKey(
         "Picard_gc_bias_metrics", on_delete=models.DO_NOTHING
     )
-    insert_size_metrics = models.ForeignKey(
+    picard_insert_size_metrics = models.ForeignKey(
         "Picard_insert_size_metrics", on_delete=models.DO_NOTHING
     )
-    quality_yield_metrics = models.ForeignKey(
+    picard_quality_yield_metrics = models.ForeignKey(
         "Picard_quality_yield_metrics", on_delete=models.DO_NOTHING
     )
-    pcr_metrics = models.ForeignKey(
+    picard_pcr_metrics = models.ForeignKey(
         "Picard_pcr_metrics", on_delete=models.DO_NOTHING
     )
 
