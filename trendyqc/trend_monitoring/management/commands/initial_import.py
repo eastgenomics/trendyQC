@@ -23,6 +23,10 @@ class Command(BaseCommand):
             "-a", "--all", action="store_true",
             help="Scan all 002 projects to import all MultiQC reports"
         )
+        parser.add_argument(
+            "-d", "--dry_run", action="store_true", default=False,
+            help="Option to not import the data"
+        )
 
     def handle(self, *args, **options):
         """ Handle options given through the CLI using the add_arguments
@@ -49,4 +53,6 @@ class Command(BaseCommand):
 
             for report_object in report_objects:
                 multiqc_report = MultiQC_report(report_object)
-                multiqc_report.import_in_db()
+
+                if not options["dry_run"]:
+                    multiqc_report.import_instances()
