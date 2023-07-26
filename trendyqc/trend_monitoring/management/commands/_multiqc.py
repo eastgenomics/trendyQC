@@ -276,7 +276,7 @@ class MultiQC_report():
 
         return instances_to_return
 
-    def create_sample_instance(self, sample: str) -> Model:
+    def create_sample_instance(self, sample_id: str) -> Model:
         """ Create the sample instance
 
         Args:
@@ -287,7 +287,7 @@ class MultiQC_report():
         """
 
         sample = self.models["sample"]
-        sample_instance = sample(sample_id=sample)
+        sample_instance = sample(sample_id=sample_id)
         self.instances_one_sample["report_sample"].append(sample_instance)
         return sample_instance
 
@@ -352,3 +352,9 @@ class MultiQC_report():
             for instance in instances
             if link_table == type_table
         }
+
+    def import_instances(self):
+        for sample, instances in self.all_instances.items():
+            for instance in instances:
+                print(instance.__dict__)
+                instance.save()
