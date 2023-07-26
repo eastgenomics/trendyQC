@@ -228,8 +228,6 @@ class MultiQC_report():
             )
 
             self.all_instances[sample].append(report_sample_instance)
-            print(self.all_instances[sample])
-            return
 
     def create_tool_data_instance(self, tool_obj: Tool, tool_data: dict) -> List:
         """ Create tool data instance
