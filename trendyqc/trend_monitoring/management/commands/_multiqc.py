@@ -245,7 +245,7 @@ class MultiQC_report():
 
         # check if the tool data has a level for the reads i.e.
         # {read: {field: data, field: data}} vs {field: data, field: data}
-        if any(isinstance(i, dict) for i in tool_data.values()):
+        if all(isinstance(i, dict) for i in tool_data.values()):
             for read, data in tool_data.items():
                 model_instance = model(**data)
                 # store the fastqc instances using their parent table i.e.
