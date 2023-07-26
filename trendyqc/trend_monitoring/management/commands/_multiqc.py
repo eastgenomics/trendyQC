@@ -16,15 +16,52 @@ CONFIG_DIR = BASE_DIR_MANAGEMENT / "configs"
 
 class MultiQC_report():
     def __init__(self, multiqc_report: dxpy.DXFile) -> None:
+        """ Initialize MultiQC report
+
+        Args:
+            multiqc_report (dxpy.DXFile): DXFile object
+        """
+
         self.dnanexus_report = multiqc_report
         self.original_data = json.loads(multiqc_report.read())
         self.assay = self.original_data["config_subtitle"]
         # load the suite of tools that is used for the report's assay
         self.suite_of_tools = load_assay_config(self.assay, CONFIG_DIR)
-        self.data = self.parse_multiqc_report()
+        self.setup_tools()
+        self.parse_multiqc_report()
         self.get_metadata()
 
-    def parse_multiqc_report(self) -> Dict:
+    def setup_tools(self):
+        """ Setup tools for use when parsing the MultiQC data """
+
+        self.tools = []
+        multiqc_raw_data = self.original_data["report_saved_raw_data"]
+
+        for multiqc_field_in_config, tool_metadata in self.suite_of_tools.items():
+            # subtool is used to specify for example, HSMetrics or insertSize
+            # for Picard. It will equal None if the main tool doesn't have a
+            # subtool
+            tool, subtool = tool_metadata
+            assert multiqc_field_in_config in multiqc_raw_data, (
+                f"{multiqc_field_in_config} doesn't exist in the multiqc "
+                "report"
+            )
+
+            if tool == "happy":
+                # setup the happy tools and distinguish that happy has ALL and
+                # PASS statuses
+                happy_tool = Tool(tool, CONFIG_DIR, subtool)
+                happy_tool.set_happy_type("pass")
+                self.tools.append(happy_tool)
+
+                happy_tool = Tool(tool, CONFIG_DIR, subtool)
+                happy_tool.set_happy_type("all")
+                self.tools.append(happy_tool)
+            else:
+                tool_obj = Tool(tool, CONFIG_DIR, subtool)
+                self.tools.append(tool_obj)
+
+    def parse_multiqc_report(self):
         """ Parse the multiqc report for easy import
         Output should look like:
         {
@@ -39,29 +76,31 @@ class MultiQC_report():
                 }
             }
         }
-
-        Returns:
-            dict: Dict containing the relevant data from MultiQC
         """
 
-        data = {}
+        self.data = {}
         multiqc_raw_data = self.original_data["report_saved_raw_data"]
 
         for multiqc_field_in_config, tool_metadata in self.suite_of_tools.items():
-            # subtool is used to specify for example, HSMetrics or insertSize
-            # for Picard. It will equal None if the main tool doesn't have a
-            # subtool
             tool, subtool = tool_metadata
-            assert multiqc_field_in_config in multiqc_raw_data, (
-                f"{multiqc_field_in_config} doesn't exist in the multiqc "
-                "report"
-            )
             data_all_samples = multiqc_raw_data[multiqc_field_in_config]
-            tool_obj = Tool(tool, CONFIG_DIR, subtool)
 
             for sample, tool_data in data_all_samples.items():
                 if sample == "undetermined":
                     continue
+
+                # get the tool for the sample
+                tool_obj = [
+                    tool_obj
+                    for tool_obj in self.tools
+                    if tool == tool_obj.name and subtool == tool_obj.subtool
+                    and tool_obj.happy_type in sample.lower()
+                ]
+
+                # quick check for the testing, might need to be improved
+                assert len(tool_obj) == 1, "Multiple tools found"
+
+                tool_obj = tool_obj[0]
 
                 # convert the multiqc fields name for ease the import in the db
                 converted_fields = tool_obj.convert_tool_fields(tool_data)
@@ -81,19 +120,17 @@ class MultiQC_report():
                 else:
                     sample_id = sample_data[0]
 
-                data.setdefault(sample_id, {})
-                data[sample_id].setdefault(tool_obj, {})
+                self.data.setdefault(sample_id, {})
+                self.data[sample_id].setdefault(tool_obj, {})
 
                 # fastqc needs a new level to take into account the lane and
                 # the read
                 if tool == "fastqc":
-                    data[sample_id][tool_obj][f"{lane}_{read}"] = converted_fields
+                    self.data[sample_id][tool_obj][f"{lane}_{read}"] = converted_fields
                 else:
-                    data[sample_id][tool_obj] = converted_fields
+                    self.data[sample_id][tool_obj] = converted_fields
 
-        return data
-
-    def get_metadata(self) -> Dict:
+    def get_metadata(self):
         """ Get the metadata from the MultiQC DNAnexus object """
 
         self.report_name = self.dnanexus_report.describe()["name"],
