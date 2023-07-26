@@ -284,7 +284,7 @@ class MultiQC_report():
 
     def create_report_instance(self) -> Model:
         """ Create the report instance using data gathered when initialising
-        the report 
+        the report
 
         Returns:
             Model: Instance object of Report Model
