@@ -82,26 +82,31 @@ class Picard(models.Model):
     library = models.CharField(max_length=10)
     read_group = models.CharField(max_length=10)
     picard_hs_metrics = models.ForeignKey(
-        "Picard_hs_metrics", on_delete=models.DO_NOTHING
+        "Picard_hs_metrics", on_delete=models.DO_NOTHING, blank=True, null=True
     )
     picard_alignment_summary_metrics = models.ForeignKey(
-        "Picard_alignment_summary_metrics", on_delete=models.DO_NOTHING
+        "Picard_alignment_summary_metrics", on_delete=models.DO_NOTHING,
+        blank=True, null=True
     )
     picard_base_distribution_by_cycle_metrics = models.ForeignKey(
         "Picard_base_distribution_by_cycle_metrics",
-        on_delete=models.DO_NOTHING
+        on_delete=models.DO_NOTHING, blank=True, null=True
     )
     picard_gc_bias_metrics = models.ForeignKey(
-        "Picard_gc_bias_metrics", on_delete=models.DO_NOTHING
+        "Picard_gc_bias_metrics", on_delete=models.DO_NOTHING, blank=True,
+        null=True
     )
     picard_insert_size_metrics = models.ForeignKey(
-        "Picard_insert_size_metrics", on_delete=models.DO_NOTHING
+        "Picard_insert_size_metrics", on_delete=models.DO_NOTHING, blank=True,
+        null=True
     )
     picard_quality_yield_metrics = models.ForeignKey(
-        "Picard_quality_yield_metrics", on_delete=models.DO_NOTHING
+        "Picard_quality_yield_metrics", on_delete=models.DO_NOTHING,
+        blank=True, null=True
     )
     picard_pcr_metrics = models.ForeignKey(
-        "Picard_pcr_metrics", on_delete=models.DO_NOTHING
+        "Picard_pcr_metrics", on_delete=models.DO_NOTHING, blank=True,
+        null=True
     )
 
     class Meta:
