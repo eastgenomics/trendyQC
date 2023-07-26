@@ -238,7 +238,8 @@ class MultiQC_report():
             self.all_instances[sample].append(report_sample_instance)
 
     def create_tool_data_instance(self, tool_obj: Tool, tool_data: dict) -> List:
-        """ Create tool data instance
+        """ Create tool data instance. Uses the tool data structure to check
+        how to create model instances
 
         Args:
             tool_obj (Tool): Tool object
@@ -334,7 +335,8 @@ class MultiQC_report():
             return
 
     def gather_instances_for(self, type_table: str) -> Dict:
-        """ Gather the instances for the given type table
+        """ Gather the instances for the given type table using the
+        self.instances_one_sample keys
 
         Args:
             type_table (str): Name of the table
