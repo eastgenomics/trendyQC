@@ -65,6 +65,7 @@
         "PCT_PF_READS": "pct_pf_reads",
         "PF_NOISE_READS": "pf_noise_reads",
         "PF_READS_ALIGNED": "pf_reads_aligned",
+        "PCT_PF_READS_ALIGNED": "pct_pf_reads_aligned",
         "PF_ALIGNED_BASES": "pf_aligned_bases",
         "PF_HQ_ALIGNED_READS": "pf_hq_aligned_reads",
         "PF_HQ_ALIGNED_BASES": "pf_hq_aligned_bases",
