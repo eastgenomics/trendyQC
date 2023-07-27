@@ -258,6 +258,8 @@ class MultiQC_report():
         if all(isinstance(i, dict) for i in tool_data.values()):
             for read, data in tool_data.items():
                 cleaned_data = self.clean_data(data)
+                cleaned_data["lane"] = read.split("_")[0]
+                cleaned_data["sample_read"] = read.split("_")[1]
                 model_instance = model(**cleaned_data)
                 # store the fastqc instances using their parent table i.e.
                 # fastqc as key
@@ -289,7 +291,8 @@ class MultiQC_report():
 
     @staticmethod
     def clean_value(value: str):
-        if not value:
+        # check if value is an empty string
+        if not value and value != 0:
             return None
 
         try:
@@ -297,6 +300,7 @@ class MultiQC_report():
         except ValueError:
             return value
 
+        # nan doesn't trigger the exception, so handle them separately
         if math.isnan(float(value)):
             return None
 
