@@ -247,7 +247,7 @@ class Picard_gc_bias_metrics(models.Model):
 
 class Picard_insert_size_metrics(models.Model):
     median_insert_size = models.FloatField()
-    mode_insert_size = models.FloatField()
+    mode_insert_size = models.FloatField(null=True)
     median_absolute_deviation = models.FloatField()
     min_insert_size = models.FloatField()
     max_insert_size = models.FloatField()
