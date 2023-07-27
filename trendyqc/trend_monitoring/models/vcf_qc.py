@@ -27,7 +27,7 @@ class Somalier_data(models.Model):
     y_depth_mean = models.FloatField()
     y_nb = models.FloatField()
     predicted_sex = models.CharField(max_length=10)
-    match_sexes = models.BooleanField()
+    match_sexes = models.CharField(max_length=5)
 
     class Meta:
         app_label = "trend_monitoring"
