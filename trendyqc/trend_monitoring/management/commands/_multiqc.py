@@ -233,7 +233,7 @@ class MultiQC_report():
             # get the report sample model object and instanciate using the
             # instances that were gathered previously
             report_sample_instance = self.models["report_sample"](
-                self.gather_instances_for("report_sample")
+                **self.gather_instances_for("report_sample")
             )
 
             self.all_instances[sample].append(report_sample_instance)
@@ -392,3 +392,4 @@ class MultiQC_report():
             for instance in instances:
                 print(instance.__dict__)
                 instance.save()
+                print(instance.__dict__)
