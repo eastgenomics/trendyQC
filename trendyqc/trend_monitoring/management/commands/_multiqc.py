@@ -1,6 +1,7 @@
 from collections import defaultdict
 from datetime import datetime
 import json
+import math
 from pathlib import Path
 from typing import Dict, List
 
@@ -256,13 +257,15 @@ class MultiQC_report():
         # {read: {field: data, field: data}} vs {field: data, field: data}
         if all(isinstance(i, dict) for i in tool_data.values()):
             for read, data in tool_data.items():
-                model_instance = model(**data)
+                cleaned_data = self.clean_data(data)
+                model_instance = model(**cleaned_data)
                 # store the fastqc instances using their parent table i.e.
                 # fastqc as key
                 self.instances_one_sample["fastqc"].append(model_instance)
                 instances_to_return.append(model_instance)
         else:
-            model_instance = model(**tool_data)
+            cleaned_data = self.clean_data(tool_data)
+            model_instance = model(**cleaned_data)
 
             if tool_obj.parent:
                 # store these tools using their parent table name as key
@@ -275,6 +278,33 @@ class MultiQC_report():
             instances_to_return.append(model_instance)
 
         return instances_to_return
+
+    def clean_data(self, data):
+        cleaned_data = {}
+
+        for field, value in data.items():
+            cleaned_data[field] = self.clean_value(value)
+
+        return cleaned_data
+
+    @staticmethod
+    def clean_value(value: str):
+        if not value:
+            return None
+
+        try:
+            float(value)
+        except ValueError:
+            return value
+
+        if math.isnan(float(value)):
+            return None
+
+        # it can float, check if it's an int or float
+        if '.' in str(value):
+            return float(value)
+        else:
+            return int(value)
 
     def create_sample_instance(self, sample_id: str) -> Model:
         """ Create the sample instance
