@@ -133,12 +133,14 @@ class MultiQC_report():
                 self.data.setdefault(sample_id, {})
                 self.data[sample_id].setdefault(tool_obj, {})
 
+                cleaned_data = self.clean_data(converted_fields)
+
                 # fastqc needs a new level to take into account the lane and
                 # the read
                 if tool == "fastqc":
-                    self.data[sample_id][tool_obj][f"{lane}_{read}"] = converted_fields
+                    self.data[sample_id][tool_obj][f"{lane}_{read}"] = cleaned_data
                 else:
-                    self.data[sample_id][tool_obj] = converted_fields
+                    self.data[sample_id][tool_obj] = cleaned_data
 
     def get_metadata(self):
         """ Get the metadata from the MultiQC DNAnexus object """
@@ -257,17 +259,15 @@ class MultiQC_report():
         # {read: {field: data, field: data}} vs {field: data, field: data}
         if all(isinstance(i, dict) for i in tool_data.values()):
             for read, data in tool_data.items():
-                cleaned_data = self.clean_data(data)
-                cleaned_data["lane"] = read.split("_")[0]
-                cleaned_data["sample_read"] = read.split("_")[1]
-                model_instance = model(**cleaned_data)
+                data["lane"] = read.split("_")[0]
+                data["sample_read"] = read.split("_")[1]
+                model_instance = model(**data)
                 # store the fastqc instances using their parent table i.e.
                 # fastqc as key
                 self.instances_one_sample["fastqc"].append(model_instance)
                 instances_to_return.append(model_instance)
         else:
-            cleaned_data = self.clean_data(tool_data)
-            model_instance = model(**cleaned_data)
+            model_instance = model(**tool_data)
 
             if tool_obj.parent:
                 # store these tools using their parent table name as key
