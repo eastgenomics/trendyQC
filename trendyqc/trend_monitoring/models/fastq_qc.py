@@ -12,7 +12,7 @@ class Fastqc_read_data(models.Model):
     encoding = models.CharField(max_length=50)
     total_sequences = models.FloatField()
     sequences_flagged_as_poor_quality = models.FloatField()
-    sequence_length = models.FloatField()
+    sequence_length = models.CharField(max_length=20)
     gc_pct = models.FloatField()
     total_deduplicated_pct = models.FloatField()
     avg_sequence_length = models.FloatField()
