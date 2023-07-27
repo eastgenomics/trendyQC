@@ -139,8 +139,8 @@ class Happy_snp_all(models.Model):
     metric_precision_snp = models.FloatField()
     metric_frac_na_snp = models.FloatField()
     metric_f1_score_snp = models.FloatField()
-    truth_total_titv_ratio_snp = models.FloatField()
-    query_total_titv_ratio_snp = models.FloatField()
+    truth_total_titv_ratio_snp = models.FloatField(null=True)
+    query_total_titv_ratio_snp = models.FloatField(null=True)
     truth_total_het_hom_ratio_snp = models.FloatField()
     query_total_het_hom_ratio_snp = models.FloatField()
 
@@ -162,8 +162,8 @@ class Happy_snp_pass(models.Model):
     metric_precision_snp = models.FloatField()
     metric_frac_na_snp = models.FloatField()
     metric_f1_score_snp = models.FloatField()
-    truth_total_titv_ratio_snp = models.FloatField()
-    query_total_titv_ratio_snp = models.FloatField()
+    truth_total_titv_ratio_snp = models.FloatField(null=True)
+    query_total_titv_ratio_snp = models.FloatField(null=True)
     truth_total_het_hom_ratio_snp = models.FloatField()
     query_total_het_hom_ratio_snp = models.FloatField()
 
@@ -185,8 +185,8 @@ class Happy_indel_all(models.Model):
     metric_precision_indel = models.FloatField()
     metric_frac_na_indel = models.FloatField()
     metric_f1_score_indel = models.FloatField()
-    truth_total_titv_ratio_indel = models.FloatField()
-    query_total_titv_ratio_indel = models.FloatField()
+    truth_total_titv_ratio_indel = models.FloatField(null=True)
+    query_total_titv_ratio_indel = models.FloatField(null=True)
     truth_total_het_hom_ratio_indel = models.FloatField()
     query_total_het_hom_ratio_indel = models.FloatField()
 
@@ -208,8 +208,8 @@ class Happy_indel_pass(models.Model):
     metric_precision_indel = models.FloatField()
     metric_frac_na_indel = models.FloatField()
     metric_f1_score_indel = models.FloatField()
-    truth_total_titv_ratio_indel = models.FloatField()
-    query_total_titv_ratio_indel = models.FloatField()
+    truth_total_titv_ratio_indel = models.FloatField(null=True)
+    query_total_titv_ratio_indel = models.FloatField(null=True)
     truth_total_het_hom_ratio_indel = models.FloatField()
     query_total_het_hom_ratio_indel = models.FloatField()
 
