@@ -304,12 +304,9 @@ class MultiQC_report():
             Dict: Dict with cleaned data
         """
 
-        cleaned_data = {}
-
-        for field, value in data.items():
-            cleaned_data[field] = self.clean_value(value)
-
-        return cleaned_data
+        return {
+            field: self.clean_value(value) for field, value in data.items()
+        }
 
     @staticmethod
     def clean_value(value: str) -> Any:
