@@ -254,7 +254,7 @@ class Picard_insert_size_metrics(models.Model):
     mean_insert_size = models.FloatField()
     standard_deviation = models.FloatField()
     read_pairs = models.FloatField()
-    pair_orientation = models.CharField(max_length=5)
+    pair_orientation = models.CharField(max_length=10)
     width_of_10_pct = models.FloatField()
     width_of_20_pct = models.FloatField()
     width_of_30_pct = models.FloatField()
