@@ -269,6 +269,8 @@ class MultiQC_report():
         # {read: {field: data, field: data}} vs {field: data, field: data}
         if all(isinstance(i, dict) for i in tool_data.values()):
             for read, data in tool_data.items():
+                # this info is not available in the FastQC data so I create it
+                # myself
                 data["lane"] = read.split("_")[0]
                 data["sample_read"] = read.split("_")[1]
                 model_instance = model(**data)
