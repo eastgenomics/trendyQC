@@ -310,7 +310,9 @@ class MultiQC_report():
 
     @staticmethod
     def clean_value(value: str) -> Any:
-        """ Clean given value
+        """ Determine if the value needs its type changed because for example,
+        Happy returns strings for this numbers. Additionally, return None if an
+        empty string is provided.
 
         Args:
             value (str): Value stored for a field
