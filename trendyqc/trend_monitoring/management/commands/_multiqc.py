@@ -3,7 +3,7 @@ from datetime import datetime
 import json
 import math
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import dxpy
 import regex
@@ -39,7 +39,8 @@ class MultiQC_report():
         self.create_all_instances()
 
     def setup_tools(self):
-        """ Setup tools for use when parsing the MultiQC data """
+        """ Create tools for use when parsing the MultiQC data and store them
+        in self.tools"""
 
         self.tools = []
         multiqc_raw_data = self.original_data["report_saved_raw_data"]
@@ -133,6 +134,7 @@ class MultiQC_report():
                 self.data.setdefault(sample_id, {})
                 self.data[sample_id].setdefault(tool_obj, {})
 
+                # convert data in appropriate types for future import
                 cleaned_data = self.clean_data(converted_fields)
 
                 # fastqc needs a new level to take into account the lane and
@@ -145,6 +147,8 @@ class MultiQC_report():
     def get_metadata(self):
         """ Get the metadata from the MultiQC DNAnexus object """
 
+        # TO-DO this returns the name of the json that i pull data from.
+        # Need to extract the HTML from the job id
         self.report_name = self.dnanexus_report.describe()["name"],
         self.project_name = self.dnanexus_report.describe()["project"],
         self.report_id = self.dnanexus_report.describe()["id"]
@@ -163,7 +167,8 @@ class MultiQC_report():
         )
 
     def map_models_to_tools(self):
-        """ Map Django models to tools """
+        """ Map Django models to tools. Store that info in the appropriate
+        tool object """
 
         # Store the Django models as a dict of model names to model objects
         self.models = {
@@ -207,14 +212,18 @@ class MultiQC_report():
             # per sample
             self.instances_one_sample = defaultdict(list)
             self.instances_one_sample["report_sample"].append(report_instance)
+            # setup the all instances per sample so that they are appended in
+            # order of future import
             self.all_instances.setdefault(sample, [])
             self.all_instances[sample].append(report_instance)
+
             sample_data = self.data[sample]
             self.all_instances[sample].append(
                 self.create_sample_instance(sample)
             )
 
             for tool in sample_data:
+                # create instance for every tool
                 self.all_instances[sample].extend(
                     self.create_tool_data_instance(tool, sample_data[tool])
                 )
@@ -226,6 +235,7 @@ class MultiQC_report():
             picard_instance = self.create_link_table_instance("picard")
             happy_instance = self.create_link_table_instance("happy")
 
+            # picard and happy are not used for every assay
             if picard_instance:
                 self.all_instances[sample].append(picard_instance)
 
@@ -242,7 +252,7 @@ class MultiQC_report():
 
     def create_tool_data_instance(self, tool_obj: Tool, tool_data: dict) -> List:
         """ Create tool data instance. Uses the tool data structure to check
-        how to create model instances
+        how to create model instances.
 
         Args:
             tool_obj (Tool): Tool object
@@ -281,7 +291,17 @@ class MultiQC_report():
 
         return instances_to_return
 
-    def clean_data(self, data):
+    def clean_data(self, data: Dict) -> Dict:
+        """ Loop through the fields and values for one tool and clean the
+        values
+
+        Args:
+            data (Dict): Dict containing the fields and values of a Tool
+
+        Returns:
+            Dict: Dict with cleaned data
+        """
+
         cleaned_data = {}
 
         for field, value in data.items():
@@ -290,14 +310,26 @@ class MultiQC_report():
         return cleaned_data
 
     @staticmethod
-    def clean_value(value: str):
-        # check if value is an empty string
+    def clean_value(value: str) -> Any:
+        """ Clean given value
+
+        Args:
+            value (str): Value stored for a field
+
+        Returns:
+            Any: Value that has correct type if it passed tests or cleaned
+            value
+        """
+
+        # check if value is an empty string + check if value is not 0
+        # otherwise it returns None
         if not value and value != 0:
             return None
 
         try:
             float(value)
         except ValueError:
+            # Probably str
             return value
 
         # nan doesn't trigger the exception, so handle them separately
@@ -311,7 +343,7 @@ class MultiQC_report():
             return int(value)
 
     def create_sample_instance(self, sample_id: str) -> Model:
-        """ Create the sample instance
+        """ Create the sample instance.
 
         Args:
             sample (str): Sample id
@@ -388,8 +420,8 @@ class MultiQC_report():
         }
 
     def import_instances(self):
+        """ Loop through all the samples and their instances to import them """
+
         for sample, instances in self.all_instances.items():
             for instance in instances:
-                print(instance.__dict__)
                 instance.save()
-                print(instance.__dict__)
