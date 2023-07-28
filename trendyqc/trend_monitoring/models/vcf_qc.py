@@ -27,7 +27,7 @@ class Somalier_data(models.Model):
     y_depth_mean = models.FloatField()
     y_nb = models.FloatField()
     predicted_sex = models.CharField(max_length=10)
-    match_sexes = models.BooleanField()
+    match_sexes = models.CharField(max_length=5)
 
     class Meta:
         app_label = "trend_monitoring"
@@ -108,10 +108,18 @@ class Vcfqc_data(models.Model):
 
 
 class Happy(models.Model):
-    happy_snp_all = models.ForeignKey("Happy_snp_all", on_delete=models.DO_NOTHING)
-    happy_snp_pass = models.ForeignKey("Happy_snp_pass", on_delete=models.DO_NOTHING)
-    happy_indel_all = models.ForeignKey("Happy_indel_all", on_delete=models.DO_NOTHING)
-    happy_indel_pass = models.ForeignKey("Happy_indel_pass", on_delete=models.DO_NOTHING)
+    happy_snp_all = models.ForeignKey(
+        "Happy_snp_all", on_delete=models.DO_NOTHING
+    )
+    happy_snp_pass = models.ForeignKey(
+        "Happy_snp_pass", on_delete=models.DO_NOTHING
+    )
+    happy_indel_all = models.ForeignKey(
+        "Happy_indel_all", on_delete=models.DO_NOTHING
+    )
+    happy_indel_pass = models.ForeignKey(
+        "Happy_indel_pass", on_delete=models.DO_NOTHING
+    )
 
     class Meta:
         app_label = "trend_monitoring"
@@ -131,8 +139,8 @@ class Happy_snp_all(models.Model):
     metric_precision_snp = models.FloatField()
     metric_frac_na_snp = models.FloatField()
     metric_f1_score_snp = models.FloatField()
-    truth_total_titv_ratio_snp = models.FloatField()
-    query_total_titv_ratio_snp = models.FloatField()
+    truth_total_titv_ratio_snp = models.FloatField(null=True)
+    query_total_titv_ratio_snp = models.FloatField(null=True)
     truth_total_het_hom_ratio_snp = models.FloatField()
     query_total_het_hom_ratio_snp = models.FloatField()
 
@@ -154,8 +162,8 @@ class Happy_snp_pass(models.Model):
     metric_precision_snp = models.FloatField()
     metric_frac_na_snp = models.FloatField()
     metric_f1_score_snp = models.FloatField()
-    truth_total_titv_ratio_snp = models.FloatField()
-    query_total_titv_ratio_snp = models.FloatField()
+    truth_total_titv_ratio_snp = models.FloatField(null=True)
+    query_total_titv_ratio_snp = models.FloatField(null=True)
     truth_total_het_hom_ratio_snp = models.FloatField()
     query_total_het_hom_ratio_snp = models.FloatField()
 
@@ -177,8 +185,8 @@ class Happy_indel_all(models.Model):
     metric_precision_indel = models.FloatField()
     metric_frac_na_indel = models.FloatField()
     metric_f1_score_indel = models.FloatField()
-    truth_total_titv_ratio_indel = models.FloatField()
-    query_total_titv_ratio_indel = models.FloatField()
+    truth_total_titv_ratio_indel = models.FloatField(null=True)
+    query_total_titv_ratio_indel = models.FloatField(null=True)
     truth_total_het_hom_ratio_indel = models.FloatField()
     query_total_het_hom_ratio_indel = models.FloatField()
 
@@ -200,8 +208,8 @@ class Happy_indel_pass(models.Model):
     metric_precision_indel = models.FloatField()
     metric_frac_na_indel = models.FloatField()
     metric_f1_score_indel = models.FloatField()
-    truth_total_titv_ratio_indel = models.FloatField()
-    query_total_titv_ratio_indel = models.FloatField()
+    truth_total_titv_ratio_indel = models.FloatField(null=True)
+    query_total_titv_ratio_indel = models.FloatField(null=True)
     truth_total_het_hom_ratio_indel = models.FloatField()
     query_total_het_hom_ratio_indel = models.FloatField()
 

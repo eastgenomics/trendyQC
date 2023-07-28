@@ -27,39 +27,39 @@ class VerifyBAMid_data(models.Model):
 
 
 class Samtools_data(models.Model):
-    total_passed = models.IntegerField()
-    total_failed = models.IntegerField()
-    secondary_passed = models.IntegerField()
-    secondary_failed = models.IntegerField()
-    supplementary_passed = models.IntegerField()
-    supplementary_failed = models.IntegerField()
-    duplicates_passed = models.IntegerField()
-    duplicates_failed = models.IntegerField()
-    mapped_passed = models.IntegerField()
-    mapped_failed = models.IntegerField()
-    mapped_passed_pct = models.FloatField()
-    mapped_failed_pct = models.FloatField()
-    paired_in_sequencing_passed = models.IntegerField()
-    paired_in_sequencing_failed = models.IntegerField()
-    r1_passed = models.IntegerField()
-    r1_failed = models.IntegerField()
-    r2_passed = models.IntegerField()
-    r2_failed = models.IntegerField()
-    properly_paired_passed = models.IntegerField()
-    properly_paired_failed = models.IntegerField()
-    properly_paired_passed_pct = models.FloatField()
-    properly_paired_failed_pct = models.FloatField()
-    with_itself_and_mate_mapped_passed = models.IntegerField()
-    with_itself_and_mate_mapped_failed = models.IntegerField()
-    singletons_passed = models.IntegerField()
-    singletons_failed = models.IntegerField()
-    singletons_passed_pct = models.FloatField()
-    singletons_failed_pct = models.FloatField()
-    with_mate_mapped_to_a_different_chr_passed = models.IntegerField()
-    with_mate_mapped_to_a_different_chr_failed = models.IntegerField()
-    with_mate_mapped_to_a_different_chr_mapQ_over_5_passed = models.IntegerField()
-    with_mate_mapped_to_a_different_chr_mapQ_over_5_failed = models.IntegerField()
-    flagstat_total = models.IntegerField()
+    total_passed = models.IntegerField(null=True)
+    total_failed = models.IntegerField(null=True)
+    secondary_passed = models.IntegerField(null=True)
+    secondary_failed = models.IntegerField(null=True)
+    supplementary_passed = models.IntegerField(null=True)
+    supplementary_failed = models.IntegerField(null=True)
+    duplicates_passed = models.IntegerField(null=True)
+    duplicates_failed = models.IntegerField(null=True)
+    mapped_passed = models.IntegerField(null=True)
+    mapped_failed = models.IntegerField(null=True)
+    mapped_passed_pct = models.FloatField(null=True)
+    mapped_failed_pct = models.FloatField(null=True)
+    paired_in_sequencing_passed = models.IntegerField(null=True)
+    paired_in_sequencing_failed = models.IntegerField(null=True)
+    r1_passed = models.IntegerField(null=True)
+    r1_failed = models.IntegerField(null=True)
+    r2_passed = models.IntegerField(null=True)
+    r2_failed = models.IntegerField(null=True)
+    properly_paired_passed = models.IntegerField(null=True)
+    properly_paired_failed = models.IntegerField(null=True)
+    properly_paired_passed_pct = models.FloatField(null=True)
+    properly_paired_failed_pct = models.FloatField(null=True)
+    with_itself_and_mate_mapped_passed = models.IntegerField(null=True)
+    with_itself_and_mate_mapped_failed = models.IntegerField(null=True)
+    singletons_passed = models.IntegerField(null=True)
+    singletons_failed = models.IntegerField(null=True)
+    singletons_passed_pct = models.FloatField(null=True)
+    singletons_failed_pct = models.FloatField(null=True)
+    with_mate_mapped_to_a_different_chr_passed = models.IntegerField(null=True)
+    with_mate_mapped_to_a_different_chr_failed = models.IntegerField(null=True)
+    with_mate_mapped_to_a_different_chr_mapQ_over_5_passed = models.IntegerField(null=True)
+    with_mate_mapped_to_a_different_chr_mapQ_over_5_failed = models.IntegerField(null=True)
+    flagstat_total = models.IntegerField(null=True)
 
     class Meta:
         app_label = "trend_monitoring"
@@ -82,26 +82,31 @@ class Picard(models.Model):
     library = models.CharField(max_length=10)
     read_group = models.CharField(max_length=10)
     picard_hs_metrics = models.ForeignKey(
-        "Picard_hs_metrics", on_delete=models.DO_NOTHING
+        "Picard_hs_metrics", on_delete=models.DO_NOTHING, blank=True, null=True
     )
     picard_alignment_summary_metrics = models.ForeignKey(
-        "Picard_alignment_summary_metrics", on_delete=models.DO_NOTHING
+        "Picard_alignment_summary_metrics", on_delete=models.DO_NOTHING,
+        blank=True, null=True
     )
     picard_base_distribution_by_cycle_metrics = models.ForeignKey(
         "Picard_base_distribution_by_cycle_metrics",
-        on_delete=models.DO_NOTHING
+        on_delete=models.DO_NOTHING, blank=True, null=True
     )
     picard_gc_bias_metrics = models.ForeignKey(
-        "Picard_gc_bias_metrics", on_delete=models.DO_NOTHING
+        "Picard_gc_bias_metrics", on_delete=models.DO_NOTHING, blank=True,
+        null=True
     )
     picard_insert_size_metrics = models.ForeignKey(
-        "Picard_insert_size_metrics", on_delete=models.DO_NOTHING
+        "Picard_insert_size_metrics", on_delete=models.DO_NOTHING, blank=True,
+        null=True
     )
     picard_quality_yield_metrics = models.ForeignKey(
-        "Picard_quality_yield_metrics", on_delete=models.DO_NOTHING
+        "Picard_quality_yield_metrics", on_delete=models.DO_NOTHING,
+        blank=True, null=True
     )
     picard_pcr_metrics = models.ForeignKey(
-        "Picard_pcr_metrics", on_delete=models.DO_NOTHING
+        "Picard_pcr_metrics", on_delete=models.DO_NOTHING, blank=True,
+        null=True
     )
 
     class Meta:
@@ -192,8 +197,8 @@ class Picard_alignment_summary_metrics(models.Model):
     mean_read_length = models.FloatField()
     reads_aligned_in_pairs = models.FloatField()
     pct_reads_aligned_in_pairs = models.FloatField()
-    pf_reads_improper_pairs = models.FloatField()
-    pct_pf_reads_improper_pairs = models.FloatField()
+    pf_reads_improper_pairs = models.FloatField(null=True)
+    pct_pf_reads_improper_pairs = models.FloatField(null=True)
     bad_cycles = models.FloatField()
     strand_balance = models.FloatField()
     pct_chimeras = models.FloatField()
@@ -242,14 +247,14 @@ class Picard_gc_bias_metrics(models.Model):
 
 class Picard_insert_size_metrics(models.Model):
     median_insert_size = models.FloatField()
-    mode_insert_size = models.FloatField()
+    mode_insert_size = models.FloatField(null=True)
     median_absolute_deviation = models.FloatField()
     min_insert_size = models.FloatField()
     max_insert_size = models.FloatField()
     mean_insert_size = models.FloatField()
     standard_deviation = models.FloatField()
     read_pairs = models.FloatField()
-    pair_orientation = models.CharField(max_length=5)
+    pair_orientation = models.CharField(max_length=10)
     width_of_10_pct = models.FloatField()
     width_of_20_pct = models.FloatField()
     width_of_30_pct = models.FloatField()

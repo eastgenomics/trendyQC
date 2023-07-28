@@ -22,8 +22,10 @@ class Patient(models.Model):
 
 
 class Sample(models.Model):
-    patient = models.ForeignKey(Patient, on_delete=models.DO_NOTHING)
-    sample_id = models.CharField(max_length=15)
+    patient = models.ForeignKey(
+        Patient, on_delete=models.DO_NOTHING, blank=True, null=True
+    )
+    sample_id = models.CharField(max_length=50)
 
     class Meta:
         app_label = "trend_monitoring"
@@ -36,27 +38,35 @@ class Report_Sample(models.Model):
     sample = models.ForeignKey(Sample, on_delete=models.DO_NOTHING)
     # fastq level qc
     bcl2fastq_data = models.ForeignKey(
-        "Bcl2fastq_data", on_delete=models.DO_NOTHING
+        "Bcl2fastq_data", on_delete=models.DO_NOTHING, blank=True, null=True
     )
     fastqc = models.ForeignKey("Fastqc", on_delete=models.DO_NOTHING)
     # bam level qc
     custom_coverage = models.ForeignKey(
-        "Custom_coverage", on_delete=models.DO_NOTHING
+        "Custom_coverage", on_delete=models.DO_NOTHING, blank=True, null=True
     )
     verifybamid_data = models.ForeignKey(
-        "VerifyBAMid_data", on_delete=models.DO_NOTHING
+        "VerifyBAMid_data", on_delete=models.DO_NOTHING, blank=True, null=True
     )
     samtools_data = models.ForeignKey(
-        "Samtools_data", on_delete=models.DO_NOTHING
+        "Samtools_data", on_delete=models.DO_NOTHING, blank=True, null=True
     )
-    picard = models.ForeignKey("Picard", on_delete=models.DO_NOTHING)
+    picard = models.ForeignKey(
+        "Picard", on_delete=models.DO_NOTHING, blank=True, null=True
+    )
     # vcf level qc
     somalier_data = models.ForeignKey(
-        "Somalier_data", on_delete=models.DO_NOTHING
+        "Somalier_data", on_delete=models.DO_NOTHING, blank=True, null=True
     )
-    sompy_data = models.ForeignKey("Sompy_data", on_delete=models.DO_NOTHING)
-    vcfqc_data = models.ForeignKey("Vcfqc_data", on_delete=models.DO_NOTHING)
-    happy = models.ForeignKey("Happy", on_delete=models.DO_NOTHING)
+    sompy_data = models.ForeignKey(
+        "Sompy_data", on_delete=models.DO_NOTHING, blank=True, null=True
+    )
+    vcfqc_data = models.ForeignKey(
+        "Vcfqc_data", on_delete=models.DO_NOTHING, blank=True, null=True
+    )
+    happy = models.ForeignKey(
+        "Happy", on_delete=models.DO_NOTHING, blank=True, null=True
+    )
 
     class Meta:
         app_label = "trend_monitoring"
