@@ -2,7 +2,7 @@
 
 {% load static %}
 
-{% block filters %}
+{% block dashboard %}
 
 <div>
     <table class="table table-striped" style="width:85%; margin: auto; padding: 10px; border: 5px solid;">
@@ -22,6 +22,29 @@
             </tbody>
     </table>
 </div>
+
+{% if user.is_authenticated %}
+
+<br>
+
+<div>
+    <table class="table table-striped" style="width:85%; margin: auto; padding: 10px; border: 5px solid;">
+        <thead class="thead-dark">
+            <tr>
+                <th>Filter name</th>
+                <th>Filter content</th>
+            </tr>
+        </thead>
+            <tbody>
+                <tr>
+                    <td>Filter name</td>
+                    <td>Filter content</td>
+                </tr>
+            </tbody>
+    </table>
+</div>
+
+{% endif %}
 
 <br>
 
