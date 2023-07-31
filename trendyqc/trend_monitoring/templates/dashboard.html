@@ -2,13 +2,51 @@
 
 {% load static %}
 
-{% block content %}
+{% block filters %}
 
 <div>
-    <h1>Trend Monitoring - Dashboard</h1>
+    <table class="table table-striped" style="width:85%; margin: auto; padding: 10px; border: 5px solid;">
+        <thead class="thead-dark">
+            <tr>
+                <th>Report name</th>
+                <th>Assay</th>
+                <th>Report id</th>
+            </tr>
+        </thead>
+            <tbody>
+                <tr>
+                    <td>Report name</td>
+                    <td>Assay</td>
+                    <td>Report id</td>
+                </tr>
+            </tbody>
+    </table>
 </div>
-<div>
-    <p>This will be a table</p>
+
+<br>
+
+<div class="filter" style="width:85%; margin: auto; padding: 10px; ">
+    <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%">
+        <h5>Subset selection (select at least one)</h5>
+        <li>Assay: <select></select></li>
+        <li>Runs: <select></select></li>
+        <li>Sequencer ID: <select></select></li>
+    </div>
+    <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%">
+        <h5>X axis</h5>
+        <li>Metrics: <select></select></li>
+        <li>Date range: <select></select> - <select></select></li>
+    </div>
+    <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%">
+        <h5>Y axis</h5>
+        <li>Metrics: <select></select></li>
+    </div>
+</div>
+
+<br>
+
+<div style="padding-left:10%">
+    <button>Plot</button>
 </div>
 
 {% endblock %}
