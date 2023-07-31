@@ -14,11 +14,14 @@
             </tr>
         </thead>
             <tbody>
+                {% for report in report_data %}
                 <tr>
-                    <td>Report name</td>
-                    <td>Assay</td>
-                    <td>Report id</td>
+                    <td>{{ report.name }}</td>
+                    <td>{{ report.run }}</td> 
+                    <td>{{ report.dnanexus_file_id }}</td> 
+                    <td>{{ report.job_date }}</td> 
                 </tr>
+                {% endfor %}
             </tbody>
     </table>
 </div>
