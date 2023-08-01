@@ -331,6 +331,11 @@ class MultiQC_report():
         try:
             float(value)
         except ValueError:
+            # some picard tool can return "?", why i do not know but i wanna
+            # find those people and have a talk with them
+            if value == "?":
+                return None
+
             # Probably str
             return value
 
