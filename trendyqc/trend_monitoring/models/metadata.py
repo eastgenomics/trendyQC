@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Report(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=100)
     run = models.CharField(max_length=50)
     dnanexus_file_id = models.CharField(max_length=62)
     job_date = models.DateTimeField()
