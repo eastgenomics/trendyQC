@@ -342,10 +342,13 @@ class MultiQC_report():
             if happy_instance:
                 self.all_instances[sample].append(happy_instance)
 
+            report_sample_data = {**self.gather_instances_for("report_sample")}
+            report_sample_data["assay"] = self.assay
+
             # get the report sample model object and instanciate using the
             # instances that were gathered previously
             report_sample_instance = self.models["report_sample"](
-                **self.gather_instances_for("report_sample")
+                **report_sample_data
             )
 
             self.all_instances[sample].append(report_sample_instance)
