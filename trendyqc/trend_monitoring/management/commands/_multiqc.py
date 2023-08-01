@@ -147,21 +147,24 @@ class MultiQC_report():
     def get_metadata(self):
         """ Get the metadata from the MultiQC DNAnexus object """
 
-        # TO-DO this returns the name of the json that i pull data from.
-        # Need to extract the HTML from the job id
-        self.report_name = self.dnanexus_report.describe()["name"],
-        self.project_name = self.dnanexus_report.describe()["project"],
-        self.report_id = self.dnanexus_report.describe()["id"]
+        self.project_name = self.dnanexus_report.describe()["project"]
+        self.multiqc_json_id = self.dnanexus_report.describe()["id"]
 
         # Get the job ID from the multiqc report
         self.job_id = self.dnanexus_report.describe()["createdBy"]["job"]
+
+        # get the job object
+        report_job = dxpy.DXJob(self.job_id)
+        # get the file id for the HTML report and save the DXFile object
+        html_report = dxpy.DXFile(
+            report_job.describe()["output"]["multiqc_html_report"]["$dnanexus_link"]
+        )
+        # get the name of the HTML report
+        self.report_name = html_report.describe()["name"]
+
         # DNAnexus returns a timestamp that includes milliseconds which Python
         # does not handle. So striping the last 3 characters
-        creation_timestamp = int(
-            str(
-                dxpy.DXJob(self.job_id).describe()["created"]
-            )[:-3]
-        )
+        creation_timestamp = int(str(report_job.describe()["created"])[:-3])
         self.datetime_job = datetime.fromtimestamp(
             creation_timestamp
         )
@@ -369,7 +372,7 @@ class MultiQC_report():
         report = self.models["report"]
         report_instance = report(
             name=self.report_name, run=self.project_name,
-            dnanexus_file_id=self.report_id, job_date=self.datetime_job
+            dnanexus_file_id=self.multiqc_json_id, job_date=self.datetime_job
         )
         return report_instance
 
