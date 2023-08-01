@@ -9,6 +9,7 @@ import dxpy
 import regex
 
 from django.apps import apps
+from django.db import transaction
 from django.db.models import Model
 
 from ._parsing import load_assay_config
@@ -34,6 +35,7 @@ class MultiQC_report():
         self.assay_data = load_assay_config(self.assay, CONFIG_DIR)
         self.setup_tools()
         self.parse_multiqc_report()
+        self.clean_sample_naming()
         self.get_metadata()
         self.map_models_to_tools()
         self.create_all_instances()
@@ -199,6 +201,104 @@ class MultiQC_report():
                 # something
                 print("no")
 
+    def clean_data(self, data: Dict) -> Dict:
+        """ Loop through the fields and values for one tool and clean the
+        values
+
+        Args:
+            data (Dict): Dict containing the fields and values of a Tool
+
+        Returns:
+            Dict: Dict with cleaned data
+        """
+
+        return {
+            field: self.clean_value(value) for field, value in data.items()
+        }
+
+    @staticmethod
+    def clean_value(value: str) -> Any:
+        """ Determine if the value needs its type changed because for example,
+        Happy returns strings for this numbers. Additionally, return None if an
+        empty string is provided.
+
+        Args:
+            value (str): Value stored for a field
+
+        Returns:
+            Any: Value that has correct type if it passed tests or cleaned
+            value
+        """
+
+        # check if value is an empty string + check if value is not 0
+        # otherwise it returns None
+        if not value and value != 0:
+            return None
+
+        try:
+            float(value)
+        except ValueError:
+            # some picard tool can return "?", why i do not know but i wanna
+            # find those people and have a talk with them
+            if value == "?":
+                return None
+
+            # Probably str
+            return value
+
+        # nan doesn't trigger the exception, so handle them separately
+        if math.isnan(float(value)):
+            return None
+
+        # it can float, check if it's an int or float
+        if '.' in str(value):
+            return float(value)
+        else:
+            return int(value)
+
+    def clean_sample_naming(self):
+        """ Clean the sample names.
+        Issue encountered with old RD runs for NA12878:
+        NA12878-NA12878-1-TWE-F-EGG4_S31_L001_R1 for FastQC NA12878_INDEL_ALL
+        for Happy.
+        This means that 2 instances of NA12878 are created and the data for the
+        sample is split between the 2 instances.
+        This function tries to fix that and merge the data.
+        """
+
+        data_to_add = {}
+        data_to_remove = []
+
+        for sample1 in self.data.keys():
+            for sample2 in self.data.keys():
+                # check if some sample names overlap (and are not identical)
+                if sample1 != sample2 and sample1 in sample2:
+                    # check which sample name is the longest, assume that it is
+                    # the one we want
+                    if len(sample1) > len(sample2):
+                        sample = sample1
+                    else:
+                        sample = sample2
+
+                    # merge the data from the 2 instances of the sample names
+                    # being similar
+                    data_to_add[sample] = {
+                        **self.data[sample1], **self.data[sample2]
+                    }
+
+                    # store the sample names for later removal
+                    data_to_remove.append(sample1)
+                    data_to_remove.append(sample2)
+
+        # delete the data from the sample names we have stored
+        for sample in data_to_remove:
+            del self.data[sample]
+
+        # create new entry in the self.data with the sample name we want and
+        # the merged data
+        for sample, data in data_to_add.items():
+            self.data[sample] = data
+
     def create_all_instances(self):
         """ Create instances for everything that needs to get imported
 
@@ -245,10 +345,13 @@ class MultiQC_report():
             if happy_instance:
                 self.all_instances[sample].append(happy_instance)
 
+            report_sample_data = {**self.gather_instances_for("report_sample")}
+            report_sample_data["assay"] = self.assay
+
             # get the report sample model object and instanciate using the
             # instances that were gathered previously
             report_sample_instance = self.models["report_sample"](
-                **self.gather_instances_for("report_sample")
+                **report_sample_data
             )
 
             self.all_instances[sample].append(report_sample_instance)
@@ -295,56 +398,6 @@ class MultiQC_report():
             instances_to_return.append(model_instance)
 
         return instances_to_return
-
-    def clean_data(self, data: Dict) -> Dict:
-        """ Loop through the fields and values for one tool and clean the
-        values
-
-        Args:
-            data (Dict): Dict containing the fields and values of a Tool
-
-        Returns:
-            Dict: Dict with cleaned data
-        """
-
-        return {
-            field: self.clean_value(value) for field, value in data.items()
-        }
-
-    @staticmethod
-    def clean_value(value: str) -> Any:
-        """ Determine if the value needs its type changed because for example,
-        Happy returns strings for this numbers. Additionally, return None if an
-        empty string is provided.
-
-        Args:
-            value (str): Value stored for a field
-
-        Returns:
-            Any: Value that has correct type if it passed tests or cleaned
-            value
-        """
-
-        # check if value is an empty string + check if value is not 0
-        # otherwise it returns None
-        if not value and value != 0:
-            return None
-
-        try:
-            float(value)
-        except ValueError:
-            # Probably str
-            return value
-
-        # nan doesn't trigger the exception, so handle them separately
-        if math.isnan(float(value)):
-            return None
-
-        # it can float, check if it's an int or float
-        if '.' in str(value):
-            return float(value)
-        else:
-            return int(value)
 
     def create_sample_instance(self, sample_id: str) -> Model:
         """ Create the sample instance.
@@ -423,6 +476,7 @@ class MultiQC_report():
             if link_table == type_table
         }
 
+    @transaction.atomic
     def import_instances(self):
         """ Loop through all the samples and their instances to import them """
 
