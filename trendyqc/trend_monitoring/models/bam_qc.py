@@ -128,7 +128,7 @@ class Picard_hs_metrics(models.Model):
     pct_usable_bases_on_bait = models.FloatField()
     pct_usable_bases_on_target = models.FloatField()
     fold_enrichment = models.FloatField()
-    hs_library_size = models.FloatField()
+    hs_library_size = models.FloatField(null=True)
     hs_penalty_10x = models.FloatField()
     hs_penalty_20x = models.FloatField()
     hs_penalty_30x = models.FloatField()
