@@ -197,6 +197,61 @@ class MultiQC_report():
                 # something
                 print("no")
 
+    def clean_data(self, data: Dict) -> Dict:
+        """ Loop through the fields and values for one tool and clean the
+        values
+
+        Args:
+            data (Dict): Dict containing the fields and values of a Tool
+
+        Returns:
+            Dict: Dict with cleaned data
+        """
+
+        return {
+            field: self.clean_value(value) for field, value in data.items()
+        }
+
+    @staticmethod
+    def clean_value(value: str) -> Any:
+        """ Determine if the value needs its type changed because for example,
+        Happy returns strings for this numbers. Additionally, return None if an
+        empty string is provided.
+
+        Args:
+            value (str): Value stored for a field
+
+        Returns:
+            Any: Value that has correct type if it passed tests or cleaned
+            value
+        """
+
+        # check if value is an empty string + check if value is not 0
+        # otherwise it returns None
+        if not value and value != 0:
+            return None
+
+        try:
+            float(value)
+        except ValueError:
+            # some picard tool can return "?", why i do not know but i wanna
+            # find those people and have a talk with them
+            if value == "?":
+                return None
+
+            # Probably str
+            return value
+
+        # nan doesn't trigger the exception, so handle them separately
+        if math.isnan(float(value)):
+            return None
+
+        # it can float, check if it's an int or float
+        if '.' in str(value):
+            return float(value)
+        else:
+            return int(value)
+
     def create_all_instances(self):
         """ Create instances for everything that needs to get imported
 
@@ -293,61 +348,6 @@ class MultiQC_report():
             instances_to_return.append(model_instance)
 
         return instances_to_return
-
-    def clean_data(self, data: Dict) -> Dict:
-        """ Loop through the fields and values for one tool and clean the
-        values
-
-        Args:
-            data (Dict): Dict containing the fields and values of a Tool
-
-        Returns:
-            Dict: Dict with cleaned data
-        """
-
-        return {
-            field: self.clean_value(value) for field, value in data.items()
-        }
-
-    @staticmethod
-    def clean_value(value: str) -> Any:
-        """ Determine if the value needs its type changed because for example,
-        Happy returns strings for this numbers. Additionally, return None if an
-        empty string is provided.
-
-        Args:
-            value (str): Value stored for a field
-
-        Returns:
-            Any: Value that has correct type if it passed tests or cleaned
-            value
-        """
-
-        # check if value is an empty string + check if value is not 0
-        # otherwise it returns None
-        if not value and value != 0:
-            return None
-
-        try:
-            float(value)
-        except ValueError:
-            # some picard tool can return "?", why i do not know but i wanna
-            # find those people and have a talk with them
-            if value == "?":
-                return None
-
-            # Probably str
-            return value
-
-        # nan doesn't trigger the exception, so handle them separately
-        if math.isnan(float(value)):
-            return None
-
-        # it can float, check if it's an int or float
-        if '.' in str(value):
-            return float(value)
-        else:
-            return int(value)
 
     def create_sample_instance(self, sample_id: str) -> Model:
         """ Create the sample instance.
