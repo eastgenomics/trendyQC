@@ -9,6 +9,7 @@ import dxpy
 import regex
 
 from django.apps import apps
+from django.db import transaction
 from django.db.models import Model
 
 from ._parsing import load_assay_config
@@ -420,6 +421,7 @@ class MultiQC_report():
             if link_table == type_table
         }
 
+    @transaction.atomic
     def import_instances(self):
         """ Loop through all the samples and their instances to import them """
 
