@@ -266,8 +266,8 @@ class MultiQC_report():
         data_to_add = {}
         data_to_remove = []
 
-        for sample1 in self.data:
-            for sample2 in self.data:
+        for sample1 in self.data.keys():
+            for sample2 in self.data.keys():
                 # check if some sample names overlap (and are not identical)
                 if sample1 != sample2 and sample1 in sample2:
                     # check which sample name is the longest, assume that it is
