@@ -15,7 +15,7 @@
     "indels_precision_upper": "indels_precision_upper",
     "indels_na": "indels_na",
     "indels_ambiguous": "indels_ambiguous",
-    "indels_fp.region_size": "indels_fp_region_size",
+    "indels_fp.region.size": "indels_fp_region_size",
     "indels_fp.rate": "indels_fp_rate",
     "SNVs_total.truth": "snvs_total_truth",
     "SNVs_total.query": "snvs_total_query",
@@ -33,7 +33,7 @@
     "SNVs_precision_upper": "snvs_precision_upper",
     "SNVs_na": "snvs_na",
     "SNVs_ambiguous": "snvs_ambiguous",
-    "SNVs_fp.region_size": "snvs_fp_region_size",
+    "SNVs_fp.region.size": "snvs_fp_region_size",
     "SNVs_fp.rate": "snvs_fp_rate",
     "records_total.truth": "records_total_truth",
     "records_total.query": "records_total_query",
@@ -51,6 +51,6 @@
     "records_precision_upper": "records_precision_upper",
     "records_na": "records_na",
     "records_ambiguous": "records_ambiguous",
-    "records_fp.region_size": "records_fp_region_size",
+    "records_fp.region.size": "records_fp_region_size",
     "records_fp.rate": "records_fp_rate"
 }
