@@ -52,7 +52,7 @@
 <br>
 
 <div class="filter" style="width:85%; margin: auto; padding: 10px; ">
-    <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%">
+    <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%">
         <h5>Subset selection (select at least one)</h5>
         <li>Assay: 
             <select>
@@ -61,15 +61,21 @@
                 {% endfor %}
             </select>
         </li>
-        <li>Runs: <select></select></li>
+        <li>Runs: 
+            <select>
+                {% for report in report_data %}
+                    <option value="{{ report.run }}">{{ report.run }}</option>
+                {% endfor %}
+            </select>
+        </li>
         <li>Sequencer ID: <select></select></li>
     </div>
-    <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%">
+    <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%">
         <h5>X axis</h5>
         <li>Metrics: <select></select></li>
-        <li>Date range: <select></select> - <select></select></li>
+        <li>Date range: <input type="date"> - <input type="date"></li>
     </div>
-    <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%">
+    <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:18%">
         <h5>Y axis</h5>
         <li>Metrics: <select></select></li>
     </div>
