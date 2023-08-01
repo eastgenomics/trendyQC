@@ -9,7 +9,8 @@ class Dashboard(View):
     report_sample_data = Report_Sample.objects.all()
 
     def get(self, request):
-        context = {"report_data": self.report_data}
+        assays = self.report_sample_data.values_list("assay")
+        context = {"report_data": self.report_data, "assays": assays}
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
