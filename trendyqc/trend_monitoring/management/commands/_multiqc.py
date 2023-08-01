@@ -35,6 +35,7 @@ class MultiQC_report():
         self.assay_data = load_assay_config(self.assay, CONFIG_DIR)
         self.setup_tools()
         self.parse_multiqc_report()
+        self.clean_sample_naming()
         self.get_metadata()
         self.map_models_to_tools()
         self.create_all_instances()
@@ -251,6 +252,49 @@ class MultiQC_report():
             return float(value)
         else:
             return int(value)
+
+    def clean_sample_naming(self):
+        """ Clean the sample names.
+        Issue encountered with old RD runs for NA12878:
+        NA12878-NA12878-1-TWE-F-EGG4_S31_L001_R1 for FastQC NA12878_INDEL_ALL
+        for Happy.
+        This means that 2 instances of NA12878 are created and the data for the
+        sample is split between the 2 instances.
+        This function tries to fix that and merge the data.
+        """
+
+        data_to_add = {}
+        data_to_remove = []
+
+        for sample1 in self.data:
+            for sample2 in self.data:
+                # check if some sample names overlap (and are not identical)
+                if sample1 != sample2 and sample1 in sample2:
+                    # check which sample name is the longest, assume that it is
+                    # the one we want
+                    if len(sample1) > len(sample2):
+                        sample = sample1
+                    else:
+                        sample = sample2
+
+                    # merge the data from the 2 instances of the sample names
+                    # being similar
+                    data_to_add[sample] = {
+                        **self.data[sample1], **self.data[sample2]
+                    }
+
+                    # store the sample names for later removal
+                    data_to_remove.append(sample1)
+                    data_to_remove.append(sample2)
+
+        # delete the data from the sample names we have stored
+        for sample in data_to_remove:
+            del self.data[sample]
+
+        # create new entry in the self.data with the sample name we want and
+        # the merged data
+        for sample, data in data_to_add.items():
+            self.data[sample] = data
 
     def create_all_instances(self):
         """ Create instances for everything that needs to get imported
