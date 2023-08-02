@@ -55,36 +55,40 @@
 <div class="filter" style="width:85%; margin: auto; padding: 10px; ">
     <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%">
         <h5>Subset selection (select at least one)</h5>
-        <li>Assay: 
-            <select>
-                {% for assay in assays %}
-                    <option value="{{ assay }}">{{ assay }}</option>
-                {% endfor %}
-            </select>
-        </li>
-        <li>Runs: 
-            <select>
-                {% for report in report_data %}
-                    <option value="{{ report.run }}">{{ report.run }}</option>
-                {% endfor %}
-            </select>
-        </li>
-        <li>Sequencer ID: <select></select></li>
+        <div>
+            <p><input type="checkbox"/>  Assay: 
+                <select>
+                    <option value="">Select an assay</option>
+                    {% for assay in assays %}
+                        <option value="{{ assay }}">{{ assay }}</option>
+                    {% endfor %}
+                </select>
+            </p>
+            <p><input type="checkbox"/>  Runs: 
+                <select>
+                    <option value="">Select a run</option>
+                    {% for report in report_data %}
+                        <option value="{{ report.run }}">{{ report.run }}</option>
+                    {% endfor %}
+                </select>
+            </p>
+            <p><input type="checkbox"/>  Sequencer ID: <select></select></p>
+        </div>
     </div>
     <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%">
         <h5>X axis</h5>
-        <li>Metrics: <select></select></li>
-        <li>Date range: <input type="date"> - <input type="date"></li>
+        <p><input type="checkbox"/>  Metrics: <select></select></p>
+        <p><input type="checkbox"/>  Date range: <input type="date"> - <input type="date" id="date_range2"></p>
     </div>
     <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:18%">
         <h5>Y axis</h5>
-        <li>Metrics: <select></select></li>
+        <p>Metrics: <select></select></p>
     </div>
 </div>
 
 <br>
 
-<div style="padding-left:10%">
+<div style="padding-left:7.5%">
     <button>Plot</button>
 </div>
 
