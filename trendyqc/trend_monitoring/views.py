@@ -26,7 +26,7 @@ class Dashboard(View):
         form = FilterForm(request.POST)
 
         if form.is_valid():
-            request.session["temp_data"] = form.cleaned_data
+            request.session["form"] = form.cleaned_data
             return redirect("Plot")
 
         return render(request, self.template_name, context)
@@ -35,6 +35,24 @@ class Dashboard(View):
 class Plot(View):
     template_name = "plot.html"
 
-    def get(self, request, *args, **kwargs):
-        form_data = request.session.get("temp_data")
+    def get(self, request):
+        if request.session.get("form"):
+            filter_recap = self.filter_recap(request)
+            context = {"data": filter_recap}
+            return render(request, self.template_name, context)
+
         return render(request, self.template_name)
+
+    def filter_recap(self, request):
+        form_data = request.session.get("form")
+        cleaned_plot_data = {
+            key: value
+            for key, value in form_data.items() if value
+        }
+        return cleaned_plot_data
+
+    def get_data_for_plotting(self, filter_recap):
+        pass
+
+    def plot(self, plot_data):
+        pass
