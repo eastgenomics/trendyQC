@@ -117,14 +117,10 @@ class Plot(View):
             if field == "metrics_y":
                 data["y_axis"][field] = value
 
-        self.get_subset_queryset(data["subset"])
-        self.get_metrics(data["x_axis"])
-        self.get_metrics(data["y_axis"])
-
-        return data
+        return self.get_subset_queryset(data["subset"])
 
     def get_subset_queryset(self, subset_data):
-        reports = Report_Sample.objects.filter(
+        return Report_Sample.objects.filter(
             report__name=subset_data["assay_select"],
             assay=subset_data["run_select"]
         )
