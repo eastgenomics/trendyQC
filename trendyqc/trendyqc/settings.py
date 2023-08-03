@@ -112,6 +112,18 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# error with the CSRF token if a trusted origin is not added
+# TO-DO: put the host in the environment file + change to match the host on the
+# prod server
+# https://docs.djangoproject.com/en/4.2/ref/settings/#csrf-trusted-origins
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8000",
+]
+
+# otherwise i get an error when passing the data from the dashboard view to the
+# plotting view. However the django docs share some security concerns.
+# https://docs.djangoproject.com/en/4.2/topics/http/sessions/#session-serialization
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
