@@ -116,7 +116,35 @@ class Plot(View):
         return cleaned_plot_data
 
     def get_data_for_plotting(self, filter_recap):
-        pass
+        data = {}
+        data.setdefault("subset", {})
+        data.setdefault("x_axis", "")
+        data.setdefault("y_axis", "")
+
+        for field, value in filter_recap.items():
+            if not value:
+                continue
+
+            if field in ["assay_select", "run_select", "sequencer_select"]:
+                data["subset"][field] = value
+
+            if field in ["metrics_x", "date_start", "date_end"]:
+                data["x_axis"][field] = value
+
+            if field == "metrics_y":
+                data["y_axis"][field] = value
+
+        self.get_subset_queryset(data["subset"])
+        self.get_metrics(data["x_axis"])
+        self.get_metrics(data["y_axis"])
+
+        return data
+
+    def get_subset_queryset(self, subset_data):
+        reports = Report_Sample.objects.filter(
+            report__name=subset_data["assay_select"],
+            assay=subset_data["run_select"]
+        )
 
     def plot(self, plot_data):
         pass
