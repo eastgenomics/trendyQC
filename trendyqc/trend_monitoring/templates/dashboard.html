@@ -9,18 +9,20 @@
         <thead class="thead-dark">
             <tr>
                 <th>Report name</th>
+                <th>Project name</th>
                 <th>Project id</th>
+                <th>Project date</th>
                 <th>MultiQC report json id</th>
-                <th>Job datetime</th>
             </tr>
         </thead>
             <tbody>
                 {% for report in report_data %}
                 <tr>
                     <td>{{ report.name }}</td>
-                    <td>{{ report.run }}</td> 
+                    <td>{{ report.project_name }}</td> 
+                    <td>{{ report.project_id }}</td>
+                    <td>{{ report.date }}</td> 
                     <td>{{ report.dnanexus_file_id }}</td> 
-                    <td>{{ report.job_date }}</td> 
                 </tr>
                 {% endfor %}
             </tbody>
@@ -69,7 +71,7 @@
                     <select name="run_select">
                         <option value="">Select a run</option>
                         {% for report in report_data %}
-                            <option value="{{ report.run }}">{{ report.run }}</option>
+                            <option value="{{ report.project_name }}">{{ report.project_name }}</option>
                         {% endfor %}
                     </select>
                 </p>
