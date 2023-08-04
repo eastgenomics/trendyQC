@@ -21,7 +21,14 @@ class Dashboard(View):
             "".join(assay)
             for assay in self.report_sample_data.values_list("assay")
         })
-        context = {"report_data": self.report_data, "assays": assays}
+        sequencer_ids = sorted({
+            "".join(sequencer_id)
+            for sequencer_id in self.report_data.values_list("sequencer_id")
+        })
+        context = {
+            "report_data": self.report_data, "assays": assays,
+            "sequencer_ids": sequencer_ids
+        }
         return context
 
     def get(self, request):
