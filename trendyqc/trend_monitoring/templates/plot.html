@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block plot %}
+
+<p>Plotting</p>
+
+{% for key, value in data.items %}
+    <p>{{ key }}: {{ value }}</p>
+{% endfor %}
+
+{% endblock %}

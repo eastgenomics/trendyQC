@@ -11,6 +11,7 @@ import regex
 from django.apps import apps
 from django.db import transaction
 from django.db.models import Model
+from django.utils import timezone
 
 from ._parsing import load_assay_config
 from ._tool import Tool
@@ -149,7 +150,14 @@ class MultiQC_report():
     def get_metadata(self):
         """ Get the metadata from the MultiQC DNAnexus object """
 
-        self.project_name = self.dnanexus_report.describe()["project"]
+        # get project metadata
+        self.project_id = self.dnanexus_report.describe()["project"]
+        project_obj = dxpy.DXProject(self.project_id)
+        self.project_name = project_obj.name
+        self.date = datetime.strptime(
+            self.project_name.split("_")[1], "%y%m%d"
+        ).replace(tzinfo=timezone.utc)
+
         self.multiqc_json_id = self.dnanexus_report.describe()["id"]
 
         # Get the job ID from the multiqc report
@@ -168,7 +176,7 @@ class MultiQC_report():
         # does not handle. So striping the last 3 characters
         creation_timestamp = int(str(report_job.describe()["created"])[:-3])
         self.datetime_job = datetime.fromtimestamp(
-            creation_timestamp
+            creation_timestamp, tz=timezone.utc
         )
 
     def map_models_to_tools(self):
@@ -424,7 +432,8 @@ class MultiQC_report():
 
         report = self.models["report"]
         report_instance = report(
-            name=self.report_name, run=self.project_name,
+            name=self.report_name, project_id=self.project_id,
+            project_name=self.project_name, date=self.date,
             dnanexus_file_id=self.multiqc_json_id, job_date=self.datetime_job
         )
         return report_instance

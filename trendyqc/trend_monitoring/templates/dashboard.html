@@ -2,13 +2,113 @@
 
 {% load static %}
 
-{% block content %}
+{% block dashboard %}
 
 <div>
-    <h1>Trend Monitoring - Dashboard</h1>
+    <table class="table table-striped" style="width:85%; margin: auto; padding: 10px; border: 5px solid;">
+        <thead class="thead-dark">
+            <tr>
+                <th>Report name</th>
+                <th>Project name</th>
+                <th>Project id</th>
+                <th>Project date</th>
+                <th>MultiQC report json id</th>
+            </tr>
+        </thead>
+            <tbody>
+                {% for report in report_data %}
+                <tr>
+                    <td>{{ report.name }}</td>
+                    <td>{{ report.project_name }}</td> 
+                    <td>{{ report.project_id }}</td>
+                    <td>{{ report.date }}</td> 
+                    <td>{{ report.dnanexus_file_id }}</td> 
+                </tr>
+                {% endfor %}
+            </tbody>
+    </table>
 </div>
+
+{% if user.is_authenticated %}
+
+<br>
+
 <div>
-    <p>This will be a table</p>
+    <table class="table table-striped" style="width:85%; margin: auto; padding: 10px; border: 5px solid;">
+        <thead class="thead-dark">
+            <tr>
+                <th>Filter name</th>
+                <th>Filter content</th>
+            </tr>
+        </thead>
+            <tbody>
+                <tr>
+                    <td>Filter name</td>
+                    <td>Filter content</td>
+                </tr>
+            </tbody>
+    </table>
 </div>
+
+{% endif %}
+
+<br>
+
+<form action="{% url 'Dashboard' %}" method="post"> {% csrf_token %}
+    <div class="filter" style="width:85%; margin: auto; padding: 10px; ">
+        <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%">
+            <h5>Subset selection (select at least one)</h5>
+            <div>
+                <p><input name="assay_checkbox" type="checkbox"/>  Assay: 
+                    <select name="assay_select">
+                        <option value="">Select an assay</option>
+                        {% for assay in assays %}
+                            <option value="{{ assay }}">{{ assay }}</option>
+                        {% endfor %}
+                    </select>
+                </p>
+                <p><input name="run_checkbox" type="checkbox"/>  Runs: 
+                    <select name="run_select">
+                        <option value="">Select a run</option>
+                        {% for report in report_data %}
+                            <option value="{{ report.project_name }}">{{ report.project_name }}</option>
+                        {% endfor %}
+                    </select>
+                </p>
+                <p><input id="sequencer_checkbox" type="checkbox"/>  Sequencer ID: 
+                    <select name="sequencer_select"></select>
+                </p>
+            </div>
+        </div>
+
+        <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%">
+            <h5>X axis</h5>
+            <p><input name="metrics_x_radio" type="radio"/>  Metrics: 
+                <select name="metrics_x">
+                    <option value="">Select a metric</option>
+                </select>
+            </p>
+            <p><input name="date_radio" type="radio"/>  Date range: 
+                <input type="date" name="date_start"> - <input type="date" name="date_end">
+            </p>
+        </div>
+
+        <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:18%">
+            <h5>Y axis</h5>
+            <label id="metrics_y">Metrics: 
+                <select name="metrics_y">
+                    <option value="">Select a metric</option>
+                    <option value="testing">Testing</option>
+                </select>
+            </label>
+        </div>
+    </div>
+
+    <br>
+
+    <div style="padding-left:7.5%">
+        <input type="submit" value="Plot">
+    </div>
+</form>
 
 {% endblock %}

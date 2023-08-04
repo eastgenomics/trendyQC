@@ -5,5 +5,6 @@ from . import views
 
 urlpatterns = [
     path("dashboard/", views.Dashboard.as_view(), name="Dashboard"),
+    path("plot/", views.Plot.as_view(), name="Plot"),
     path("accounts/", include("django.contrib.auth.urls")),
 ]
