@@ -80,8 +80,8 @@
                 <p><input id="sequencer_checkbox" type="checkbox"/>  Sequencer ID: 
                     <select name="sequencer_select">
                         <option value="">Select a sequencer ID</option>
-                        {% for report in report_data %}
-                            <option value="{{ report.sequencer_id }}">{{ report.sequencer_id }}</option>
+                        {% for sequencer_id in sequencer_ids %}
+                            <option value="{{ sequencer_id }}">{{ sequencer_id }}</option>
                         {% endfor %}
                     </select>
                 </p>
