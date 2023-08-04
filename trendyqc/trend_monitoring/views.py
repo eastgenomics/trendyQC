@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.views import View
 from .forms import FilterForm
 from trend_monitoring.models.metadata import Report, Report_Sample
+from .backend_utils.plot import get_data_for_plotting, get_samples
 
 
 class Dashboard(View):
@@ -121,32 +122,3 @@ class Plot(View):
             for key, value in form_data.items() if value
         }
         return cleaned_plot_data
-
-    def get_data_for_plotting(self, filter_recap):
-        data = {}
-        data.setdefault("subset", {})
-        # data.setdefault("x_axis", "")
-        # data.setdefault("y_axis", "")
-
-        for field, value in filter_recap.items():
-            if not value:
-                continue
-
-            if field in ["assay_select", "run_select", "sequencer_select"]:
-                data["subset"].setdefault(field, []).append(value)
-
-            # if field in ["metrics_x", "date_start", "date_end"]:
-            #     data["x_axis"][field] = value
-
-            # if field == "metrics_y":
-            #     data["y_axis"][field] = value
-
-        return self.get_subset_queryset(data["subset"])
-
-    def get_subset_queryset(self, subset_data):
-        assays = subset_data.get("assay_select", [])
-        runs = subset_data.get("run_select", [])
-        return Report_Sample.objects.filter(report__project_name__in=runs) | Report_Sample.objects.filter(assay__in=assays)
-
-    def plot(self, plot_data):
-        pass
