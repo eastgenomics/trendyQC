@@ -6,6 +6,7 @@ class Report(models.Model):
     project_id = models.CharField(max_length=50)
     project_name = models.CharField(max_length=50)
     dnanexus_file_id = models.CharField(max_length=62)
+    sequencer_id = models.CharField(max_length=20)
     date = models.DateField()
     job_date = models.DateTimeField()
 
