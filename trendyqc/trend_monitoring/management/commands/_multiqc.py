@@ -154,10 +154,18 @@ class MultiQC_report():
         self.project_id = self.dnanexus_report.describe()["project"]
         project_obj = dxpy.DXProject(self.project_id)
         self.project_name = project_obj.name
+        project_date = self.project_name.split("_")[1]
+        assert len(project_date) == 6, (
+            "The date in the project name doesn't have a YYMMDD format: "
+            f"{project_date}"
+        )
         self.date = datetime.strptime(
-            self.project_name.split("_")[1], "%y%m%d"
-        ).replace(tzinfo=timezone.utc)
+            project_date, "%y%m%d").replace(tzinfo=timezone.utc)
 
+        # get the sequencer id
+        self.sequencer_id = self.project_name.split("_")[2]
+
+        # get the multiqc metadata
         self.multiqc_json_id = self.dnanexus_report.describe()["id"]
 
         # Get the job ID from the multiqc report
@@ -432,9 +440,10 @@ class MultiQC_report():
 
         report = self.models["report"]
         report_instance = report(
-            name=self.report_name, project_id=self.project_id,
-            project_name=self.project_name, date=self.date,
-            dnanexus_file_id=self.multiqc_json_id, job_date=self.datetime_job
+            name=self.report_name, project_name=self.project_name,
+            project_id=self.project_id, date=self.date,
+            sequencer_id=self.sequencer_id, job_date=self.datetime_job,
+            dnanexus_file_id=self.multiqc_json_id
         )
         return report_instance
 
