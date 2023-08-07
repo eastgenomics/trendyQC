@@ -1,5 +1,6 @@
-from django.views import View
+from django.contrib import messages
 from django.shortcuts import render, redirect
+from django.views import View
 from .forms import FilterForm
 from trend_monitoring.models.metadata import Report, Report_Sample
 
@@ -55,6 +56,20 @@ class Dashboard(View):
             # save the cleaned data in the session so that 
             request.session["form"] = form.cleaned_data
             return redirect("Plot")
+        else:
+            # add the errors for displaying in the dashboard template
+            for error_field in form.errors:
+                if isinstance(form.errors[error_field], list):
+                    for error in form.errors[error_field]:
+                        messages.add_message(
+                            request, messages.ERROR,
+                            f"{error_field}: {error}"
+                        )
+                else:
+                    messages.add_message(
+                            request, messages.ERROR,
+                            f"{error_field}: {''.join(form.errors[error])}"
+                        )
 
         return render(request, self.template_name, context)
 
@@ -73,10 +88,12 @@ class Plot(View):
             ?: Render Django thingy
         """
 
+        form = request.session.get("form")
+
         # check if we have the form data in the session request
-        if request.session.get("form"):
+        if form:
             # clean the form data
-            filter_recap = self.clean_form_data(request.session.get("form"))
+            filter_recap = self.clean_form_data(form)
             context = {"data": filter_recap}
             return render(request, self.template_name, context)
 
