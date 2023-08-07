@@ -85,18 +85,18 @@
                         {% endfor %}
                     </select>
                 </p>
+                <p><input id="date_checkbox" type="checkbox"/>  Date range: 
+                    <input type="date" name="date_start"> - <input type="date" name="date_end">
+                </p>
             </div>
         </div>
 
         <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%">
             <h5>X axis</h5>
-            <p><input name="metrics_x_radio" type="radio"/>  Metrics: 
+            <p> Metrics (optional): 
                 <select name="metrics_x">
                     <option value="">Select a metric</option>
                 </select>
-            </p>
-            <p><input name="date_radio" type="radio"/>  Date range: 
-                <input type="date" name="date_start"> - <input type="date" name="date_end">
             </p>
         </div>
 
