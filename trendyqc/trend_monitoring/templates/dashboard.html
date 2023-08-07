@@ -113,4 +113,14 @@
     </div>
 </form>
 
+<br>
+
+{% if messages %}
+    <div class="alert alert-danger">
+        {% for message in messages %}
+            <ul>{{ message }}</ul>
+        {% endfor %}
+    </div>
+{% endif %}
+
 {% endblock %}
