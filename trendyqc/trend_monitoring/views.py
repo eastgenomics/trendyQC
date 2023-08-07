@@ -3,7 +3,6 @@ from django.shortcuts import render, redirect
 from django.views import View
 from .forms import FilterForm
 from trend_monitoring.models.metadata import Report, Report_Sample
-from .backend_utils.plot import get_data_for_plotting, get_samples
 
 
 class Dashboard(View):
