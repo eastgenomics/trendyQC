@@ -26,7 +26,7 @@ class FilterForm(forms.Form):
         end_date = cleaned_data.get("date_end", None)
 
         if not any(run_subset):
-            raise ValidationError("No subset of runs selected")
+            self.add_error(None, ValidationError("No subset of runs selected"))
 
         x_metric = [
             cleaned_data.get("metrics_x", None),
@@ -34,7 +34,7 @@ class FilterForm(forms.Form):
         ]
 
         if not x_metric:
-            raise ValidationError("No X-axis values selected")
+            self.add_error(None, ValidationError("No X-axis values selected"))
         else:
             if not end_date and start_date:
                 now = datetime.date.today()
@@ -43,12 +43,16 @@ class FilterForm(forms.Form):
 
             if end_date and start_date:
                 if end_date < start_date:
-                    raise ValidationError((
-                        "Date end cannot be smaller than date start: "
-                        f"{start_date} - {end_date}"
-                    ))
+                    self.add_error(
+                        None, ValidationError(
+                            (
+                                "Date end cannot be smaller than date start: "
+                                f"{start_date} - {end_date}"
+                            )
+                        )
+                    )
 
         if not cleaned_data.get("metrics_y", None):
-            raise ValidationError("No Y-axis metric selected")
+            self.add_error(None, ValidationError("No Y-axis metric selected"))
 
         return cleaned_data

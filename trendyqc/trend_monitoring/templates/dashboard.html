@@ -13,6 +13,7 @@
                 <th>Project id</th>
                 <th>Project date</th>
                 <th>MultiQC report json id</th>
+                <th>Sequencer id</th>
             </tr>
         </thead>
             <tbody>
@@ -22,7 +23,8 @@
                     <td>{{ report.project_name }}</td> 
                     <td>{{ report.project_id }}</td>
                     <td>{{ report.date }}</td> 
-                    <td>{{ report.dnanexus_file_id }}</td> 
+                    <td>{{ report.dnanexus_file_id }}</td>
+                    <td>{{ report.sequencer_id }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -110,5 +112,15 @@
         <input type="submit" value="Plot">
     </div>
 </form>
+
+<br>
+
+{% if messages %}
+    <div class="alert alert-danger">
+        {% for message in messages %}
+            <ul>{{ message }}</ul>
+        {% endfor %}
+    </div>
+{% endif %}
 
 {% endblock %}
