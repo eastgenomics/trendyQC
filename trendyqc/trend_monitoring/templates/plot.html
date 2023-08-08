@@ -6,8 +6,20 @@
 
 <p>Plotting</p>
 
-{% for key, value in data.items %}
+{% for key, value in form.items %}
     <p>{{ key }}: {{ value }}</p>
 {% endfor %}
+
+<br>
+
+{% autoescape off %}
+{{ data }}
+{% endautoescape %}
+
+<br>
+
+{% autoescape off %}
+{{ plot }}
+{% endautoescape %}
 
 {% endblock %}
