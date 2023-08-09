@@ -160,7 +160,11 @@ def get_metric_filter(metric: str) -> str:
     metric_filter = list(metric_filter_dict.values())[0]
 
     # handle cases where there is an intermediary table between Report sample
-    # and the table containing the metric field
+    # and the table containing the metric field:
+    # The list represent the cases we want to test. "" is testing if the field
+    # is in a table directly linked to report_sample. Fastqc, picard and happy
+    # are the intermediate tables that could separate the field to
+    # report_sample
     for intermediate_table in ["", "fastqc", "picard", "happy"]:
         if intermediate_table != "":
             # add the intermediary table in the filter string
