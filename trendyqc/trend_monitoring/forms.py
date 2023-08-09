@@ -30,6 +30,11 @@ class FilterForm(forms.Form):
         if not any(run_subset):
             self.add_error(None, ValidationError("No subset of runs selected"))
 
+        if not start_date and end_date:
+            self.add_error(
+                "date_start", ValidationError("No start date selected")
+            )
+
         if not end_date and start_date:
             now = datetime.date.today()
             cleaned_data["date_end"] = now
