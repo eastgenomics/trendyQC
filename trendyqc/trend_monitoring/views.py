@@ -104,6 +104,8 @@ class Plot(View):
         if form:
             # clean the form data
             filter_data = prepare_filter_data(form)
+            # get queryset of report_sample filtered using the "subset" options
+            # selected by the user and passed through the form
             subset_queryset = get_subset_queryset(filter_data["subset"])
             df_data = get_data_for_plotting(subset_queryset)
             div_plot = plot_qc_data(df_data)
