@@ -157,7 +157,7 @@ def get_metric_filter(metric: str) -> str:
         f"{metric} is present in '{', '.join(metric_filter_dict.keys())}'"
     )
 
-    metric_filter = list(metric_filter_dict.values())[0]
+    original_metric_filter = list(metric_filter_dict.values())[0]
 
     # handle cases where there is an intermediary table between Report sample
     # and the table containing the metric field:
@@ -168,7 +168,9 @@ def get_metric_filter(metric: str) -> str:
     for intermediate_table in ["", "fastqc", "picard", "happy"]:
         if intermediate_table != "":
             # add the intermediary table in the filter string
-            metric_filter = f"{intermediate_table}__{metric_filter}"
+            metric_filter = f"{intermediate_table}__{original_metric_filter}"
+        else:
+            metric_filter = original_metric_filter
 
         try:
             Report_Sample.objects.all().values(metric_filter)
