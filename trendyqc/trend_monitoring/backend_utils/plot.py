@@ -161,12 +161,10 @@ def get_metric_filter(metric: str) -> str:
 
     # handle cases where there is an intermediary table between Report sample
     # and the table containing the metric field
-    for ele in ["", "fastqc", "picard", "happy"]:
-        if ele == "":
-            metric_filter = metric_filter
-        else:
+    for intermediate_table in ["", "fastqc", "picard", "happy"]:
+        if intermediate_table != "":
             # add the intermediary table in the filter string
-            metric_filter = f"{ele}__{metric_filter}"
+            metric_filter = f"{intermediate_table}__{metric_filter}"
 
         try:
             Report_Sample.objects.all().values(metric_filter)
