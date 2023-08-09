@@ -40,10 +40,6 @@ def prepare_filter_data(filter_recap: Dict) -> Dict:
     data.setdefault("y_axis", {})
 
     for field, value in filter_recap.items():
-        # skip if a field was not given any data
-        if not value:
-            continue
-
         # I'm setting a list by default because I want the user to be able to
         # select multiple runs for example
         if field in [
