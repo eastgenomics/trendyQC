@@ -141,17 +141,23 @@ def get_metric_filter(metric: str) -> str:
         queryset
     """
 
-    metric_filter = None
+    metric_filter_dict = {}
 
     # loop through the models and their fields to find in which model the
     # metric comes from
     for model in apps.get_models():
+        model_name = model.__name__.lower()
+
         for field in model._meta.get_fields():
             if field.name == metric:
-                metric_filter = f"{model.__name__.lower()}__{metric}"
-                break
+                metric_filter_dict[model_name] = f"{model_name}__{metric}"
 
-    assert metric_filter, f"{metric} does not exist in any model"
+    assert metric_filter_dict, f"{metric} does not exist in any model"
+    assert len(metric_filter_dict) == 1, (
+        f"{metric} is present in '{', '.join(metric_filter_dict.keys())}'"
+    )
+
+    metric_filter = list(metric_filter_dict.values())[0]
 
     # handle cases where there is an intermediary table between Report sample
     # and the table containing the metric field
