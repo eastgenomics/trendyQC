@@ -22,12 +22,12 @@ class Dashboard(View):
 
         # get all the assays and sort them
         assays = sorted({
-            "".join(assay)
-            for assay in self.report_sample_data.values_list("assay")
+            assay
+            for assay in self.report_sample_data.values_list("assay", flat=True)
         })
         sequencer_ids = sorted({
-            "".join(sequencer_id)
-            for sequencer_id in self.report_data.values_list("sequencer_id")
+            sequencer_id
+            for sequencer_id in self.report_data.values_list("sequencer_id", flat=True)
         })
         context = {
             "report_data": self.report_data, "assays": assays,
