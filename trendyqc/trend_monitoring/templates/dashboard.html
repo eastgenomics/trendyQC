@@ -78,20 +78,25 @@
                     </select>
                 </p>
                 <p><input id="sequencer_checkbox" type="checkbox"/>  Sequencer ID: 
-                    <select name="sequencer_select"></select>
+                    <select name="sequencer_select">
+                        <option value="">Select a sequencer ID</option>
+                        {% for sequencer_id in sequencer_ids %}
+                            <option value="{{ sequencer_id }}">{{ sequencer_id }}</option>
+                        {% endfor %}
+                    </select>
+                </p>
+                <p><input id="date_checkbox" type="checkbox"/>  Date range: 
+                    <input type="date" name="date_start"> - <input type="date" name="date_end">
                 </p>
             </div>
         </div>
 
         <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%">
             <h5>X axis</h5>
-            <p><input name="metrics_x_radio" type="radio"/>  Metrics: 
+            <p> Metrics (optional): 
                 <select name="metrics_x">
                     <option value="">Select a metric</option>
                 </select>
-            </p>
-            <p><input name="date_radio" type="radio"/>  Date range: 
-                <input type="date" name="date_start"> - <input type="date" name="date_end">
             </p>
         </div>
 

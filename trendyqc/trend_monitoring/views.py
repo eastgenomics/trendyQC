@@ -3,6 +3,9 @@ from django.shortcuts import render, redirect
 from django.views import View
 from .forms import FilterForm
 from trend_monitoring.models.metadata import Report, Report_Sample
+from .backend_utils.plot import (
+    get_subset_queryset, get_data_for_plotting, plot_qc_data, prepare_filter_data
+)
 
 
 class Dashboard(View):
@@ -19,10 +22,17 @@ class Dashboard(View):
 
         # get all the assays and sort them
         assays = sorted({
-            "".join(assay)
-            for assay in self.report_sample_data.values_list("assay")
+            assay
+            for assay in self.report_sample_data.values_list("assay", flat=True)
         })
-        context = {"report_data": self.report_data, "assays": assays}
+        sequencer_ids = sorted({
+            sequencer_id
+            for sequencer_id in self.report_data.values_list("sequencer_id", flat=True)
+        })
+        context = {
+            "report_data": self.report_data, "assays": assays,
+            "sequencer_ids": sequencer_ids
+        }
         return context
 
     def get(self, request):
@@ -93,30 +103,13 @@ class Plot(View):
         # check if we have the form data in the session request
         if form:
             # clean the form data
-            filter_recap = self.clean_form_data(form)
-            context = {"data": filter_recap}
+            filter_data = prepare_filter_data(form)
+            # get queryset of report_sample filtered using the "subset" options
+            # selected by the user and passed through the form
+            subset_queryset = get_subset_queryset(filter_data["subset"])
+            df_data = get_data_for_plotting(subset_queryset)
+            div_plot = plot_qc_data(df_data)
+            context = {"form": form, "plot": div_plot.to_html(), "data": df_data.to_html()}
             return render(request, self.template_name, context)
 
         return render(request, self.template_name)
-
-    def clean_form_data(self, form_data):
-        """ Clean form data by removing empty values
-
-        Args:
-            form_data (dict): Dict containing data from the Dashboard form
-
-        Returns:
-            dict: Dict of cleaned form data
-        """
-
-        cleaned_plot_data = {
-            key: value
-            for key, value in form_data.items() if value
-        }
-        return cleaned_plot_data
-
-    def get_data_for_plotting(self, filter_recap):
-        pass
-
-    def plot(self, plot_data):
-        pass
