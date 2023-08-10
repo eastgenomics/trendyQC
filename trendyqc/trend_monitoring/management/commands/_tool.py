@@ -3,7 +3,10 @@ from pathlib import Path
 
 
 class Tool:
-    def __init__(self, tool_name: str, config_dir: Path, subtool: str = None):
+    def __init__(
+        self, tool_name: str, config_dir: Path, multiqc_field: str,
+        subtool: str = None
+    ):
         """ Initialize Tool object with the tool name, its subtool
         (if it exists) and the config directory
 
@@ -11,10 +14,13 @@ class Tool:
             tool_name (str): Tool name
             config_dir (Path): Pathlib Path pointing to the config folder where
             the tool object will find its config file
+            multiqc_field (str): Name of the multiqc field containing data for
+            that tool
             subtool (str, optional): Subtool name if it has one. Defaults to None.
         """
 
         self.name = tool_name
+        self.multiqc_field_name = multiqc_field
         self.subtool = subtool
         self.parent = None
         self.children = []
