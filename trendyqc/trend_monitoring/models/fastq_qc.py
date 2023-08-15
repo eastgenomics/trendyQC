@@ -6,8 +6,8 @@ class Fastqc(models.Model):
 
 
 class Fastqc_read_data(models.Model):
-    sample_read = models.CharField(max_length=50)
-    lane = models.CharField(max_length=20)
+    sample_read = models.CharField(max_length=50, blank=True)
+    lane = models.CharField(max_length=20, blank=True)
     file_type = models.CharField(max_length=50)
     encoding = models.CharField(max_length=50)
     total_sequences = models.FloatField()
@@ -45,9 +45,9 @@ class Bcl2fastq_data(models.Model):
     r2_yield = models.BigIntegerField()
     r2_Q30 = models.BigIntegerField()
     r2_trimmed_bases = models.IntegerField()
-    pct_Q30 = models.FloatField()
-    pct_perfect_index = models.FloatField()
-    mean_qscore = models.FloatField()
+    pct_Q30 = models.FloatField(null=True)
+    pct_perfect_index = models.FloatField(null=True)
+    mean_qscore = models.FloatField(null=True)
 
     class Meta:
         app_label = "trend_monitoring"
