@@ -108,6 +108,10 @@ class Picard(models.Model):
         "Picard_pcr_metrics", on_delete=models.DO_NOTHING, blank=True,
         null=True
     )
+    picard_duplication_metrics = models.ForeignKey(
+        "Picard_duplication_metrics", on_delete=models.DO_NOTHING, blank=True,
+        null=True
+    )
 
     class Meta:
         app_label = "trend_monitoring"
@@ -344,3 +348,26 @@ class Picard_pcr_metrics(models.Model):
     class Meta:
         app_label = "trend_monitoring"
         db_table = "picard_pcr_metrics"
+
+
+class Picard_duplication_metrics(models.Model):
+    unpaired_reads_examined = models.FloatField()
+    read_pairs_examined = models.FloatField()
+    secondary_or_suplementary_rds = models.FloatField()
+    unmapped_reads = models.FloatField()
+    unpaired_read_duplicates = models.FloatField()
+    read_pair_duplicates = models.FloatField()
+    read_pair_optical_duplicates = models.FloatField()
+    pct_duplication = models.FloatField()
+    estimated_library_size = models.FloatField()
+    reads_in_duplicate_pairs = models.FloatField()
+    reads_in_unique_pairs = models.FloatField()
+    reads_in_unique_unpaired = models.FloatField()
+    reads_in_duplicate_pairs_optical = models.FloatField()
+    reads_in_duplicate_pairs_nonoptical = models.FloatField()
+    reads_in_duplicate_unpaired = models.FloatField()
+    reads_unmapped = models.FloatField()
+
+    class Meta:
+        app_label = "trend_monitoring"
+        db_table = "picard_duplication_metrics"
