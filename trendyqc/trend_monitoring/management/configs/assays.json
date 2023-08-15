@@ -51,5 +51,16 @@
         "multiqc_picard_insertSize": ["picard", "insert_size_metrics"],
         "multiqc_picard_pcrmetrics": ["picard", "pcr_metrics"],
         "multiqc_samtools_flagstat": ["samtools", null]
+    },
+    "TruSight One Expanded": {
+        "multiqc_bcl2fastq_bysample": ["bcl2fastq", null],
+        "multiqc_fastqc": ["fastqc", "read"],
+        "multiqc_het-hom_analysis": ["vcfqc", null],
+        "multiqc_picard_HsMetrics": ["picard", "hs_metrics"],
+        "multiqc_picard_dups": ["picard", "duplication_metrics"],
+        "multiqc_samtools_flagstat": ["samtools", null],
+        "multiqc_sentieon_AlignmentSummaryMetrics": ["picard", "alignment_summary_metrics"],
+        "multiqc_sentieon_insertSize": ["picard", "insert_size_metrics"],
+        "multiqc_verifybamid": ["verifybamid", null]
     }
 }
