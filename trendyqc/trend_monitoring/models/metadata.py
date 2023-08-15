@@ -28,7 +28,7 @@ class Sample(models.Model):
     patient = models.ForeignKey(
         Patient, on_delete=models.DO_NOTHING, blank=True, null=True
     )
-    sample_id = models.CharField(max_length=50)
+    sample_id = models.CharField(max_length=100)
 
     class Meta:
         app_label = "trend_monitoring"
