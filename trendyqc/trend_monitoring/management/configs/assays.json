@@ -62,5 +62,17 @@
         "multiqc_sentieon_AlignmentSummaryMetrics": ["picard", "alignment_summary_metrics"],
         "multiqc_sentieon_insertSize": ["picard", "insert_size_metrics"],
         "multiqc_verifybamid": ["verifybamid", null]
+    },
+    "Capture: Familial Hypercholesterolemia (FH)": {
+        "multiqc_fastqc": ["fastqc", "read"],
+        "multiqc_happy_indel_data": ["happy", "indel"],
+        "multiqc_happy_snp_data": ["happy", "snp"],
+        "multiqc_het-hom_analysis": ["vcfqc", null],
+        "multiqc_picard_HsMetrics": ["picard", "hs_metrics"],
+        "multiqc_picard_dups": ["picard", "duplication_metrics"],
+        "multiqc_samtools_flagstat": ["samtools", null],
+        "multiqc_sentieon_AlignmentSummaryMetrics": ["picard", "alignment_summary_metrics"],
+        "multiqc_sentieon_insertSize": ["picard", "insert_size_metrics"],
+        "multiqc_verifybamid": ["verifybamid", null]
     }
 }
