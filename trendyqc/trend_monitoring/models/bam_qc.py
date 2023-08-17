@@ -127,7 +127,7 @@ class Picard_hs_metrics(models.Model):
     off_bait_bases = models.FloatField()
     pct_selected_bases = models.FloatField()
     pct_off_bait = models.FloatField()
-    on_bait_vs_selected = models.FloatField()
+    on_bait_vs_selected = models.FloatField(null=True)
     mean_bait_coverage = models.FloatField()
     pct_usable_bases_on_bait = models.FloatField()
     pct_usable_bases_on_target = models.FloatField()
