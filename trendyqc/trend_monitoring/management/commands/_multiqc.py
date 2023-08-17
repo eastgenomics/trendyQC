@@ -124,27 +124,36 @@ class MultiQC_report():
 
                 # fastqc contains data at the lane and read level
                 if tool_name == "fastqc":
+                    # look for the order, lane and read using regex
                     match = regex.search(
                         r"_(?P<order>S[0-9]+)_(?P<lane>L[0-9]+)_(?P<read>R[12])",
                         sample
                     )
 
                     if match:
+                        # use the regex matching to get the sample id
                         potential_sample_id = sample[:match.start()]
+                        # find every component of the sample id
                         matches = regex.findall(
                             r"([a-zA-Z0-9]+)", potential_sample_id
                         )
+                        # and join them using dashes (to fix potential errors
+                        # in the sample naming)
                         sample_id = "-".join(matches)
                         lane = match.groupdict()["lane"]
                         read = match.groupdict()["read"]
                     else:
+                        # give up on the samples that don't have lane and read
                         sample_id = sample
                         lane = ""
                         read = ""
                 else:
+                    # some tools provide the order in the sample name, so find
+                    # that element
                     match = regex.search(r"_(?P<order>S[0-9]+)", sample)
 
                     if match:
+                        # and get the sample id remaining
                         potential_sample_id = sample[:match.start()]
                     else:
                         # loop through the happy suffixes and remove them
@@ -159,9 +168,11 @@ class MultiQC_report():
 
                         potential_sample_id = sample
 
+                    # same as before, find every element in the sample id
                     matches = regex.findall(
                         r"([a-zA-Z0-9]+)", potential_sample_id
                     )
+                    # and join using dashes
                     sample_id = "-".join(matches)
 
                 self.data.setdefault(sample_id, {})
@@ -382,12 +393,12 @@ class MultiQC_report():
                 )
 
             fastqc_link_table = self.create_link_table_instance("fastqc")
-
-            if fastqc_link_table:
-                self.all_instances[sample].append(fastqc_link_table)
-
             picard_instance = self.create_link_table_instance("picard")
             happy_instance = self.create_link_table_instance("happy")
+
+            # check if a fastqc link table was created
+            if fastqc_link_table:
+                self.all_instances[sample].append(fastqc_link_table)
 
             # picard and happy are not used for every assay
             if picard_instance:
