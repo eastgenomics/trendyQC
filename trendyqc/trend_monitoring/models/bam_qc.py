@@ -301,7 +301,7 @@ class Picard_pcr_metrics(models.Model):
     off_amplicon_bases = models.FloatField()
     pct_amplified_bases = models.FloatField()
     pct_off_amplicon = models.FloatField()
-    on_amplicon_vs_selected = models.FloatField()
+    on_amplicon_vs_selected = models.FloatField(null=True)
     mean_amplicon_cov = models.FloatField()
     fold_enrichment = models.FloatField()
     pf_selected_pairs = models.FloatField()
