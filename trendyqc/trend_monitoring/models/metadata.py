@@ -43,7 +43,9 @@ class Report_Sample(models.Model):
     bcl2fastq_data = models.ForeignKey(
         "Bcl2fastq_data", on_delete=models.DO_NOTHING, blank=True, null=True
     )
-    fastqc = models.ForeignKey("Fastqc", on_delete=models.DO_NOTHING)
+    fastqc = models.ForeignKey(
+        "Fastqc", on_delete=models.DO_NOTHING, blank=True, null=True
+    )
     # bam level qc
     custom_coverage = models.ForeignKey(
         "Custom_coverage", on_delete=models.DO_NOTHING, blank=True, null=True
