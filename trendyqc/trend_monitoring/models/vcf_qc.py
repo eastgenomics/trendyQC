@@ -109,16 +109,16 @@ class Vcfqc_data(models.Model):
 
 class Happy(models.Model):
     happy_snp_all = models.ForeignKey(
-        "Happy_snp_all", on_delete=models.DO_NOTHING
+        "Happy_snp_all", on_delete=models.DO_NOTHING, null=True
     )
     happy_snp_pass = models.ForeignKey(
-        "Happy_snp_pass", on_delete=models.DO_NOTHING
+        "Happy_snp_pass", on_delete=models.DO_NOTHING, null=True
     )
     happy_indel_all = models.ForeignKey(
-        "Happy_indel_all", on_delete=models.DO_NOTHING
+        "Happy_indel_all", on_delete=models.DO_NOTHING, null=True
     )
     happy_indel_pass = models.ForeignKey(
-        "Happy_indel_pass", on_delete=models.DO_NOTHING
+        "Happy_indel_pass", on_delete=models.DO_NOTHING, null=True
     )
 
     class Meta:
