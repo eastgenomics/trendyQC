@@ -4,7 +4,7 @@ from django.db import models
 class Report(models.Model):
     name = models.CharField(max_length=500)
     project_id = models.CharField(max_length=50)
-    project_name = models.CharField(max_length=50)
+    project_name = models.CharField(max_length=500)
     dnanexus_file_id = models.CharField(max_length=62)
     sequencer_id = models.CharField(max_length=20)
     date = models.DateField()
