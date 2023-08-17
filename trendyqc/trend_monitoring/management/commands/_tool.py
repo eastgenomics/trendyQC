@@ -78,6 +78,26 @@ class Tool:
                 # the models to build a new dict
                 converted_data[self.fields[field]] = data
 
+        # list of bool to know if all expected fields are present
+        check_fields = [
+            True if field in converted_data else False
+            for field in self.fields.values()
+        ]
+
+        # bool to know if all fields are present
+        fields_all_present = all(check_fields)
+        # bool to know if we have at least one field
+        some_fields_present = any(check_fields)
+
+        # check if we have some fields but not all
+        if not fields_all_present and some_fields_present:
+            # some tools don't provide all the fields they are supposed to
+            # provide so check if we have all the fields that we want and add
+            # them if we are missing them
+            for field in self.fields.values():
+                if field not in converted_data:
+                    converted_data[field] = "NA"
+
         return converted_data
 
     def set_happy_type(self, happy_type):
