@@ -60,5 +60,6 @@ class Command(BaseCommand):
 
                 multiqc_report = MultiQC_report(report_object)
 
-                if not options["dry_run"]:
-                    multiqc_report.import_instances()
+                if multiqc_report.is_importable:
+                    if not options["dry_run"]:
+                        multiqc_report.import_instances()
