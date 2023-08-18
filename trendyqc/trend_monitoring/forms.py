@@ -54,9 +54,12 @@ class FilterForm(forms.Form):
         if not cleaned_data.get("metrics_y", None):
             self.add_error(None, ValidationError("No Y-axis metric selected"))
 
-        cleaned_data = {
-            key: value
-            for key, value in cleaned_data.items() if value
-        }
+        very_cleaned_data = {}
 
-        return cleaned_data
+        for key, value in cleaned_data.items():
+            if value and not isinstance(value, datetime.date):
+                very_cleaned_data[key] = value.strip()
+            elif isinstance(value, datetime.date):
+                very_cleaned_data[key] = value
+
+        return very_cleaned_data
