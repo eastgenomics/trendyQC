@@ -31,15 +31,22 @@ class MultiQC_report():
 
         self.dnanexus_report = multiqc_report
         self.original_data = json.loads(multiqc_report.read())
-        self.assay = self.original_data["config_subtitle"]
-        # load the report's assay tools and the fields they are associated with
-        self.assay_data = load_assay_config(self.assay, CONFIG_DIR)
-        self.setup_tools()
-        self.parse_multiqc_report()
-        self.clean_sample_naming()
-        self.get_metadata()
-        self.map_models_to_tools()
-        self.create_all_instances()
+        self.assay = self.original_data.get("config_subtitle", None)
+        self.is_importable = True
+
+        # skip projects for which we don't have a config subtitle
+        if self.assay:
+            # load the report's assay tools and the fields they are associated
+            # with
+            self.assay_data = load_assay_config(self.assay, CONFIG_DIR)
+            self.get_metadata()
+            self.setup_tools()
+            self.parse_multiqc_report()
+            self.clean_sample_naming()
+            self.map_models_to_tools()
+            self.create_all_instances()
+        else:
+            self.is_importable = False
 
     def setup_tools(self):
         """ Create tools for use when parsing the MultiQC data and store them
@@ -49,27 +56,33 @@ class MultiQC_report():
         multiqc_raw_data = self.original_data["report_saved_raw_data"]
 
         for multiqc_field_in_config, tool_metadata in self.assay_data.items():
+            if multiqc_field_in_config not in multiqc_raw_data:
+                # TO-DO: log projects that are missing some tool info
+                continue
+
             # subtool is used to specify for example, HSMetrics or insertSize
             # for Picard. It will equal None if the main tool doesn't have a
             # subtool
             tool, subtool = tool_metadata
-            assert multiqc_field_in_config in multiqc_raw_data, (
-                f"{multiqc_field_in_config} doesn't exist in the multiqc "
-                "report"
-            )
 
             if tool == "happy":
                 # setup the happy tools and distinguish that happy has ALL and
                 # PASS statuses
-                happy_tool = Tool(tool, CONFIG_DIR, subtool)
+                happy_tool = Tool(
+                    tool, CONFIG_DIR, multiqc_field_in_config, subtool
+                )
                 happy_tool.set_happy_type("pass")
                 self.tools.append(happy_tool)
 
-                happy_tool = Tool(tool, CONFIG_DIR, subtool)
+                happy_tool = Tool(
+                    tool, CONFIG_DIR, multiqc_field_in_config, subtool
+                )
                 happy_tool.set_happy_type("all")
                 self.tools.append(happy_tool)
             else:
-                tool_obj = Tool(tool, CONFIG_DIR, subtool)
+                tool_obj = Tool(
+                    tool, CONFIG_DIR, multiqc_field_in_config, subtool
+                )
                 self.tools.append(tool_obj)
 
     def parse_multiqc_report(self):
@@ -92,29 +105,16 @@ class MultiQC_report():
         self.data = {}
         multiqc_raw_data = self.original_data["report_saved_raw_data"]
 
-        for multiqc_field_in_config, tool_metadata in self.assay_data.items():
+        for tool_obj in self.tools:
             # subtool is used to specify for example, HSMetrics or insertSize
             # for Picard. It will equal None if the main tool doesn't have a
             # subtool
-            tool, subtool = tool_metadata
-            data_all_samples = multiqc_raw_data[multiqc_field_in_config]
+            tool_name = tool_obj.name
+            data_all_samples = multiqc_raw_data[tool_obj.multiqc_field_name]
 
             for sample, tool_data in data_all_samples.items():
                 if sample == "undetermined":
                     continue
-
-                # get the tool for the sample
-                tool_obj = [
-                    tool_obj
-                    for tool_obj in self.tools
-                    if tool == tool_obj.name and subtool == tool_obj.subtool
-                    and tool_obj.happy_type in sample.lower()
-                ]
-
-                # quick check for the testing, might need to be improved
-                assert len(tool_obj) == 1, "Multiple tools found"
-
-                tool_obj = tool_obj[0]
 
                 # convert the multiqc fields name for ease the import in the db
                 converted_fields = tool_obj.convert_tool_fields(tool_data)
@@ -122,17 +122,56 @@ class MultiQC_report():
                 # SNP genotyping adds a "sorted" in the sample name
                 sample = sample.replace("_sorted", "")
 
-                sample_data = sample.split("_")
-                assert len(sample_data) <= 4, (
-                    "Unexpected number of fields when splitting using _: "
-                    f"{sample.split('_')}"
-                )
-
                 # fastqc contains data at the lane and read level
-                if tool == "fastqc":
-                    sample_id, order, lane, read = sample_data
+                if tool_name == "fastqc":
+                    # look for the order, lane and read using regex
+                    match = regex.search(
+                        r"_(?P<order>S[0-9]+)_(?P<lane>L[0-9]+)_(?P<read>R[12])",
+                        sample
+                    )
+
+                    if match:
+                        # use the regex matching to get the sample id
+                        potential_sample_id = sample[:match.start()]
+                        # find every component of the sample id
+                        matches = regex.findall(
+                            r"([a-zA-Z0-9]+)", potential_sample_id
+                        )
+                        # and join them using dashes (to fix potential errors
+                        # in the sample naming)
+                        sample_id = "-".join(matches)
+                        lane = match.groupdict()["lane"]
+                        read = match.groupdict()["read"]
+                    else:
+                        # give up on the samples that don't have lane and read
+                        sample_id = sample
+                        lane = ""
+                        read = ""
                 else:
-                    sample_id = sample_data[0]
+                    # some tools provide the order in the sample name, so find
+                    # that element
+                    match = regex.search(r"_(?P<order>S[0-9]+)", sample)
+
+                    if match:
+                        # and get the sample id remaining
+                        potential_sample_id = sample[:match.start()]
+                    else:
+                        # remove the happy suffixes, they were causing issues
+                        # because it had a longer sample name breaking the
+                        # merging of data under one sample id
+                        sample = regex.sub(
+                            "_INDEL_PASS|_INDEL_ALL|_SNP_PASS|_SNP_ALL", "",
+                            sample
+                        )
+
+                        potential_sample_id = sample
+
+                    # same as before, find every element in the sample id
+                    matches = regex.findall(
+                        r"([a-zA-Z0-9]+)", potential_sample_id
+                    )
+                    # and join using dashes
+                    sample_id = "-".join(matches)
 
                 self.data.setdefault(sample_id, {})
                 self.data[sample_id].setdefault(tool_obj, {})
@@ -142,7 +181,7 @@ class MultiQC_report():
 
                 # fastqc needs a new level to take into account the lane and
                 # the read
-                if tool == "fastqc":
+                if tool_name == "fastqc":
                     self.data[sample_id][tool_obj][f"{lane}_{read}"] = cleaned_data
                 else:
                     self.data[sample_id][tool_obj] = cleaned_data
@@ -155,12 +194,6 @@ class MultiQC_report():
         project_obj = dxpy.DXProject(self.project_id)
         self.project_name = project_obj.name
         project_date = self.project_name.split("_")[1]
-        assert len(project_date) == 6, (
-            "The date in the project name doesn't have a YYMMDD format: "
-            f"{project_date}"
-        )
-        self.date = datetime.strptime(
-            project_date, "%y%m%d").replace(tzinfo=timezone.utc)
 
         # get the sequencer id
         self.sequencer_id = self.project_name.split("_")[2]
@@ -186,6 +219,14 @@ class MultiQC_report():
         self.datetime_job = datetime.fromtimestamp(
             creation_timestamp, tz=timezone.utc
         )
+
+        try:
+            self.date = datetime.strptime(
+                project_date, "%y%m%d").replace(tzinfo=timezone.utc)
+        except ValueError:
+            # if the format of the date is wrong, use the job date as the date
+            # of the run
+            self.date = self.datetime_job
 
     def map_models_to_tools(self):
         """ Map Django models to tools. Store that info in the appropriate
@@ -256,7 +297,8 @@ class MultiQC_report():
         except ValueError:
             # some picard tool can return "?", why i do not know but i wanna
             # find those people and have a talk with them
-            if value == "?":
+            # other tools have NA, so handle those cases
+            if value == "?" or value == "NA":
                 return None
 
             # Probably str
@@ -283,12 +325,12 @@ class MultiQC_report():
         """
 
         data_to_add = {}
-        data_to_remove = []
+        data_to_remove = set()
 
         for sample1 in self.data.keys():
             for sample2 in self.data.keys():
                 # check if some sample names overlap (and are not identical)
-                if sample1 != sample2 and sample1 in sample2:
+                if sample1 != sample2 and (sample1 in sample2 or sample2 in sample1):
                     # check which sample name is the longest, assume that it is
                     # the one we want
                     if len(sample1) > len(sample2):
@@ -296,15 +338,16 @@ class MultiQC_report():
                     else:
                         sample = sample2
 
+                    data_to_add.setdefault(sample, {})
+
                     # merge the data from the 2 instances of the sample names
                     # being similar
-                    data_to_add[sample] = {
-                        **self.data[sample1], **self.data[sample2]
-                    }
+                    data_to_add[sample].update(self.data[sample1])
+                    data_to_add[sample].update(self.data[sample2])
 
                     # store the sample names for later removal
-                    data_to_remove.append(sample1)
-                    data_to_remove.append(sample2)
+                    data_to_remove.add(sample1)
+                    data_to_remove.add(sample2)
 
         # delete the data from the sample names we have stored
         for sample in data_to_remove:
@@ -347,12 +390,13 @@ class MultiQC_report():
                     self.create_tool_data_instance(tool, sample_data[tool])
                 )
 
-            self.all_instances[sample].append(
-                self.create_link_table_instance("fastqc")
-            )
-
+            fastqc_link_table = self.create_link_table_instance("fastqc")
             picard_instance = self.create_link_table_instance("picard")
             happy_instance = self.create_link_table_instance("happy")
+
+            # check if a fastqc link table was created
+            if fastqc_link_table:
+                self.all_instances[sample].append(fastqc_link_table)
 
             # picard and happy are not used for every assay
             if picard_instance:

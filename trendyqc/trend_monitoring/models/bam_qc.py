@@ -3,23 +3,23 @@ from django.db import models
 
 class VerifyBAMid_data(models.Model):
     rg = models.CharField(max_length=10)
-    chip_id = models.CharField(max_length=10)
+    chip_id = models.CharField(max_length=10, null=True)
     nb_snps = models.IntegerField()
     nb_reads = models.IntegerField()
     avg_dp = models.FloatField()
     freemix = models.FloatField()
     freelk1 = models.FloatField()
     freelk0 = models.FloatField()
-    free_rh = models.CharField(max_length=10)
-    free_ra = models.CharField(max_length=10)
-    chipmix = models.CharField(max_length=10)
-    chiplk1 = models.CharField(max_length=10)
-    chiplk0 = models.CharField(max_length=10)
-    chip_rh = models.CharField(max_length=10)
-    chip_ra = models.CharField(max_length=10)
-    dpref = models.CharField(max_length=10)
-    rdphet = models.CharField(max_length=10)
-    rdpalt = models.CharField(max_length=10)
+    free_rh = models.CharField(max_length=10, null=True)
+    free_ra = models.CharField(max_length=10, null=True)
+    chipmix = models.CharField(max_length=10, null=True)
+    chiplk1 = models.CharField(max_length=10, null=True)
+    chiplk0 = models.CharField(max_length=10, null=True)
+    chip_rh = models.CharField(max_length=10, null=True)
+    chip_ra = models.CharField(max_length=10, null=True)
+    dpref = models.CharField(max_length=10, null=True)
+    rdphet = models.CharField(max_length=10, null=True)
+    rdpalt = models.CharField(max_length=10, null=True)
 
     class Meta:
         app_label = "trend_monitoring"
@@ -108,6 +108,10 @@ class Picard(models.Model):
         "Picard_pcr_metrics", on_delete=models.DO_NOTHING, blank=True,
         null=True
     )
+    picard_duplication_metrics = models.ForeignKey(
+        "Picard_duplication_metrics", on_delete=models.DO_NOTHING, blank=True,
+        null=True
+    )
 
     class Meta:
         app_label = "trend_monitoring"
@@ -123,7 +127,7 @@ class Picard_hs_metrics(models.Model):
     off_bait_bases = models.FloatField()
     pct_selected_bases = models.FloatField()
     pct_off_bait = models.FloatField()
-    on_bait_vs_selected = models.FloatField()
+    on_bait_vs_selected = models.FloatField(null=True)
     mean_bait_coverage = models.FloatField()
     pct_usable_bases_on_bait = models.FloatField()
     pct_usable_bases_on_target = models.FloatField()
@@ -297,7 +301,7 @@ class Picard_pcr_metrics(models.Model):
     off_amplicon_bases = models.FloatField()
     pct_amplified_bases = models.FloatField()
     pct_off_amplicon = models.FloatField()
-    on_amplicon_vs_selected = models.FloatField()
+    on_amplicon_vs_selected = models.FloatField(null=True)
     mean_amplicon_cov = models.FloatField()
     fold_enrichment = models.FloatField()
     pf_selected_pairs = models.FloatField()
@@ -344,3 +348,26 @@ class Picard_pcr_metrics(models.Model):
     class Meta:
         app_label = "trend_monitoring"
         db_table = "picard_pcr_metrics"
+
+
+class Picard_duplication_metrics(models.Model):
+    unpaired_reads_examined = models.FloatField()
+    read_pairs_examined = models.FloatField()
+    secondary_or_suplementary_rds = models.FloatField()
+    unmapped_reads = models.FloatField()
+    unpaired_read_duplicates = models.FloatField()
+    read_pair_duplicates = models.FloatField()
+    read_pair_optical_duplicates = models.FloatField()
+    pct_duplication = models.FloatField()
+    estimated_library_size = models.FloatField()
+    reads_in_duplicate_pairs = models.FloatField()
+    reads_in_unique_pairs = models.FloatField()
+    reads_in_unique_unpaired = models.FloatField()
+    reads_in_duplicate_pairs_optical = models.FloatField()
+    reads_in_duplicate_pairs_nonoptical = models.FloatField()
+    reads_in_duplicate_unpaired = models.FloatField()
+    reads_unmapped = models.FloatField()
+
+    class Meta:
+        app_label = "trend_monitoring"
+        db_table = "picard_duplication_metrics"

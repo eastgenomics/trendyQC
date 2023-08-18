@@ -4,16 +4,16 @@ from django.db import models
 class Somalier_data(models.Model):
     paternal_id = models.CharField(max_length=50)
     maternal_id = models.CharField(max_length=50)
-    family_id = models.CharField(max_length=50)
+    family_id = models.CharField(max_length=100)
     sex = models.FloatField()
     phenotype = models.FloatField()
     original_pedigree_sex = models.CharField(max_length=10)
     gt_depth_mean = models.FloatField()
-    gt_depth_sd = models.FloatField()
+    gt_depth_sd = models.FloatField(null=True)
     depth_mean = models.FloatField()
     depth_sd = models.FloatField()
     ab_mean = models.FloatField()
-    ab_std = models.FloatField()
+    ab_std = models.FloatField(null=True)
     nb_hom_ref = models.FloatField()
     nb_het = models.FloatField()
     nb_hom_alt = models.FloatField()
@@ -27,7 +27,7 @@ class Somalier_data(models.Model):
     y_depth_mean = models.FloatField()
     y_nb = models.FloatField()
     predicted_sex = models.CharField(max_length=10)
-    match_sexes = models.CharField(max_length=5)
+    match_sexes = models.CharField(max_length=5, null=True)
 
     class Meta:
         app_label = "trend_monitoring"
@@ -109,16 +109,16 @@ class Vcfqc_data(models.Model):
 
 class Happy(models.Model):
     happy_snp_all = models.ForeignKey(
-        "Happy_snp_all", on_delete=models.DO_NOTHING
+        "Happy_snp_all", on_delete=models.DO_NOTHING, null=True
     )
     happy_snp_pass = models.ForeignKey(
-        "Happy_snp_pass", on_delete=models.DO_NOTHING
+        "Happy_snp_pass", on_delete=models.DO_NOTHING, null=True
     )
     happy_indel_all = models.ForeignKey(
-        "Happy_indel_all", on_delete=models.DO_NOTHING
+        "Happy_indel_all", on_delete=models.DO_NOTHING, null=True
     )
     happy_indel_pass = models.ForeignKey(
-        "Happy_indel_pass", on_delete=models.DO_NOTHING
+        "Happy_indel_pass", on_delete=models.DO_NOTHING, null=True
     )
 
     class Meta:

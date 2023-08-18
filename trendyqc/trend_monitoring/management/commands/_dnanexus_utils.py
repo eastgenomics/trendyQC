@@ -50,3 +50,21 @@ def get_all_002_projects() -> List:
     projects = dxpy.find_projects(name="^002", name_mode="regexp")
 
     return [project["id"] for project in projects]
+
+
+def is_archived(dnanexus_object: dxpy.DXFile) -> bool:
+    """ Check if the given dnanexus object is archived
+
+    Args:
+        dnanexus_object (dxpy.DXFile): Generic Dnanexus DXFile
+
+    Returns:
+        bool: bool to indicate archival status
+    """
+
+    archival_state = dnanexus_object.describe()["archivalState"]
+
+    if archival_state == "live":
+        return False
+    else:
+        return True

@@ -6,8 +6,8 @@ class Fastqc(models.Model):
 
 
 class Fastqc_read_data(models.Model):
-    sample_read = models.CharField(max_length=50)
-    lane = models.CharField(max_length=20)
+    sample_read = models.CharField(max_length=50, blank=True)
+    lane = models.CharField(max_length=20, blank=True)
     file_type = models.CharField(max_length=50)
     encoding = models.CharField(max_length=50)
     total_sequences = models.FloatField()
@@ -18,8 +18,8 @@ class Fastqc_read_data(models.Model):
     avg_sequence_length = models.FloatField()
     basic_statistics = models.CharField(max_length=10)
     per_base_sequence_quality = models.CharField(max_length=10)
-    per_tile_sequence_quality = models.CharField(max_length=10)
-    per_sequence_quality_score = models.CharField(max_length=10)
+    per_tile_sequence_quality = models.CharField(max_length=10, null=True)
+    per_sequence_quality_scores = models.CharField(max_length=10)
     per_base_sequence_content = models.CharField(max_length=10)
     per_sequence_gc_content = models.CharField(max_length=10)
     per_base_n_content = models.CharField(max_length=10)
@@ -34,20 +34,20 @@ class Fastqc_read_data(models.Model):
 
 
 class Bcl2fastq_data(models.Model):
-    total = models.BigIntegerField()
-    total_yield = models.BigIntegerField()
-    perfect_index = models.IntegerField()
-    yield_Q30 = models.BigIntegerField()
-    qscore_sum = models.BigIntegerField()
-    r1_yield = models.BigIntegerField()
-    r1_Q30 = models.BigIntegerField()
-    r1_trimmed_bases = models.IntegerField()
-    r2_yield = models.BigIntegerField()
-    r2_Q30 = models.BigIntegerField()
-    r2_trimmed_bases = models.IntegerField()
-    pct_Q30 = models.FloatField()
-    pct_perfect_index = models.FloatField()
-    mean_qscore = models.FloatField()
+    total = models.BigIntegerField(null=True)
+    total_yield = models.BigIntegerField(null=True)
+    perfect_index = models.BigIntegerField(null=True)
+    yield_Q30 = models.BigIntegerField(null=True)
+    qscore_sum = models.BigIntegerField(null=True)
+    r1_yield = models.BigIntegerField(null=True)
+    r1_Q30 = models.BigIntegerField(null=True)
+    r1_trimmed_bases = models.BigIntegerField(null=True)
+    r2_yield = models.BigIntegerField(null=True)
+    r2_Q30 = models.BigIntegerField(null=True)
+    r2_trimmed_bases = models.BigIntegerField(null=True)
+    pct_Q30 = models.FloatField(null=True)
+    pct_perfect_index = models.FloatField(null=True)
+    mean_qscore = models.FloatField(null=True)
 
     class Meta:
         app_label = "trend_monitoring"

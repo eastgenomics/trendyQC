@@ -195,5 +195,23 @@
         "mean_pct_c": "mean_pct_c",
         "mean_pct_g": "mean_pct_g",
         "mean_pct_t": "mean_pct_t"
+    },
+    "duplication_metrics": {
+        "UNPAIRED_READS_EXAMINED": "unpaired_reads_examined",
+        "READ_PAIRS_EXAMINED": "read_pairs_examined",
+        "SECONDARY_OR_SUPPLEMENTARY_RDS": "secondary_or_suplementary_rds",
+        "UNMAPPED_READS": "unmapped_reads",
+        "UNPAIRED_READ_DUPLICATES": "unpaired_read_duplicates",
+        "READ_PAIR_DUPLICATES": "read_pair_duplicates",
+        "READ_PAIR_OPTICAL_DUPLICATES": "read_pair_optical_duplicates",
+        "PERCENT_DUPLICATION": "pct_duplication",
+        "ESTIMATED_LIBRARY_SIZE": "estimated_library_size",
+        "READS_IN_DUPLICATE_PAIRS": "reads_in_duplicate_pairs",
+        "READS_IN_UNIQUE_PAIRS": "reads_in_unique_pairs",
+        "READS_IN_UNIQUE_UNPAIRED": "reads_in_unique_unpaired",
+        "READS_IN_DUPLICATE_PAIRS_OPTICAL": "reads_in_duplicate_pairs_optical",
+        "READS_IN_DUPLICATE_PAIRS_NONOPTICAL": "reads_in_duplicate_pairs_nonoptical",
+        "READS_IN_DUPLICATE_UNPAIRED": "reads_in_duplicate_unpaired",
+        "READS_UNMAPPED": "reads_unmapped"
     }
 }

@@ -2,9 +2,9 @@ from django.db import models
 
 
 class Report(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=500)
     project_id = models.CharField(max_length=50)
-    project_name = models.CharField(max_length=50)
+    project_name = models.CharField(max_length=500)
     dnanexus_file_id = models.CharField(max_length=62)
     sequencer_id = models.CharField(max_length=20)
     date = models.DateField()
@@ -28,7 +28,7 @@ class Sample(models.Model):
     patient = models.ForeignKey(
         Patient, on_delete=models.DO_NOTHING, blank=True, null=True
     )
-    sample_id = models.CharField(max_length=50)
+    sample_id = models.CharField(max_length=100)
 
     class Meta:
         app_label = "trend_monitoring"
@@ -43,7 +43,9 @@ class Report_Sample(models.Model):
     bcl2fastq_data = models.ForeignKey(
         "Bcl2fastq_data", on_delete=models.DO_NOTHING, blank=True, null=True
     )
-    fastqc = models.ForeignKey("Fastqc", on_delete=models.DO_NOTHING)
+    fastqc = models.ForeignKey(
+        "Fastqc", on_delete=models.DO_NOTHING, blank=True, null=True
+    )
     # bam level qc
     custom_coverage = models.ForeignKey(
         "Custom_coverage", on_delete=models.DO_NOTHING, blank=True, null=True

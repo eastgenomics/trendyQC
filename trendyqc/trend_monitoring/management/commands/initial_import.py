@@ -3,7 +3,8 @@ from django.core.management.base import BaseCommand
 import regex
 
 from ._dnanexus_utils import (
-    login_to_dnanexus, search_multiqc_reports, get_all_002_projects
+    login_to_dnanexus, search_multiqc_reports, get_all_002_projects,
+    is_archived
 )
 from ._multiqc import MultiQC_report
 
@@ -52,7 +53,13 @@ class Command(BaseCommand):
             report_objects = search_multiqc_reports(p_id)
 
             for report_object in report_objects:
+                if is_archived(report_object):
+                    # TO-DO: logging system. Generate list of projects skipped
+                    # to allow user to unarchive those to import in database ?
+                    continue
+
                 multiqc_report = MultiQC_report(report_object)
 
-                if not options["dry_run"]:
-                    multiqc_report.import_instances()
+                if multiqc_report.is_importable:
+                    if not options["dry_run"]:
+                        multiqc_report.import_instances()
