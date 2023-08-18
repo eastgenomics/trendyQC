@@ -17,7 +17,7 @@
             </tr>
         </thead>
             <tbody>
-                {% for report in report_data %}
+                {% for report in report_data|dictsort:"project_name" %}
                 <tr>
                     <td>{{ report.name }}</td>
                     <td>{{ report.project_name }}</td> 
@@ -72,7 +72,7 @@
                 <p><input name="run_checkbox" type="checkbox"/>  Runs: 
                     <select name="run_select">
                         <option value="">Select a run</option>
-                        {% for report in report_data %}
+                        {% for report in report_data|dictsort:"project_name" %}
                             <option value="{{ report.project_name }}">{{ report.project_name }}</option>
                         {% endfor %}
                     </select>

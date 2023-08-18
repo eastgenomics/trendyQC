@@ -77,21 +77,28 @@ def get_subset_queryset(data: Dict) -> QuerySet:
         after filtering using the data inputted by the user
     """
 
+    filter_dict = {}
+
     assays = data.get("assay_select", [])
     runs = data.get("run_select", [])
     sequencer_ids = data.get("sequencer_select", [])
     date_start = data.get("date_start")
     date_end = data.get("date_end")
 
+    if assays:
+        filter_dict["assay__in"] = assays
+
+    if runs:
+        filter_dict["report__project_name__in"] = runs
+
+    if sequencer_ids:
+        filter_dict["report__sequencer_id__in"] = sequencer_ids
+
+    if date_start and date_end:
+        filter_dict["report__date__range"] = (date_start, date_end)
+
     # combine all the data passed through the form to build the final queryset
-    return (
-        Report_Sample.objects.filter(report__project_name__in=runs) |
-        Report_Sample.objects.filter(assay__in=assays) |
-        Report_Sample.objects.filter(report__sequencer_id__in=sequencer_ids) |
-        Report_Sample.objects.filter(
-            report__date__range=(date_start, date_end)
-        )
-    ).prefetch_related()
+    return Report_Sample.objects.filter(**filter_dict).prefetch_related()
 
 
 def get_data_for_plotting(
@@ -205,7 +212,7 @@ def plot_qc_data(plot_data: pd.DataFrame) -> go.Figure:
         fig.add_trace(
             Scatter(
                 x=plot_data[col].index.values.tolist(), y=plot_data[col],
-                text=col, showlegend=False
+                text=col, showlegend=False, mode="markers"
             )
         )
 
