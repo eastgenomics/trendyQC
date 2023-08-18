@@ -56,7 +56,7 @@ class FilterForm(forms.Form):
 
         cleaned_data = {
             key: value
-            for key, value in cleaned_data.items() if value.strip()
+            for key, value in cleaned_data.items() if value
         }
 
         return cleaned_data
