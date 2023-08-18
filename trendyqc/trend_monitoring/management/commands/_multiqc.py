@@ -156,15 +156,13 @@ class MultiQC_report():
                         # and get the sample id remaining
                         potential_sample_id = sample[:match.start()]
                     else:
-                        # loop through the happy suffixes and remove them
-                        # they were causing issues because it had a longer
-                        # sample name breaking the merging of data under one
-                        # sample id
-                        for suffix in [
-                            "_INDEL_PASS", "_INDEL_ALL", "_SNP_PASS", "_SNP_ALL"
-                        ]:
-                            if suffix in sample:
-                                sample = sample.replace(suffix, "")
+                        # remove the happy suffixes, they were causing issues
+                        # because it had a longer sample name breaking the
+                        # merging of data under one sample id
+                        sample = regex.sub(
+                            "_INDEL_PASS|_INDEL_ALL|_SNP_PASS|_SNP_ALL", "",
+                            sample
+                        )
 
                         potential_sample_id = sample
 
