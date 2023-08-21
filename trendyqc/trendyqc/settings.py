@@ -23,6 +23,10 @@ SECRET_KEY = os.environ.get("TRENDYQC_SECRET_KEY")
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+ERROR_LOG = BASE_DIR / "logs" / "errors.log"
+DEBUG_LOG = BASE_DIR / "logs" / "debug.log"
+STORING_LOG = BASE_DIR / "logs" / "storing.log"
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -148,3 +152,61 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} - {message}",
+            "style": "{",
+        },
+        "storing": {
+            "format": "{asctime} - {message}",
+            "style": "{"
+        },
+        "simple": {
+            "format": "{levelname} {asctime} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "error-log": {
+            "level": "ERROR",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": ERROR_LOG,
+            "formatter": "simple",
+            "maxBytes": 5242880,  # 5MB
+            "backupCount": 2,
+        },
+        "storing-log": {
+            "level": "WARNING",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": STORING_LOG,
+            "formatter": "storing",
+            "maxBytes": 5242880,  # 5MB
+            "backupCount": 2,
+        },
+        "debug-log": {
+            "level": "DEBUG",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": DEBUG_LOG,
+            "formatter": "verbose",
+            "maxBytes": 5242880,
+            "backupCount": 2,
+        },
+    },
+    # Loggers
+    "loggers": {
+        "": {
+            "handlers": ["debug-log", "error-log"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
+        "storing": {
+            "handlers": ["storing-log"],
+            "level": "INFO",
+            "propagate": False,
+        }
+    },
+}
