@@ -63,7 +63,7 @@ class MultiQC_report():
             self.is_importable = False
             logger.warning((
                 f"{self.dnanexus_report.id} doesn't have an "
-                "assay name  present in the trendyqc/trend_monitoring/"
+                "assay name present in the trendyqc/trend_monitoring/"
                 "management/configs/assays.json. Skipping.."
             ))
 
