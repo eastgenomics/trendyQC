@@ -158,15 +158,15 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {
         "verbose": {
-            "format": "{levelname}:{asctime}:{module}:{process:d}:{thread:d}-{message}",
+            "format": "{levelname}:{asctime}:{module}:{process:d}:{thread:d}|{message}",
             "style": "{",
         },
         "storing": {
-            "format": "{asctime}-{message}",
+            "format": "{asctime}|{message}",
             "style": "{"
         },
         "simple": {
-            "format": "{levelname}:{asctime}-{message}",
+            "format": "{levelname}:{asctime}|{message}",
             "style": "{",
         },
     },
