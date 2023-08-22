@@ -6,6 +6,6 @@ from . import views
 urlpatterns = [
     path("dashboard/", views.Dashboard.as_view(), name="Dashboard"),
     path("plot/", views.Plot.as_view(), name="Plot"),
-    path("logs/", views.Logs.as_view(), name="Logs"),
+    path("logs/", include("log_viewer.urls")),
     path("accounts/", include("django.contrib.auth.urls")),
 ]
