@@ -88,12 +88,6 @@ class Command(BaseCommand):
                             f"Successfully imported: "
                             f"{multiqc_report.multiqc_json_id}"
                         ))
-                else:
-                    logger.warning((
-                        f"{report_object.id} doesn't have an "
-                        "assay name  present in the trendyqc/trend_monitoring/"
-                        "management/configs/assays.json"
-                    ))
 
         if archived_reports:
             storing_logger.warning(
