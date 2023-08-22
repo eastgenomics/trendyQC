@@ -41,7 +41,7 @@ class Command(BaseCommand):
         function
         """
 
-        logger.debug(f"Command line: {' '.join(sys.argv)}")
+        logger.info(f"Command line: {' '.join(sys.argv)}")
 
         project_ids = None
 
