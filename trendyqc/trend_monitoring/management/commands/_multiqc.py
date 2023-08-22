@@ -14,6 +14,7 @@ from django.db import transaction
 from django.db.models import Model
 from django.utils import timezone
 
+from ._check import report_already_in_db
 from ._parsing import load_assay_config
 from ._tool import Tool
 
@@ -43,6 +44,13 @@ class MultiQC_report():
             # with
             self.assay_data = load_assay_config(self.assay, CONFIG_DIR)
             self.get_metadata()
+
+            if report_already_in_db(
+                dnanexus_file_id=self.multiqc_json_id, name=self.report_name
+            ):
+                self.is_importable = False
+                return
+
             self.setup_tools()
             self.parse_multiqc_report()
             self.clean_sample_naming()
