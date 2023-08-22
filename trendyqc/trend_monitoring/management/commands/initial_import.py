@@ -11,7 +11,7 @@ from ._dnanexus_utils import (
 )
 from ._multiqc import MultiQC_report
 
-logger = logging.getLogger()
+logger = logging.getLogger("basic")
 storing_logger = logging.getLogger("storing")
 
 

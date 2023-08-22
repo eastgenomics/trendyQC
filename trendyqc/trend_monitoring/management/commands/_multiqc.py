@@ -22,7 +22,7 @@ from ._tool import Tool
 BASE_DIR_MANAGEMENT = Path(__file__).resolve().parent.parent
 CONFIG_DIR = BASE_DIR_MANAGEMENT / "configs"
 
-logger = logging.getLogger()
+logger = logging.getLogger("basic")
 
 
 class MultiQC_report():

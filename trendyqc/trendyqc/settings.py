@@ -199,7 +199,7 @@ LOGGING = {
     },
     # Loggers
     "loggers": {
-        "": {
+        "basic": {
             "handlers": ["debug-log", "error-log"],
             "level": "DEBUG",
             "propagate": True,
