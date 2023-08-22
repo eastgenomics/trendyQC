@@ -1,4 +1,5 @@
 import logging
+import sys
 
 import regex
 
@@ -10,7 +11,7 @@ from ._dnanexus_utils import (
 )
 from ._multiqc import MultiQC_report
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 storing_logger = logging.getLogger("storing")
 
 
@@ -39,6 +40,8 @@ class Command(BaseCommand):
         function
         """
 
+        logger.debug(f"Command line: {' '.join(sys.argv)}")
+
         project_ids = None
 
         login_to_dnanexus()
@@ -66,7 +69,7 @@ class Command(BaseCommand):
 
             for report_object in report_objects:
                 if is_archived(report_object):
-                    archived_reports.append(report_object.multiqc_json_id)
+                    archived_reports.append(report_object.id)
                     continue
 
                 multiqc_report = MultiQC_report(report_object)
@@ -80,10 +83,13 @@ class Command(BaseCommand):
                         ))
                 else:
                     logger.warning((
-                        f"{multiqc_report.multiqc_json_id} doesn't have an "
+                        f"{report_object.id} doesn't have an "
                         "assay name  present in the trendyqc/trend_monitoring/"
                         "management/configs/assays.json"
                     ))
 
         if archived_reports:
-            storing_logger.warning(f"Archived reports: {archived_reports}")
+            storing_logger.warning(
+                f"{len(archived_reports)} archived report(s): "
+                f"{','.join(archived_reports)}"
+            )
