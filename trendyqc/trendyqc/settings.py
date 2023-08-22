@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'trend_monitoring'
+    'trend_monitoring',
+    "log_viewer",
 ]
 
 MIDDLEWARE = [
@@ -162,7 +163,7 @@ LOGGING = {
             "style": "{",
         },
         "storing": {
-            "format": "{asctime}|{message}",
+            "format": "{levelname}|{asctime}|{message}",
             "style": "{"
         },
         "simple": {
@@ -198,7 +199,7 @@ LOGGING = {
     },
     # Loggers
     "loggers": {
-        "": {
+        "basic": {
             "handlers": ["debug-log", "error-log"],
             "level": "DEBUG",
             "propagate": True,
@@ -210,3 +211,12 @@ LOGGING = {
         }
     },
 }
+
+LOG_VIEWER_FILES = [str(ERROR_LOG), str(STORING_LOG), str(DEBUG_LOG)]
+LOG_VIEWER_FILES_PATTERN = '*.log*'
+LOG_VIEWER_FILES_DIR = str(BASE_DIR / "logs")
+LOG_VIEWER_PAGE_LENGTH = 25       # total log lines per-page
+LOG_VIEWER_MAX_READ_LINES = 1000  # total log lines will be read
+LOG_VIEWER_FILE_LIST_MAX_ITEMS_PER_PAGE = 25 # Max log files loaded in Datatable per page
+LOG_VIEWER_PATTERNS = ['INFO', 'DEBUG', 'WARNING', 'ERROR', 'CRITICAL']
+LOG_VIEWER_EXCLUDE_TEXT_PATTERN = None  # String regex expression to exclude the log from line

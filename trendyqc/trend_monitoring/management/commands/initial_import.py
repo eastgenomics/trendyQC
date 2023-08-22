@@ -11,7 +11,7 @@ from ._dnanexus_utils import (
 )
 from ._multiqc import MultiQC_report
 
-logger = logging.getLogger()
+logger = logging.getLogger("basic")
 storing_logger = logging.getLogger("storing")
 
 
@@ -41,7 +41,7 @@ class Command(BaseCommand):
         function
         """
 
-        logger.debug(f"Command line: {' '.join(sys.argv)}")
+        logger.info(f"Command line: {' '.join(sys.argv)}")
 
         project_ids = None
 
