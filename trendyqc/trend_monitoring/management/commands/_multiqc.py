@@ -262,7 +262,7 @@ class MultiQC_report():
             else:
                 logger.warning((
                     f"{self.multiqc_json_id}: {tool.name} matches multiple "
-                    "model names"
+                    f"model names -> {matches}"
                 ))
 
     def clean_data(self, data: Dict) -> Dict:
