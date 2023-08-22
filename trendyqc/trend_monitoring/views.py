@@ -1,10 +1,13 @@
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.views import View
-from .forms import FilterForm
+
 from trend_monitoring.models.metadata import Report, Report_Sample
+
+from .forms import FilterForm
 from .backend_utils.plot import (
-    get_subset_queryset, get_data_for_plotting, plot_qc_data, prepare_filter_data
+    get_subset_queryset, get_data_for_plotting, plot_qc_data,
+    prepare_filter_data
 )
 
 
