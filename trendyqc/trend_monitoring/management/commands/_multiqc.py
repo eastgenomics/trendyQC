@@ -14,6 +14,7 @@ from django.db import transaction
 from django.db.models import Model
 from django.utils import timezone
 
+from ._check import already_in_db
 from ._parsing import load_assay_config
 from ._tool import Tool
 
@@ -36,6 +37,10 @@ class MultiQC_report():
         self.original_data = json.loads(multiqc_report.read())
         self.assay = self.original_data.get("config_subtitle", None)
         self.is_importable = True
+        # Store the Django models as a dict of model names to model objects
+        self.models = {
+            model.__name__.lower(): model for model in apps.get_models()
+        }
 
         # skip projects for which we don't have a config subtitle
         if self.assay:
@@ -43,13 +48,29 @@ class MultiQC_report():
             # with
             self.assay_data = load_assay_config(self.assay, CONFIG_DIR)
             self.get_metadata()
-            self.setup_tools()
-            self.parse_multiqc_report()
-            self.clean_sample_naming()
-            self.map_models_to_tools()
-            self.create_all_instances()
+
+            if already_in_db(
+                self.models["report"], dnanexus_file_id=self.multiqc_json_id,
+                name=self.report_name
+            ):
+                self.is_importable = False
+                logger.warning((
+                    f"{self.multiqc_json_id} has already been imported in the "
+                    "database. Skipping.."
+                ))
+            else:
+                self.setup_tools()
+                self.parse_multiqc_report()
+                self.clean_sample_naming()
+                self.map_models_to_tools()
+                self.create_all_instances()
         else:
             self.is_importable = False
+            logger.warning((
+                f"{self.dnanexus_report.id} doesn't have an "
+                "assay name present in the trendyqc/trend_monitoring/"
+                "management/configs/assays.json. Skipping.."
+            ))
 
     def setup_tools(self):
         """ Create tools for use when parsing the MultiQC data and store them
@@ -237,11 +258,6 @@ class MultiQC_report():
     def map_models_to_tools(self):
         """ Map Django models to tools. Store that info in the appropriate
         tool object """
-
-        # Store the Django models as a dict of model names to model objects
-        self.models = {
-            model.__name__.lower(): model for model in apps.get_models()
-        }
 
         # loop through the tools that we have for this MultiQC report
         for tool in self.tools:
