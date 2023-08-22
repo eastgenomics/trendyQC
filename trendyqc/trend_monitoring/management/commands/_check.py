@@ -1,8 +1,8 @@
-from trend_monitoring.models import Report
+from django.apps import apps
 
 
-def report_already_in_db(**kwargs):
-    if Report.objects.filter(**kwargs).exists():
+def already_in_db(model, **kwargs):
+    if model.objects.filter(**kwargs).exists():
         return True
     else:
         return False
