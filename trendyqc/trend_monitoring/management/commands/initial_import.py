@@ -63,11 +63,11 @@ class Command(BaseCommand):
         invalid = [
             p
             for p in project_ids
-            if not regex.fullmatch(r"project-[a-zA-Z0-9]{24}", p_id)
+            if not regex.fullmatch(r"project-[a-zA-Z0-9]{24}", p)
         ]
 
         if invalid:
-            msg = f"Invalid DNAnexus project id(s): {','.join(p_id)}"
+            msg = f"Invalid DNAnexus project id(s): {','.join(invalid)}"
             logger.error(msg)
             raise AssertionError(msg)
 
