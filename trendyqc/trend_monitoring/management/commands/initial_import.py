@@ -19,14 +19,15 @@ class Command(BaseCommand):
     help = "Initial import of the MultiQC reports"
 
     def add_arguments(self, parser):
-        parser.add_argument(
+        projects = parser.add_mutually_exclusive_group()
+        projects.add_argument(
             "-p_id", "--project_id", nargs="+",
             help=(
                 "Project id(s) from which to import MultiQC reports. Mainly "
                 "for testing purposes"
             )
         )
-        parser.add_argument(
+        projects.add_argument(
             "-a", "--all", action="store_true",
             help="Scan all 002 projects to import all MultiQC reports"
         )
@@ -59,12 +60,18 @@ class Command(BaseCommand):
 
         archived_reports = []
 
-        for p_id in project_ids:
-            if not regex.fullmatch(r"project-[a-zA-Z0-9]{24}", p_id):
-                msg = f"{p_id} is not a correctly formatted DNAnexus project id"
-                logger.error(msg)
-                raise Exception(msg)
+        invalid = [
+            p
+            for p in project_ids
+            if not regex.fullmatch(r"project-[a-zA-Z0-9]{24}", p_id)
+        ]
 
+        if invalid:
+            msg = f"Invalid DNAnexus project id(s): {','.join(p_id)}"
+            logger.error(msg)
+            raise AssertionError(msg)
+
+        for p_id in project_ids:
             report_objects = search_multiqc_reports(p_id)
 
             for report_object in report_objects:
