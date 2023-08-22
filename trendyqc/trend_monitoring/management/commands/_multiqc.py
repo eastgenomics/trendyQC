@@ -49,15 +49,23 @@ class MultiQC_report():
                 dnanexus_file_id=self.multiqc_json_id, name=self.report_name
             ):
                 self.is_importable = False
-                return
-
-            self.setup_tools()
-            self.parse_multiqc_report()
-            self.clean_sample_naming()
-            self.map_models_to_tools()
-            self.create_all_instances()
+                logger.warning((
+                    f"{self.multiqc_json_id} has already been imported in the "
+                    "database. Skipping.."
+                ))
+            else:
+                self.setup_tools()
+                self.parse_multiqc_report()
+                self.clean_sample_naming()
+                self.map_models_to_tools()
+                self.create_all_instances()
         else:
             self.is_importable = False
+            logger.warning((
+                f"{self.dnanexus_report.id} doesn't have an "
+                "assay name  present in the trendyqc/trend_monitoring/"
+                "management/configs/assays.json. Skipping.."
+            ))
 
     def setup_tools(self):
         """ Create tools for use when parsing the MultiQC data and store them
