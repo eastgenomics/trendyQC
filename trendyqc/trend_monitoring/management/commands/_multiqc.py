@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import datetime
+import logging
 import json
 import math
 from pathlib import Path
@@ -19,6 +20,8 @@ from ._tool import Tool
 # returns the /trendyqc/trend_monitoring/management folder
 BASE_DIR_MANAGEMENT = Path(__file__).resolve().parent.parent
 CONFIG_DIR = BASE_DIR_MANAGEMENT / "configs"
+
+logger = logging.getLogger()
 
 
 class MultiQC_report():
@@ -57,7 +60,10 @@ class MultiQC_report():
 
         for multiqc_field_in_config, tool_metadata in self.assay_data.items():
             if multiqc_field_in_config not in multiqc_raw_data:
-                # TO-DO: log projects that are missing some tool info
+                logger.debug((
+                    f"{self.multiqc_json_id}: {multiqc_field_in_config} not "
+                    "present in report"
+                ))
                 continue
 
             # subtool is used to specify for example, HSMetrics or insertSize
@@ -254,9 +260,10 @@ class MultiQC_report():
                 # store the model in the tool object
                 tool.set_model(self.models[matches[0]])
             else:
-                # TO-DO: log if there are multiple matches, probably warning or
-                # something
-                print("no")
+                logger.warning((
+                    f"{self.multiqc_json_id}: {tool.name} matches multiple "
+                    f"model names -> {matches}"
+                ))
 
     def clean_data(self, data: Dict) -> Dict:
         """ Loop through the fields and values for one tool and clean the

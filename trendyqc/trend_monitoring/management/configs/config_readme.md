@@ -4,7 +4,7 @@
 
 TrendyQC possesses config files to define what tools it can support and perform checks on the MultiQC reports.
 
-For an assay used to create a MultiQC report, we have a specific set of tools that we use since scientists are not going to care about the same QC metrics depending on the assay. 
+For an assay used to create a MultiQC report, we have a specific set of tools that we use since scientists are not going to care about the same QC metrics depending on the assay.
 
 Additionally the fields used in the tools might have been modified to accomodate Python i.e. `%GC` in FastQC became `gc_pct` in the models. The tool level config contain the field names in the MultiQC reports pointing to the model field names.
 
