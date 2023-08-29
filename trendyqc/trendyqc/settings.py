@@ -27,6 +27,7 @@ ERROR_LOG = BASE_DIR / "logs" / "errors.log"
 DEBUG_LOG = BASE_DIR / "logs" / "debug.log"
 STORING_LOG = BASE_DIR / "logs" / "storing.log"
 
+DJANGO_TABLES2_TEMPLATE = "django_tables2/bootstrap5.html"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'trend_monitoring',
+    "django_tables2",
     "log_viewer",
 ]
 
