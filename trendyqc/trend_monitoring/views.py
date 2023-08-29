@@ -9,7 +9,8 @@ from trend_monitoring.models.metadata import Report, Report_Sample
 from .tables import ReportTable
 from .forms import FilterForm
 from .backend_utils.plot import (
-    get_subset_queryset, get_data_for_plotting, prepare_filter_data
+    get_subset_queryset, get_data_for_plotting, prepare_filter_data,
+    format_data_for_plotly_js
 )
 
 
@@ -119,7 +120,9 @@ class Plot(View):
             # selected by the user and passed through the form
             subset_queryset = get_subset_queryset(filter_data["subset"])
             df_data = get_data_for_plotting(subset_queryset)
-            context = {"form": form, "plot": df_data.to_json()}
+            context = {
+                "form": form, "plot": format_data_for_plotly_js(df_data)
+            }
             return render(request, self.template_name, context)
 
         return render(request, self.template_name)
