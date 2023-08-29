@@ -1,8 +1,9 @@
+import json
+import math
 from typing import Dict
 
 import pandas as pd
 import plotly.graph_objs as go
-from plotly.graph_objs import Scatter
 
 from django.apps import apps
 from django.core.exceptions import FieldError
@@ -191,29 +192,36 @@ def get_metric_filter(metric: str) -> str:
     return None
 
 
-def plot_qc_data(plot_data: pd.DataFrame) -> go.Figure:
-    """ Create plot given the form data
+def format_data_for_plotly_js(plot_data: pd.DataFrame) -> go.Figure:
+    """ Format the dataframe data for Plotly JS.
 
     Args:
         plot_data (pd.DataFrame): Pandas Dataframe containing the data to plot
 
     Returns:
-        go.Figure: Figure to be displayed in the view
+        str: Serialized string of the data that needs to be plotted
     """
 
-    # initiate the figure
-    fig = go.Figure()
+    # create the list of traces (data points) that will be displayed in the
+    # plot
+    traces = []
 
     # for each column i.e. sample in our dataframe
     for col in plot_data.columns:
-        # add a scatter plot with the date on the x-axis and the metric values
-        # on the y-axis
-        # hide the legend and name each point using the sample id
-        fig.add_trace(
-            Scatter(
-                x=plot_data[col].index.values.tolist(), y=plot_data[col],
-                text=col, showlegend=False, mode="markers"
-            )
-        )
+        # loop through the data value and the date in conjunction
+        for value, date in zip(
+            plot_data[col].to_list(), plot_data[col].index.values.tolist()
+        ):
+            # convert the date object into a string that Plotly will understand
+            date = date.strftime("%Y-%m-%d %H:%M:%S")
 
-    return fig
+            # save some compute power by skipping the nan values
+            if not math.isnan(value):
+                # setup the data points for Plotly use
+                trace = {
+                    "x": [date], "y": [value], "mode": "markers",
+                    "type": "scatter", "text": col
+                }
+                traces.append(trace)
+
+    return json.dumps(traces)
