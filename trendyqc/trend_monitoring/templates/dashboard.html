@@ -1,34 +1,12 @@
 {% extends "base.html" %}
 
 {% load static %}
+{% load render_table from django_tables2 %}
 
 {% block dashboard %}
 
-<div>
-    <table class="table table-striped" style="width:85%; margin: auto; padding: 10px; border: 5px solid;">
-        <thead class="thead-dark">
-            <tr>
-                <th>Report name</th>
-                <th>Project name</th>
-                <th>Project id</th>
-                <th>Project date</th>
-                <th>MultiQC report json id</th>
-                <th>Sequencer id</th>
-            </tr>
-        </thead>
-            <tbody>
-                {% for report in report_data|dictsort:"project_name" %}
-                <tr>
-                    <td>{{ report.name }}</td>
-                    <td>{{ report.project_name }}</td> 
-                    <td>{{ report.project_id }}</td>
-                    <td>{{ report.date }}</td> 
-                    <td>{{ report.dnanexus_file_id }}</td>
-                    <td>{{ report.sequencer_id }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-    </table>
+<div style="width:90%; margin: auto; padding: 10px;">
+    {% render_table table %}
 </div>
 
 {% if user.is_authenticated %}
@@ -36,7 +14,7 @@
 <br>
 
 <div>
-    <table class="table table-striped" style="width:85%; margin: auto; padding: 10px; border: 5px solid;">
+    <table class="table table-striped" style="width:90%; margin: auto; padding: 10px; border: 5px solid;">
         <thead class="thead-dark">
             <tr>
                 <th>Filter name</th>
@@ -57,7 +35,7 @@
 <br>
 
 <form action="{% url 'Dashboard' %}" method="post"> {% csrf_token %}
-    <div class="filter" style="width:85%; margin: auto; padding: 10px; ">
+    <div class="filter" style="width:90%; margin: auto; padding: 10px; ">
         <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%">
             <h5>Subset selection (select at least one)</h5>
             <div>
@@ -113,7 +91,7 @@
 
     <br>
 
-    <div style="padding-left:7.5%">
+    <div style="padding-left:5%">
         <input type="submit" value="Plot">
     </div>
 </form>
