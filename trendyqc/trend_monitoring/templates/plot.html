@@ -4,16 +4,26 @@
 
 {% block plot %}
 
-<p>Plotting</p>
 
-{% for key, value in form.items %}
-    <p>{{ key }}: {{ value }}</p>
-{% endfor %}
+<div style="width:90%; margin: auto; padding: 10px; ">
+    <p>Plotting filter</p>
+    {% for key, value in form.items %}
+        <ul> - {{ key }}: {{ value }}</ul>
+    {% endfor %}
+</div>
 
-<br>
+<div id="plot-div"></div>
 
-{% autoescape off %}
-{{ plot }}
-{% endautoescape %}
+<script>
+var plot_data = JSON.parse("{{plot|escapejs}}");
+var layout = {
+    xaxis: {
+        type: "date",
+        title: "Date",
+    },
+    showlegend: false
+};
+Plotly.newPlot("plot-div", plot_data, layout, {responsive: true});
+</script>
 
 {% endblock %}
