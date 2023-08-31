@@ -8,7 +8,7 @@
 <div style="width:90%; margin: auto; padding: 10px; ">
     <p>Plotting filter</p>
     {% for key, value in form.items %}
-        <ul> - {{ key }}: {{ value }}</ul>
+        <ul> - <b>{{ key }}</b>: {{ value }}</ul>
     {% endfor %}
 </div>
 
@@ -18,10 +18,13 @@
 var plot_data = JSON.parse("{{plot|escapejs}}");
 var layout = {
     xaxis: {
-        type: "date",
+        type: "category",
         title: "Date",
     },
-    showlegend: false
+    showlegend: false,
+    boxmode: "group",
+    boxgroupgap: 0.1,
+    boxgap: 0.1,
 };
 Plotly.newPlot("plot-div", plot_data, layout, {responsive: true});
 </script>

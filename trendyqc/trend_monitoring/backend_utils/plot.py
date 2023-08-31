@@ -126,10 +126,13 @@ def get_data_for_plotting(
     # loop through the queryset and extract sample id, date of report and
     # metric
     for row in report_sample_queryset.values(
-        "sample__sample_id", "report__date", metric_filter
+        "sample__sample_id", "report__date", "report__project_name", metric_filter
     ):
-        data.setdefault(row["sample__sample_id"], {})
-        data[row["sample__sample_id"]][row["report__date"]] = row[metric_filter]
+        sample_id = row["sample__sample_id"]
+        report_date = row["report__date"]
+        report_project_name = row["report__project_name"]
+        data.setdefault(sample_id, {})
+        data[sample_id][f"{report_date}|{report_project_name}"] = row[metric_filter]
 
     # convert dict into a dataframe
     data_df = pd.DataFrame(data)
@@ -206,22 +209,24 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> go.Figure:
     # plot
     traces = []
 
-    # for each column i.e. sample in our dataframe
-    for col in plot_data.columns:
-        # loop through the data value and the date in conjunction
-        for value, date in zip(
-            plot_data[col].to_list(), plot_data[col].index.values.tolist()
-        ):
-            # convert the date object into a string that Plotly will understand
-            date = date.strftime("%Y-%m-%d %H:%M:%S")
+    plot_data = plot_data.sort_index()
 
-            # save some compute power by skipping the nan values
-            if not math.isnan(value):
-                # setup the data points for Plotly use
-                trace = {
-                    "x": [date], "y": [value], "mode": "markers",
-                    "type": "scatter", "text": col
+    for index in plot_data.index:
+        report_date, project_name = index.split("|")
+        data_seriesed = plot_data.loc[[index]].transpose().dropna()
+        cleaned_data = data_seriesed.values.flatten().tolist()
+        trace = {
+            "x0": report_date,
+            "y": sorted(cleaned_data),
+            "name": project_name,
+            "type": "box",
+            "marker": {
+                "line": {
+                    "outlierwidth": 2
                 }
-                traces.append(trace)
+            },
+            "boxpoints": 'suspectedoutliers',
+        }
+        traces.append(trace)
 
     return json.dumps(traces)
