@@ -39,7 +39,7 @@
         <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%">
             <h5>Subset selection (select at least one)</h5>
             <div>
-                <p><input name="assay_checkbox" type="checkbox"/>  Assay: 
+                <p>Assay: 
                     <select name="assay_select">
                         <option value="">Select an assay</option>
                         {% for assay in assays %}
@@ -47,7 +47,7 @@
                         {% endfor %}
                     </select>
                 </p>
-                <p><input name="run_checkbox" type="checkbox"/>  Runs: 
+                <p>Runs: 
                     <select name="run_select">
                         <option value="">Select a run</option>
                         {% for report in report_data|dictsort:"project_name" %}
@@ -55,7 +55,7 @@
                         {% endfor %}
                     </select>
                 </p>
-                <p><input id="sequencer_checkbox" type="checkbox"/>  Sequencer ID: 
+                <p>Sequencer ID: 
                     <select name="sequencer_select">
                         <option value="">Select a sequencer ID</option>
                         {% for sequencer_id in sequencer_ids %}
@@ -63,7 +63,7 @@
                         {% endfor %}
                     </select>
                 </p>
-                <p><input id="date_checkbox" type="checkbox"/>  Date range: 
+                <p>Date range: 
                     <input type="date" name="date_start"> - <input type="date" name="date_end">
                 </p>
             </div>
