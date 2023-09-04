@@ -2,7 +2,6 @@ import json
 from statistics import median
 from typing import Dict
 
-import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
 
