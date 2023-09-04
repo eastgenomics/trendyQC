@@ -201,6 +201,12 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> go.Figure:
     Args:
         plot_data (pd.DataFrame): Pandas Dataframe containing the data to plot
 
+    Example format:
+            sample1 sample2 sample3 sample4 sample5 sample6 sample7 sample8
+    run1    value1  value2  value3  NA  NA  NA  NA  NA
+    run2    NA  NA  NA  value4  value5  value6  NA  NA
+    run3    NA  NA  NA  NA  NA  NA  value7  value8
+
     Returns:
         str: Serialized string of the boxplot data that needs to be plotted
         str: Serialized string of the trend data that needs to be plotted
