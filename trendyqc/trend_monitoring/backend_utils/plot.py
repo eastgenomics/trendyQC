@@ -195,7 +195,7 @@ def get_metric_filter(metric: str) -> str:
     return None
 
 
-def format_data_for_plotly_js(plot_data: pd.DataFrame) -> go.Figure:
+def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
     """ Format the dataframe data for Plotly JS.
 
     Args:
@@ -211,6 +211,21 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> go.Figure:
         str: Serialized string of the boxplot data that needs to be plotted
         str: Serialized string of the trend data that needs to be plotted
     """
+
+    date_coloring = {
+        "01": "FF7800",
+        "02": "000000",
+        "03": "969696",
+        "04": "c7962c",
+        "05": "ff1c4d",
+        "06": "ff65ff",
+        "07": "6600cc",
+        "08": "1c6dff",
+        "09": "6ddfff",
+        "10": "ffdf3c",
+        "11": "00cc99",
+        "12": "00a600",
+    }
 
     # create the list of boxplots that will be displayed in the plot
     traces = []
@@ -231,6 +246,10 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> go.Figure:
 
     for index in plot_data.index:
         report_date, project_name = index.split("|")
+
+        month = report_date.split("-")[1]
+        boxplot_color = date_coloring[month]
+
         data_for_one_run = plot_data.loc[[index]].transpose().dropna().to_dict()
         # sort the data using the values for use in the Plotly computation
         sorted_data = {
@@ -246,7 +265,10 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> go.Figure:
             "name": report_date,
             "type": "box",
             "text": list(sorted_data.keys()),
-            "boxpoints": "suspectedoutliers"
+            "boxpoints": "suspectedoutliers",
+            "marker": {
+                "color": boxplot_color,
+            }
         }
         traces.append(trace)
 
