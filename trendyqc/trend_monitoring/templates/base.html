@@ -10,6 +10,7 @@
         <!-- CSS & Bootstrap v5.1.3 CSS -->
         <link rel="stylesheet" href="{% static 'css/style.css' %}">
         <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+        <script src="{% static "js/plotly-2.26.0.min.js" %}"></script>
 </head>
 
 <body>
@@ -46,7 +47,7 @@
     <div id="dashboard">
         {% block dashboard %}{% endblock %}
     </div>
-    <div id="plot">
+    <div id="plotly-div">
         {% block plot %}{% endblock %}
     </div>
 </body>

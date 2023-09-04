@@ -2,18 +2,22 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.views import View
 
+from django_tables2 import SingleTableView
+
 from trend_monitoring.models.metadata import Report, Report_Sample
 
+from .tables import ReportTable
 from .forms import FilterForm
 from .backend_utils.plot import (
-    get_subset_queryset, get_data_for_plotting, plot_qc_data,
-    prepare_filter_data
+    get_subset_queryset, get_data_for_plotting, prepare_filter_data,
+    format_data_for_plotly_js
 )
 
 
-class Dashboard(View):
+class Dashboard(SingleTableView):
     template_name = "dashboard.html"
-    report_data = Report.objects.all()
+    table_class = ReportTable
+    model = Report
     report_sample_data = Report_Sample.objects.all()
 
     def get_context_data(self):
@@ -23,6 +27,11 @@ class Dashboard(View):
             dict: Dict of report and assay data to be passed to the dashboard
         """
 
+        # object list needs to be defined for SingleTableViews but i have no
+        # need for it
+        # get the default context data (the one i need is one called table)
+        context = super().get_context_data(object_list="")
+
         # get all the assays and sort them
         assays = sorted({
             assay
@@ -30,12 +39,11 @@ class Dashboard(View):
         })
         sequencer_ids = sorted({
             sequencer_id
-            for sequencer_id in self.report_data.values_list("sequencer_id", flat=True)
+            for sequencer_id in self.model.objects.all().values_list("sequencer_id", flat=True)
         })
-        context = {
-            "report_data": self.report_data, "assays": assays,
-            "sequencer_ids": sequencer_ids
-        }
+
+        context["assays"] = assays
+        context["sequencer_ids"] = sequencer_ids
         return context
 
     def get(self, request):
@@ -66,7 +74,8 @@ class Dashboard(View):
 
         # call the clean function and see if the form data is valid
         if form.is_valid():
-            # save the cleaned data in the session so that 
+            # save the cleaned data in the session so that it gets passed to
+            # the Plot view
             request.session["form"] = form.cleaned_data
             return redirect("Plot")
         else:
@@ -111,8 +120,12 @@ class Plot(View):
             # selected by the user and passed through the form
             subset_queryset = get_subset_queryset(filter_data["subset"])
             df_data = get_data_for_plotting(subset_queryset)
-            div_plot = plot_qc_data(df_data)
-            context = {"form": form, "plot": div_plot.to_html(), "data": df_data.to_html()}
+            (
+                json_plot_data, json_trend_data
+            ) = format_data_for_plotly_js(df_data)
+            context = {
+                "form": form, "plot": json_plot_data, "trend": json_trend_data
+            }
             return render(request, self.template_name, context)
 
         return render(request, self.template_name)

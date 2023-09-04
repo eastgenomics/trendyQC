@@ -1,8 +1,9 @@
+import json
+from statistics import median
 from typing import Dict
 
 import pandas as pd
 import plotly.graph_objs as go
-from plotly.graph_objs import Scatter
 
 from django.apps import apps
 from django.core.exceptions import FieldError
@@ -125,10 +126,13 @@ def get_data_for_plotting(
     # loop through the queryset and extract sample id, date of report and
     # metric
     for row in report_sample_queryset.values(
-        "sample__sample_id", "report__date", metric_filter
+        "sample__sample_id", "report__date", "report__project_name", metric_filter
     ):
-        data.setdefault(row["sample__sample_id"], {})
-        data[row["sample__sample_id"]][row["report__date"]] = row[metric_filter]
+        sample_id = row["sample__sample_id"]
+        report_date = row["report__date"]
+        report_project_name = row["report__project_name"]
+        data.setdefault(sample_id, {})
+        data[sample_id][f"{report_date}|{report_project_name}"] = row[metric_filter]
 
     # convert dict into a dataframe
     data_df = pd.DataFrame(data)
@@ -191,29 +195,86 @@ def get_metric_filter(metric: str) -> str:
     return None
 
 
-def plot_qc_data(plot_data: pd.DataFrame) -> go.Figure:
-    """ Create plot given the form data
+def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
+    """ Format the dataframe data for Plotly JS.
 
     Args:
         plot_data (pd.DataFrame): Pandas Dataframe containing the data to plot
 
+    Example format:
+            sample1 sample2 sample3 sample4 sample5 sample6 sample7 sample8
+    run1    value1  value2  value3  NA  NA  NA  NA  NA
+    run2    NA  NA  NA  value4  value5  value6  NA  NA
+    run3    NA  NA  NA  NA  NA  NA  value7  value8
+
     Returns:
-        go.Figure: Figure to be displayed in the view
+        str: Serialized string of the boxplot data that needs to be plotted
+        str: Serialized string of the trend data that needs to be plotted
     """
 
-    # initiate the figure
-    fig = go.Figure()
+    date_coloring = {
+        "01": "FF7800",
+        "02": "000000",
+        "03": "969696",
+        "04": "c7962c",
+        "05": "ff1c4d",
+        "06": "ff65ff",
+        "07": "6600cc",
+        "08": "1c6dff",
+        "09": "6ddfff",
+        "10": "ffdf3c",
+        "11": "00cc99",
+        "12": "00a600",
+    }
 
-    # for each column i.e. sample in our dataframe
-    for col in plot_data.columns:
-        # add a scatter plot with the date on the x-axis and the metric values
-        # on the y-axis
-        # hide the legend and name each point using the sample id
-        fig.add_trace(
-            Scatter(
-                x=plot_data[col].index.values.tolist(), y=plot_data[col],
-                text=col, showlegend=False, mode="markers"
+    # create the list of boxplots that will be displayed in the plot
+    traces = []
+
+    # formatting median trace
+    median_trace = {
+        "mode": "lines",
+        "name": "trend",
+        "line": {
+            "dash": "dashdot",
+            "width": 2
+        }
+    }
+    median_trace.setdefault("x", [])
+    median_trace.setdefault("y", [])
+
+    plot_data = plot_data.sort_index()
+
+    for index in plot_data.index:
+        report_date, project_name = index.split("|")
+
+        month = report_date.split("-")[1]
+        boxplot_color = date_coloring[month]
+
+        data_for_one_run = plot_data.loc[[index]].transpose().dropna().to_dict()
+        # sort the data using the values for use in the Plotly computation
+        sorted_data = {
+            k: v for k, v in sorted(
+                data_for_one_run[index].items(), key=lambda item: item[1]
             )
-        )
+        }
 
-    return fig
+        # setup each boxplot with the appropriate annotation and data points
+        trace = {
+            "x0": project_name,
+            "y": list(sorted_data.values()),
+            "name": report_date,
+            "type": "box",
+            "text": list(sorted_data.keys()),
+            "boxpoints": "suspectedoutliers",
+            "marker": {
+                "color": boxplot_color,
+            }
+        }
+        traces.append(trace)
+
+        # add median of current boxplot for trend line
+        data_median = median(list(sorted_data.values()))
+        median_trace["x"].append(project_name)
+        median_trace["y"].append(data_median)
+
+    return json.dumps(traces), json.dumps(median_trace)
