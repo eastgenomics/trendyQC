@@ -203,13 +203,14 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> go.Figure:
         plot_data (pd.DataFrame): Pandas Dataframe containing the data to plot
 
     Returns:
-        str: Serialized string of the data that needs to be plotted
+        str: Serialized string of the boxplot data that needs to be plotted
+        str: Serialized string of the trend data that needs to be plotted
     """
 
-    # create the list of traces (data points) that will be displayed in the
-    # plot
+    # create the list of boxplots that will be displayed in the plot
     traces = []
 
+    # formatting median trace
     median_trace = {
         "mode": "lines",
         "name": "trend",
@@ -226,12 +227,14 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> go.Figure:
     for index in plot_data.index:
         report_date, project_name = index.split("|")
         data_for_one_run = plot_data.loc[[index]].transpose().dropna().to_dict()
+        # sort the data using the values for use in the Plotly computation
         sorted_data = {
             k: v for k, v in sorted(
                 data_for_one_run[index].items(), key=lambda item: item[1]
             )
         }
 
+        # setup each boxplot with the appropriate annotation and data points
         trace = {
             "x0": project_name,
             "y": list(sorted_data.values()),
@@ -241,6 +244,7 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> go.Figure:
         }
         traces.append(trace)
 
+        # add median of current boxplot for trend line
         data_median = median(list(sorted_data.values()))
         median_trace["x"].append(project_name)
         median_trace["y"].append(data_median)
