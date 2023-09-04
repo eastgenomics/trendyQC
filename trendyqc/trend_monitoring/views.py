@@ -120,8 +120,9 @@ class Plot(View):
             # selected by the user and passed through the form
             subset_queryset = get_subset_queryset(filter_data["subset"])
             df_data = get_data_for_plotting(subset_queryset)
+            json_plot_data, json_trend_data = format_data_for_plotly_js(df_data)
             context = {
-                "form": form, "plot": format_data_for_plotly_js(df_data)
+                "form": form, "plot": json_plot_data, "trend": json_trend_data
             }
             return render(request, self.template_name, context)
 
