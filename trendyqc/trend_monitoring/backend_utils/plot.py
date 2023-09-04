@@ -216,9 +216,9 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> go.Figure:
         data_seriesed = plot_data.loc[[index]].transpose().dropna()
         cleaned_data = data_seriesed.values.flatten().tolist()
         trace = {
-            "x0": report_date,
+            "x0": project_name,
             "y": sorted(cleaned_data),
-            "name": project_name,
+            "name": report_date,
             "type": "box",
             "marker": {
                 "line": {
