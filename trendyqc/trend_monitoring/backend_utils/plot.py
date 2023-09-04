@@ -239,7 +239,8 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> go.Figure:
             "y": list(sorted_data.values()),
             "name": report_date,
             "type": "box",
-            "text": list(sorted_data.keys())
+            "text": list(sorted_data.keys()),
+            "boxpoints": "suspectedoutliers"
         }
         traces.append(trace)
 
