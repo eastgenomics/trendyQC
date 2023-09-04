@@ -196,46 +196,6 @@ def get_metric_filter(metric: str) -> str:
     return None
 
 
-def compute_data_stats(data):
-    first_quartile, third_quantile = np.quantile(data, [0.25, 0.75])
-    iqr = third_quantile - first_quartile
-
-    return {
-        "first_quartile": first_quartile,
-        "third_quantile": third_quantile,
-        "iqr": iqr
-    }
-
-
-def find_outliers(data, **stats):
-    max_boxplot = max([
-        data_point for data_point in data
-        if data_point <= stats["third_quartile"] + stats["iqr"] * 1.5
-    ])
-
-    min_boxplot = min([
-        data_point for data_point in data
-        if data_point >= stats["first_quartile"] - stats["iqr"] * 1.5
-    ])
-
-    suspected_outliers = []
-    outliers = []
-
-    suspected_outliers = [
-        data_point for data_point in data
-        if (data_point > max_boxplot + stats["iqr"] * 1.5 and data_point < max_boxplot + stats["iqr"] * 3) or
-        (data_point < min_boxplot - stats["iqr"] * 1.5 and data_point > min_boxplot - stats["iqr"] * 3)
-    ]
-
-    outliers = [
-        data_point for data_point in data
-        if data_point >= max_boxplot + stats["iqr"] * 3 or
-        data_point <= min_boxplot - stats["iqr"] * 3)
-    ]
-
-    return suspected_outliers, outliers
-
-
 def format_data_for_plotly_js(plot_data: pd.DataFrame) -> go.Figure:
     """ Format the dataframe data for Plotly JS.
 
@@ -265,26 +225,24 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> go.Figure:
 
     for index in plot_data.index:
         report_date, project_name = index.split("|")
-        data_for_one_run = plot_data.loc[[index]].transpose().dropna()
-        flatten_data_for_one_run = data_for_one_run.values.flatten().tolist()
-        sorted_flatten_data = sorted(flatten_data_for_one_run)
+        data_for_one_run = plot_data.loc[[index]].transpose().dropna().to_dict()
+        sorted_data = {
+            k: v for k, v in sorted(
+                data_for_one_run[index].items(), key=lambda item: item[1]
+            )
+        }
+
         trace = {
             "x0": project_name,
-            "y": sorted_flatten_data,
+            "y": list(sorted_data.values()),
             "name": report_date,
             "type": "box",
-            "boxpoints": "box",
+            "text": list(sorted_data.keys())
         }
         traces.append(trace)
 
-        data_median = median(flatten_data_for_one_run)
+        data_median = median(list(sorted_data.values()))
         median_trace["x"].append(project_name)
         median_trace["y"].append(data_median)
-
-        stats = compute_data_stats(sorted_flatten_data)
-        suspected_outliers, outliers = find_outliers(
-            sorted_flatten_data, **stats
-        )
-
 
     return json.dumps(traces), json.dumps(median_trace)
