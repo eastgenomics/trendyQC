@@ -1,5 +1,5 @@
 import json
-import math
+from statistics import median
 from typing import Dict
 
 import pandas as pd
@@ -209,15 +209,26 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> go.Figure:
     # plot
     traces = []
 
+    median_trace = {
+        "mode": "lines",
+        "name": "trend",
+        "line": {
+            "dash": "dashdot",
+            "width": 2
+        }
+    }
+    median_trace.setdefault("x", [])
+    median_trace.setdefault("y", [])
+
     plot_data = plot_data.sort_index()
 
     for index in plot_data.index:
         report_date, project_name = index.split("|")
-        data_seriesed = plot_data.loc[[index]].transpose().dropna()
-        cleaned_data = data_seriesed.values.flatten().tolist()
+        data_for_one_run = plot_data.loc[[index]].transpose().dropna()
+        flatten_data_for_one_run = data_for_one_run.values.flatten().tolist()
         trace = {
             "x0": project_name,
-            "y": sorted(cleaned_data),
+            "y": sorted(flatten_data_for_one_run),
             "name": report_date,
             "type": "box",
             "marker": {
@@ -229,4 +240,8 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> go.Figure:
         }
         traces.append(trace)
 
-    return json.dumps(traces)
+        data_median = median(flatten_data_for_one_run)
+        median_trace["x"].append(project_name)
+        median_trace["y"].append(data_median)
+
+    return json.dumps(traces), json.dumps(median_trace)
