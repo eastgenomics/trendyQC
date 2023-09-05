@@ -39,7 +39,9 @@
 <br>
 
 <form action="{% url 'Dashboard' %}" method="post"> {% csrf_token %}
+    <!-- Div for 3 inner divs that will occupy the page horizontally -->
     <div class="filter" style="width:90%; margin: auto; padding: 10px; ">
+        <!-- 1st inner div: filter for obtaining a subset of runs -->
         <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%">
             <h5>Subset selection (select at least one)</h5>
             <div>
@@ -52,7 +54,7 @@
                     </select>
                 </p>
                 <p>Runs: 
-                    <select name="run_select" style="width:100%; max-width: 400px; min-width: 1%;">
+                    <select name="run_select" style="width:100%; max-width: 400px; min-width: 1%;" multiple="multiple">
                         <option value="">Select a run</option>
                         {% for project_name in project_names %}
                             <option value="{{ project_name }}">{{ project_name }}</option>
@@ -73,15 +75,17 @@
             </div>
         </div>
 
+        <!-- 2nd inner div: Metrics for x-axis -->
         <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%">
             <h5>X axis</h5>
-            <p> Metrics (optional): 
+            <p> Metrics (optional) <b>not yet implemented</b>: 
                 <select name="metrics_x">
                     <option value="">Select a metric</option>
                 </select>
             </p>
         </div>
 
+        <!-- 3rd inner div: Metrics for y-axis -->
         <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:18%">
             <h5>Y axis</h5>
             <label id="metrics_y">Metrics: 
