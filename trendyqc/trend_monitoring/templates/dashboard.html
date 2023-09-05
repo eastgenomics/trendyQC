@@ -6,6 +6,10 @@
 {% block dashboard %}
 
 <div style="width:90%; margin: auto; padding: 10px;">
+<p>There are <b>{{ project_names|length }}</b> projects currently in TrendyQC.</p>
+</div>
+
+<div style="width:90%; margin: auto; padding: 10px;">
     {% render_table table %}
 </div>
 
