@@ -46,24 +46,21 @@
             <h5>Subset selection (select at least one)</h5>
             <div>
                 <p>Assay: 
-                    <select name="assay_select">
-                        <option value="">Select an assay</option>
+                    <select class="multiselect" name="assay_select" multiple>
                         {% for assay in assays %}
                             <option value="{{ assay }}">{{ assay }}</option>
                         {% endfor %}
                     </select>
                 </p>
                 <p>Runs: 
-                    <select name="run_select" style="width:100%; max-width: 400px; min-width: 1%;" multiple="multiple">
-                        <option value="">Select a run</option>
+                    <select class="multiselect" name="run_select" style="width:100%; max-width: 400px; min-width: 1%;" multiple>
                         {% for project_name in project_names %}
                             <option value="{{ project_name }}">{{ project_name }}</option>
                         {% endfor %}
                     </select>
                 </p>
                 <p>Sequencer ID: 
-                    <select name="sequencer_select">
-                        <option value="">Select a sequencer ID</option>
+                    <select class="multiselect" name="sequencer_select" multiple>
                         {% for sequencer_id in sequencer_ids %}
                             <option value="{{ sequencer_id }}">{{ sequencer_id }}</option>
                         {% endfor %}
@@ -113,5 +110,13 @@
         {% endfor %}
     </div>
 {% endif %}
+
+<script>
+$(function () {
+    $('.multiselect').selectpicker({
+        liveSearch: true
+    });
+});
+</script>
 
 {% endblock %}
