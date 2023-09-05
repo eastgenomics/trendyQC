@@ -48,10 +48,10 @@
                     </select>
                 </p>
                 <p>Runs: 
-                    <select name="run_select">
+                    <select name="run_select" style="width:100%; max-width: 400px; min-width: 1%;">
                         <option value="">Select a run</option>
-                        {% for report in report_data|dictsort:"project_name" %}
-                            <option value="{{ report.project_name }}">{{ report.project_name }}</option>
+                        {% for project_name in project_names %}
+                            <option value="{{ project_name }}">{{ project_name }}</option>
                         {% endfor %}
                     </select>
                 </p>
