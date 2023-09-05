@@ -14,18 +14,29 @@ class FilterForm(forms.Form):
     metrics_y = forms.CharField()
 
     def clean(self):
-        cleaned_data = super().clean()
+        # i can't use super().clean() because QueryDict are dumb:
+        # https://docs.djangoproject.com/en/4.2/ref/request-response/#django.http.QueryDict.__getitem__
+        # converting the querydict into a normal dict
+        data = dict(self.data.lists())
 
         run_subset = [
-            cleaned_data.get("assay_select", None),
-            cleaned_data.get("run_select", None),
-            cleaned_data.get("sequencer_select", None),
-            cleaned_data.get("date_start", None),
-            cleaned_data.get("date_end", None)
+            data.get("assay_select", None),
+            data.get("run_select", None),
+            data.get("sequencer_select", None),
+            data.get("date_start", None),
+            data.get("date_end", None)
         ]
 
-        start_date = cleaned_data.get("date_start", None)
-        end_date = cleaned_data.get("date_end", None)
+        # clean was converting the type automatically, i need to do it manually
+        # now
+        start_date = datetime.datetime.strptime(
+            data.get("date_start", None)[0], "%Y-%m-%d"
+        ).date()
+        end_date = data.get("date_end", None)[0]
+
+        # add the date data in the dict
+        data["date_start"] = start_date
+        data["date_end"] = end_date
 
         if not any(run_subset):
             self.add_error(None, ValidationError("No subset of runs selected"))
@@ -37,7 +48,7 @@ class FilterForm(forms.Form):
 
         if not end_date and start_date:
             now = datetime.date.today()
-            cleaned_data["date_end"] = now
+            data["date_end"] = now
             end_date = now
 
         if end_date and start_date:
@@ -51,15 +62,36 @@ class FilterForm(forms.Form):
                     )
                 )
 
-        if not cleaned_data.get("metrics_y", None):
+        if not data.get("metrics_y", None):
             self.add_error(None, ValidationError("No Y-axis metric selected"))
 
-        very_cleaned_data = {}
+        cleaned_data = {}
 
-        for key, value in cleaned_data.items():
-            if value and not isinstance(value, datetime.date):
-                very_cleaned_data[key] = value.strip()
-            elif isinstance(value, datetime.date):
-                very_cleaned_data[key] = value
+        for key, value in data.items():
+            # clean also removed the crsf token, removing it manually
+            if key == "csrfmiddlewaretoken":
+                continue
 
-        return very_cleaned_data
+            if value:
+                if isinstance(value, str):
+                    cleaned_data[key] = value.strip()
+
+                elif isinstance(value, list):
+                    # clean flattened the data (since it was returning the last
+                    # value). Handling those [""] occurences
+                    if "" in value and len(value) == 1:
+                        continue
+
+                    cleaned_data[key] = value
+
+                elif isinstance(value, datetime.date):
+                    cleaned_data[key] = value
+
+                else:
+                    # error message just in case of any other weird stuff
+                    self.add_error(None, ValidationError((
+                        "Unexpected type in the form data. Please contact the "
+                        "bioinformatics team"
+                    )))
+
+        return cleaned_data
