@@ -16,7 +16,9 @@ class FilterForm(forms.Form):
     def clean(self):
         # i can't use super().clean() because QueryDict are dumb:
         # https://docs.djangoproject.com/en/4.2/ref/request-response/#django.http.QueryDict.__getitem__
-        # converting the querydict into a normal dict
+        # converting the querydict into a normal dict, this means a lot of the
+        # automatic cleaning that clean() was doing is going to be done
+        # manually by yours truly
         data = dict(self.data.lists())
 
         run_subset = [
