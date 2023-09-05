@@ -35,13 +35,21 @@ class Dashboard(SingleTableView):
         # get all the assays and sort them
         assays = sorted({
             assay
-            for assay in self.report_sample_data.values_list("assay", flat=True)
+            for assay in self.report_sample_data.values_list(
+                "assay", flat=True)
         })
         sequencer_ids = sorted({
             sequencer_id
-            for sequencer_id in self.model.objects.all().values_list("sequencer_id", flat=True)
+            for sequencer_id in self.model.objects.all().values_list(
+                "sequencer_id", flat=True)
         })
+        project_names = sorted(
+            project_name
+            for project_name in self.model.objects.all().values_list(
+                "project_name", flat=True)
+        )
 
+        context["project_names"] = project_names
         context["assays"] = assays
         context["sequencer_ids"] = sequencer_ids
         return context
