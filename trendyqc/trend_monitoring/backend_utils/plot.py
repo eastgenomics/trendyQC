@@ -47,7 +47,11 @@ def prepare_filter_data(filter_recap: Dict) -> Dict:
             "assay_select", "run_select", "sequencer_select"
         ]:
             data["subset"].setdefault(field, [])
-            data["subset"][field].append(value)
+
+            if isinstance(value, list):
+                data["subset"][field].extend(value)
+            else:
+                data["subset"][field].append(value)
 
         # this is kept separated from the above because you can input only one
         # date range
