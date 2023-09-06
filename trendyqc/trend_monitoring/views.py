@@ -5,6 +5,9 @@ from django.views import View
 from django_tables2 import SingleTableView
 
 from trend_monitoring.models.metadata import Report, Report_Sample
+from trend_monitoring.models import bam_qc
+from trend_monitoring.models import fastq_qc
+from trend_monitoring.models import vcf_qc
 
 from .tables import ReportTable
 from .forms import FilterForm
@@ -52,7 +55,52 @@ class Dashboard(SingleTableView):
         context["project_names"] = project_names
         context["assays"] = assays
         context["sequencer_ids"] = sequencer_ids
+        context["metrics"] = {
+            **self.get_plotable_metrics(bam_qc),
+            **self.get_plotable_metrics(fastq_qc),
+            **self.get_plotable_metrics(vcf_qc)
+        }
         return context
+
+    def get_plotable_metrics(self, module) -> dict:
+        """ Gather all the plotable metrics by model in a dict
+
+        Args:
+            module (module): Module containing the definition of models
+
+        Returns:
+            dict: Dict with the name of the model as key and the name of the
+            field as value
+        """
+
+        plotable_metrics = {}
+
+        # loop through the modules' classes and get their name and object into
+        # a dict
+        module_dict = dict(
+            [
+                (name, cls)
+                for name, cls in module.__dict__.items()
+                if isinstance(cls, type)
+            ]
+        )
+
+        for model_name, model in module_dict.items():
+            # remove some unnecessary bits of the model name
+            model_name_cleaned = model_name.replace(
+                "_data", ""
+            ).replace("_metrics", "")
+            plotable_metrics.setdefault(model_name_cleaned, [])
+
+            for field in model._meta.fields:
+                # get the type of the field
+                field_type = field.get_internal_type()
+
+                # only get fields with those type for plotability
+                if field_type in ["FloatField", "IntegerField"]:
+                    plotable_metrics[model_name_cleaned].append(field.name)
+
+        return plotable_metrics
 
     def get(self, request):
         """ Handle GET request
