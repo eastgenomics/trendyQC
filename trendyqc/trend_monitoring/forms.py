@@ -20,25 +20,39 @@ class FilterForm(forms.Form):
         # automatic cleaning that clean() was doing is going to be done
         # manually by yours truly
         data = dict(self.data.lists())
+        cleaned_data = {}
+
+        for key, value in data.items():
+            # clean also removed the crsf token, removing it manually
+            if key == "csrfmiddlewaretoken":
+                continue
+
+            for v in value:
+                if v:
+                    cleaned_data.setdefault(key, []).append(v)
 
         run_subset = [
-            data.get("assay_select", None),
-            data.get("run_select", None),
-            data.get("sequencer_select", None),
-            data.get("date_start", None),
-            data.get("date_end", None)
+            cleaned_data.get("assay_select", None),
+            cleaned_data.get("run_select", None),
+            cleaned_data.get("sequencer_select", None),
+            cleaned_data.get("date_start", None),
+            cleaned_data.get("date_end", None)
         ]
 
-        # clean was converting the type automatically, i need to do it manually
-        # now
-        start_date = datetime.datetime.strptime(
-            data.get("date_start", None)[0], "%Y-%m-%d"
-        ).date()
-        end_date = data.get("date_end", None)[0]
+        start_date = cleaned_data.get("date_start", None)
+        end_date = cleaned_data.get("date_end", None)
 
-        # add the date data in the dict
-        data["date_start"] = start_date
-        data["date_end"] = end_date
+        if cleaned_data.get("date_start", None):
+            # clean was converting the type automatically, i need to do it
+            # manually now
+            start_date = datetime.datetime.strptime(
+                start_date[0], "%Y-%m-%d"
+            ).date()
+            cleaned_data["date_start"] = start_date
+
+        if cleaned_data.get("date_end", None):
+            end_date = end_date[0]
+            cleaned_data["date_end"] = end_date
 
         if not any(run_subset):
             self.add_error(None, ValidationError("No subset of runs selected"))
@@ -50,7 +64,7 @@ class FilterForm(forms.Form):
 
         if not end_date and start_date:
             now = datetime.date.today()
-            data["date_end"] = now
+            cleaned_data["date_end"] = now
             end_date = now
 
         if end_date and start_date:
@@ -64,36 +78,7 @@ class FilterForm(forms.Form):
                     )
                 )
 
-        if not data.get("metrics_y", None):
+        if not cleaned_data.get("metrics_y", None):
             self.add_error(None, ValidationError("No Y-axis metric selected"))
-
-        cleaned_data = {}
-
-        for key, value in data.items():
-            # clean also removed the crsf token, removing it manually
-            if key == "csrfmiddlewaretoken":
-                continue
-
-            if value:
-                if isinstance(value, str):
-                    cleaned_data[key] = value.strip()
-
-                elif isinstance(value, list):
-                    # clean flattened the data (since it was returning the last
-                    # value). Handling those [""] occurences
-                    if "" in value and len(value) == 1:
-                        continue
-
-                    cleaned_data[key] = value
-
-                elif isinstance(value, datetime.date):
-                    cleaned_data[key] = value
-
-                else:
-                    # error message just in case of any other weird stuff
-                    self.add_error(None, ValidationError((
-                        "Unexpected type in the form data. Please contact the "
-                        "bioinformatics team"
-                    )))
 
         return cleaned_data
