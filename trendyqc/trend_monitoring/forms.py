@@ -62,11 +62,14 @@ class FilterForm(forms.Form):
                 "date_start", ValidationError("No start date selected")
             )
 
+        # if start date provided but not end date, define end date as today's
+        # date
         if not end_date and start_date:
             now = datetime.date.today()
             cleaned_data["date_end"] = now
             end_date = now
 
+        # basic check if the start date is later than the end date
         if end_date and start_date:
             if end_date < start_date:
                 self.add_error(
