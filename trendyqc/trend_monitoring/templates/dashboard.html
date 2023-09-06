@@ -79,7 +79,7 @@
                 {% for model, fields in metrics.items %}
                     <optgroup label={{ model }}>
                         {% for field in fields %}
-                            <option data-tokens="{{ model }} {{ field }}" value={{ field }}>{{ field }}</option>
+                            <option data-subtext="{{ model }}" data-tokens="{{ model }} {{ field }}" value={{ field }}>{{ field }}</option>
                         {% endfor %}
                     </optgroup>
                 {% endfor %}
@@ -93,7 +93,7 @@
                 {% for model, fields in metrics.items %}
                     <optgroup label={{ model }}>
                         {% for field in fields %}
-                            <option data-tokens="{{ model }} {{ field }}" value={{ field }}>{{ field }}</option>
+                            <option data-subtext="{{ model }}" data-tokens="{{ model }} {{ field }}" value={{ field }}>{{ field }}</option>
                         {% endfor %}
                     </optgroup>
                 {% endfor %}
@@ -120,7 +120,7 @@
 
 <script>
 $(function () {
-    $('.multiselect').selectpicker({
+    $(".multiselect").selectpicker({
         liveSearch: true
     });
 });
