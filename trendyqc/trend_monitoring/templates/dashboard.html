@@ -76,7 +76,13 @@
         <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%">
             <h5>X axis - Metrics</h5>
             <select class="multiselect" name="metrics_x" multiple disabled title="Choose a metric">
-                <option value="">Select a metric</option>
+                {% for model, fields in metrics.items %}
+                    <optgroup label={{ model }}>
+                        {% for field in fields %}
+                            <option value={{ field }}>{{ field }}</option>
+                        {% endfor %}
+                    </optgroup>
+                {% endfor %}
             </select>
         </div>
 
@@ -84,7 +90,13 @@
         <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:18%">
             <h5>Y axis - Metrics</h5>
             <select class="multiselect" name="metrics_y" multiple title="Choose a metric">
-                <option value="testing">Testing</option>
+                {% for model, fields in metrics.items %}
+                    <optgroup label={{ model }}>
+                        {% for field in fields %}
+                            <option value={{ field }}>{{ field }}</option>
+                        {% endfor %}
+                    </optgroup>
+                {% endfor %}
             </select>
         </div>
     </div>
