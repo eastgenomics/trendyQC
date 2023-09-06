@@ -45,52 +45,47 @@
         <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%">
             <h5>Subset selection (select at least one)</h5>
             <div>
-                <p>Assay: 
-                    <select class="multiselect" name="assay_select" multiple>
+                <ul>
+                    <select class="multiselect" name="assay_select" multiple title="Choose an assay">
                         {% for assay in assays %}
                             <option value="{{ assay }}">{{ assay }}</option>
                         {% endfor %}
                     </select>
-                </p>
-                <p>Runs: 
-                    <select class="multiselect" name="run_select" style="width:100%; max-width: 400px; min-width: 1%;" multiple>
+                </ul>
+                <ul>
+                    <select class="multiselect" name="run_select" multiple title="Choose a run">
                         {% for project_name in project_names %}
                             <option value="{{ project_name }}">{{ project_name }}</option>
                         {% endfor %}
                     </select>
-                </p>
-                <p>Sequencer ID: 
-                    <select class="multiselect" name="sequencer_select" multiple>
+                </ul>
+                <ul>
+                    <select class="multiselect" name="sequencer_select" multiple title="Choose a sequencer id">
                         {% for sequencer_id in sequencer_ids %}
                             <option value="{{ sequencer_id }}">{{ sequencer_id }}</option>
                         {% endfor %}
                     </select>
-                </p>
-                <p>Date range: 
+                </ul>
+                <ul>
                     <input type="date" name="date_start"> - <input type="date" name="date_end">
-                </p>
+                </ul>
             </div>
         </div>
 
         <!-- 2nd inner div: Metrics for x-axis -->
         <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%">
-            <h5>X axis</h5>
-            <p> Metrics (optional) <b>not yet implemented</b>: 
-                <select name="metrics_x">
-                    <option value="">Select a metric</option>
-                </select>
-            </p>
+            <h5>X axis - Metrics</h5>
+            <select class="multiselect" name="metrics_x" multiple disabled title="Choose a metric">
+                <option value="">Select a metric</option>
+            </select>
         </div>
 
         <!-- 3rd inner div: Metrics for y-axis -->
         <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:18%">
-            <h5>Y axis</h5>
-            <label id="metrics_y">Metrics: 
-                <select name="metrics_y">
-                    <option value="">Select a metric</option>
-                    <option value="testing">Testing</option>
-                </select>
-            </label>
+            <h5>Y axis - Metrics</h5>
+            <select class="multiselect" name="metrics_y" multiple title="Choose a metric">
+                <option value="testing">Testing</option>
+            </select>
         </div>
     </div>
 
