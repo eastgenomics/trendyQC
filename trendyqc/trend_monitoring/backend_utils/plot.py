@@ -37,8 +37,8 @@ def prepare_filter_data(filter_recap: Dict) -> Dict:
 
     data = {}
     data.setdefault("subset", {})
-    data.setdefault("x_axis", {})
-    data.setdefault("y_axis", {})
+    data.setdefault("x_axis", [])
+    data.setdefault("y_axis", [])
 
     for field, value in filter_recap.items():
         # I'm setting a list by default because I want the user to be able to
@@ -60,12 +60,10 @@ def prepare_filter_data(filter_recap: Dict) -> Dict:
             data["subset"][field] = value
 
         if field == "metrics_x":
-            data["x_axis"].setdefault(field, "")
-            data["x_axis"][field] = value
+            data["x_axis"].extend(value)
 
         if field == "metrics_y":
-            data["y_axis"].setdefault(field, "")
-            data["y_axis"][field] = value
+            data["y_axis"].extend(value)
 
     return data
 
@@ -107,13 +105,13 @@ def get_subset_queryset(data: Dict) -> QuerySet:
 
 
 def get_data_for_plotting(
-    report_sample_queryset: QuerySet, metric: str = "total_sequences"
+    report_sample_queryset: QuerySet, metrics: list
 ) -> pd.DataFrame:
     """ Get the data from the queryset in a Pandas dataframe.
 
     Args:
         report_sample_queryset (QuerySet): Report sample queryset
-        metric (str, optional): Metric that we want to plot on the Y-axis.
+        metrics (list): Metrics that we want to plot on the Y-axis.
         Defaults to "total_sequences" for testing purposes.
 
     Returns:
@@ -122,26 +120,29 @@ def get_data_for_plotting(
             date1 	value1 	value2 	value3
     """
 
-    # get the filter string needed to get the metric data from the queryset
-    metric_filter = get_metric_filter(metric)
+    list_df = []
 
-    data = {}
+    for metric in metrics:
+        # get the filter string needed to get the metric data from the queryset
+        metric_filter = get_metric_filter(metric)
 
-    # loop through the queryset and extract sample id, date of report and
-    # metric
-    for row in report_sample_queryset.values(
-        "sample__sample_id", "report__date", "report__project_name", metric_filter
-    ):
-        sample_id = row["sample__sample_id"]
-        report_date = row["report__date"]
-        report_project_name = row["report__project_name"]
-        data.setdefault(sample_id, {})
-        data[sample_id][f"{report_date}|{report_project_name}"] = row[metric_filter]
+        data = {}
 
-    # convert dict into a dataframe
-    data_df = pd.DataFrame(data)
+        # loop through the queryset and extract sample id, date of report and
+        # metric
+        for row in report_sample_queryset.values(
+            "sample__sample_id", "report__date", "report__project_name", metric_filter
+        ):
+            sample_id = row["sample__sample_id"]
+            report_date = row["report__date"]
+            report_project_name = row["report__project_name"]
+            data.setdefault(sample_id, {})
+            data[sample_id][f"{report_date}|{report_project_name}"] = row[metric_filter]
 
-    return data_df
+        # convert dict into a dataframe
+        list_df.append(pd.DataFrame(data))
+
+    return list_df
 
 
 def get_metric_filter(metric: str) -> str:
