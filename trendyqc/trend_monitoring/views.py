@@ -5,9 +5,7 @@ from django.views import View
 from django_tables2 import SingleTableView
 
 from trend_monitoring.models.metadata import Report, Report_Sample
-from trend_monitoring.models import bam_qc
-from trend_monitoring.models import fastq_qc
-from trend_monitoring.models import vcf_qc
+from trend_monitoring.models import bam_qc, fastq_qc, vcf_qc
 
 from .tables import ReportTable
 from .forms import FilterForm
