@@ -173,10 +173,21 @@ class Plot(View):
             # get queryset of report_sample filtered using the "subset" options
             # selected by the user and passed through the form
             subset_queryset = get_subset_queryset(filter_data["subset"])
-            df_data = get_data_for_plotting(subset_queryset)
+            data_dfs = get_data_for_plotting(
+                subset_queryset, filter_data["y_axis"]
+            )
+
+            if len(data_dfs) > 1:
+                msg = (
+                    "Only one metric can be plotted at a time. Plotting: "
+                    f"{filter_data['y_axis'][0]}"
+                )
+                messages.warning(request, msg)
+
             (
                 json_plot_data, json_trend_data
-            ) = format_data_for_plotly_js(df_data)
+            ) = format_data_for_plotly_js(data_dfs[0])
+
             context = {
                 "form": form, "plot": json_plot_data, "trend": json_trend_data
             }
