@@ -173,7 +173,15 @@ class Plot(View):
             # get queryset of report_sample filtered using the "subset" options
             # selected by the user and passed through the form
             subset_queryset = get_subset_queryset(filter_data["subset"])
-            data_dfs, missing_metrics_projects = get_data_for_plotting(
+
+            if not subset_queryset:
+                msg = f"No data found for {filter_data['subset']}"
+                messages.error(request, msg)
+                return render(request, self.template_name, {})
+
+            (
+                data_dfs, projects_no_metric, samples_no_metric
+            ) = get_data_for_plotting(
                 subset_queryset, filter_data["y_axis"]
             )
 
@@ -190,7 +198,9 @@ class Plot(View):
 
             context = {
                 "form": dict(sorted(form.items())), "plot": json_plot_data,
-                "trend": json_trend_data, "skipped": missing_metrics_projects
+                "trend": json_trend_data,
+                "skipped_projects": projects_no_metric,
+                "skipped_samples": samples_no_metric
             }
             return render(request, self.template_name, context)
 
