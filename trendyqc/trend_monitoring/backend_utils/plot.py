@@ -121,6 +121,7 @@ def get_data_for_plotting(
     """
 
     list_df = []
+    missing_metrics_projects = {}
 
     for metric in metrics:
         # get the filter string needed to get the metric data from the queryset
@@ -133,16 +134,23 @@ def get_data_for_plotting(
         for row in report_sample_queryset.values(
             "sample__sample_id", "report__date", "report__project_name", metric_filter
         ):
-            sample_id = row["sample__sample_id"]
-            report_date = row["report__date"]
-            report_project_name = row["report__project_name"]
-            data.setdefault(sample_id, {})
-            data[sample_id][f"{report_date}|{report_project_name}"] = row[metric_filter]
+            if row[metric_filter] is None:
+                missing_metrics_projects.setdefault(
+                    metric, set()
+                ).add(row["report__project_name"])
+            else:
+                sample_id = row["sample__sample_id"]
+                report_date = row["report__date"]
+                report_project_name = row["report__project_name"]
+                data.setdefault(sample_id, {})
+                data[sample_id][f"{report_date}|{report_project_name}"] = row[metric_filter]
+
+        df_data = pd.DataFrame(data)
 
         # convert dict into a dataframe
-        list_df.append(pd.DataFrame(data))
+        list_df.append(df_data)
 
-    return list_df
+    return list_df, missing_metrics_projects
 
 
 def get_metric_filter(metric: str) -> str:
