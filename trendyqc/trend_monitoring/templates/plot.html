@@ -14,11 +14,19 @@
 </div>
 {% endif %}
 
-<div style="width:90%; margin: auto; padding: 10px; ">
-    <p>Plotting filter</p>
-    {% for key, value in form.items %}
-        <ul> - <b>{{ key }}</b>: {{ value }}</ul>
-    {% endfor %}
+<div class="filter" style="width:90%; margin: auto; padding: 10px; ">
+    <!-- 1st inner div: filter for obtaining a subset of runs -->
+    <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:20%; padding: 10px;">
+        <h5>Plotting filter</h5>
+        {% for key, value in form.items %}
+            <ul> - <b>{{ key }}</b>: {{ value }}</ul>
+        {% endfor %}
+    </div>
+    <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:20%; padding: 10px;">
+        <form action="{% url 'Plot' %}" method="post"> {% csrf_token %}
+                <input type="submit" value="Go back to dashboard">
+        </form>
+    </div>
 </div>
 
 <div id="plot-div"></div>
