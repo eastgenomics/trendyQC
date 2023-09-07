@@ -2,8 +2,8 @@ import json
 from statistics import median
 from typing import Dict
 
+import numpy as np
 import pandas as pd
-import plotly.graph_objs as go
 
 from django.apps import apps
 from django.core.exceptions import FieldError
@@ -121,36 +121,52 @@ def get_data_for_plotting(
     """
 
     list_df = []
-    missing_metrics_projects = {}
+    projects_no_metrics = {}
+    samples_no_metric = {}
 
     for metric in metrics:
         # get the filter string needed to get the metric data from the queryset
         metric_filter = get_metric_filter(metric)
+        metric_field = metric_filter.split("__")[-1]
 
-        data = {}
+        df = pd.DataFrame(
+            report_sample_queryset.values(
+                "sample__sample_id", "report__date",
+                "report__project_name", metric_filter
+            )
+        )
 
-        # loop through the queryset and extract sample id, date of report and
-        # metric
-        for row in report_sample_queryset.values(
-            "sample__sample_id", "report__date", "report__project_name", metric_filter
-        ):
-            if row[metric_filter] is None:
-                missing_metrics_projects.setdefault(
-                    metric, set()
-                ).add(row["report__project_name"])
-            else:
-                sample_id = row["sample__sample_id"]
-                report_date = row["report__date"]
-                report_project_name = row["report__project_name"]
-                data.setdefault(sample_id, {})
-                data[sample_id][f"{report_date}|{report_project_name}"] = row[metric_filter]
+        df.columns = ["sample_id", "date", "project_name", metric_field]
 
-        df_data = pd.DataFrame(data)
+        for project_name in df["project_name"].unique():
+            # get subdataframe for a single run
+            data_one_run = df[df["project_name"] == project_name]
+
+            # get the metric series and look for None and NaN
+            none_in_metric_column = data_one_run[metric_field].apply(
+                lambda x: x is None or np.isnan(x)
+            )
+
+            # if all values are None/NaN
+            if all(none_in_metric_column):
+                projects_no_metrics.setdefault(metric, []).append(project_name)
+
+            # if one value is None/NaN
+            elif any(none_in_metric_column):
+                samples_no_metric.setdefault(metric, {})
+                samples_no_metric[metric][project_name] = data_one_run.loc[
+                    none_in_metric_column, "sample_id"
+                ].values
+
+        # filter out the None/NaN values in the metric column
+        pd_data_no_none = df[
+            ~df[metric_field].apply(lambda x: x is None or np.isnan(x))
+        ]
 
         # convert dict into a dataframe
-        list_df.append(df_data)
+        list_df.append(pd_data_no_none)
 
-    return list_df, missing_metrics_projects
+    return list_df, projects_no_metrics, samples_no_metric
 
 
 def get_metric_filter(metric: str) -> str:
@@ -226,18 +242,18 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
     """
 
     date_coloring = {
-        "01": "FF7800",
-        "02": "000000",
-        "03": "969696",
-        "04": "c7962c",
-        "05": "ff1c4d",
-        "06": "ff65ff",
-        "07": "6600cc",
-        "08": "1c6dff",
-        "09": "6ddfff",
-        "10": "ffdf3c",
-        "11": "00cc99",
-        "12": "00a600",
+        1: "FF7800",
+        2: "000000",
+        3: "969696",
+        4: "c7962c",
+        5: "ff1c4d",
+        6: "ff65ff",
+        7: "6600cc",
+        8: "1c6dff",
+        9: "6ddfff",
+        10: "ffdf3c",
+        11: "00cc99",
+        12: "00a600",
     }
 
     # create the list of boxplots that will be displayed in the plot
@@ -255,29 +271,25 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
     median_trace.setdefault("x", [])
     median_trace.setdefault("y", [])
 
-    plot_data = plot_data.sort_index()
+    metric_name = plot_data.columns[-1]
 
-    for index in plot_data.index:
-        report_date, project_name = index.split("|")
+    for project_name in plot_data["project_name"].unique():
+        data_one_run = plot_data[plot_data["project_name"] == project_name]
 
-        month = report_date.split("-")[1]
-        boxplot_color = date_coloring[month]
+        report_date = data_one_run["date"].unique()[0]
+        boxplot_color = date_coloring[report_date.month]
 
-        data_for_one_run = plot_data.loc[[index]].transpose().dropna().to_dict()
-        # sort the data using the values for use in the Plotly computation
-        sorted_data = {
-            k: v for k, v in sorted(
-                data_for_one_run[index].items(), key=lambda item: item[1]
-            )
-        }
+        sub_df = data_one_run.sort_values(
+            metric_name
+        )[["sample_id", metric_name]]
 
         # setup each boxplot with the appropriate annotation and data points
         trace = {
             "x0": project_name,
-            "y": list(sorted_data.values()),
-            "name": report_date,
+            "y": list(sub_df[metric_name].values),
+            "name": str(report_date),
             "type": "box",
-            "text": list(sorted_data.keys()),
+            "text": list(sub_df["sample_id"].values),
             "boxpoints": "suspectedoutliers",
             "marker": {
                 "color": boxplot_color,
@@ -286,7 +298,7 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
         traces.append(trace)
 
         # add median of current boxplot for trend line
-        data_median = median(list(sorted_data.values()))
+        data_median = median(list(sub_df[metric_name].values))
         median_trace["x"].append(project_name)
         median_trace["y"].append(data_median)
 
