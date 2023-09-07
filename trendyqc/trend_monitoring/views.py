@@ -21,7 +21,7 @@ class Dashboard(SingleTableView):
     model = Report
     report_sample_data = Report_Sample.objects.all()
 
-    def get_context_data(self):
+    def _get_context_data(self):
         """ Get the basic data that needs to be displayed in the dashboard page
 
         Returns:
@@ -54,13 +54,13 @@ class Dashboard(SingleTableView):
         context["assays"] = assays
         context["sequencer_ids"] = sequencer_ids
         context["metrics"] = {
-            **self.get_plotable_metrics(bam_qc),
-            **self.get_plotable_metrics(fastq_qc),
-            **self.get_plotable_metrics(vcf_qc)
+            **self._get_plotable_metrics(bam_qc),
+            **self._get_plotable_metrics(fastq_qc),
+            **self._get_plotable_metrics(vcf_qc)
         }
         return context
 
-    def get_plotable_metrics(self, module) -> dict:
+    def _get_plotable_metrics(self, module) -> dict:
         """ Gather all the plotable metrics by model in a dict
 
         Args:
@@ -110,10 +110,10 @@ class Dashboard(SingleTableView):
             ?: Render Django thingy?
         """
 
-        context = self.get_context_data()
+        context = self._get_context_data()
         return render(request, self.template_name, context)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         """ Handle POST request
 
         Args:
@@ -123,7 +123,7 @@ class Dashboard(SingleTableView):
             ?: Render Django thingy? | Redirect thingy towards the Plot view
         """
 
-        context = self.get_context_data()
+        context = self._get_context_data()
         form = FilterForm(request.POST)
 
         # call the clean function and see if the form data is valid
@@ -189,8 +189,13 @@ class Plot(View):
             ) = format_data_for_plotly_js(data_dfs[0])
 
             context = {
-                "form": form, "plot": json_plot_data, "trend": json_trend_data
+                "form": dict(sorted(form.items())), "plot": json_plot_data,
+                "trend": json_trend_data
             }
             return render(request, self.template_name, context)
 
         return render(request, self.template_name)
+
+    def post(self, request):
+        request.session.pop("form", None)
+        return redirect("Dashboard")
