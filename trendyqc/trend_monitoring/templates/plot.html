@@ -15,7 +15,7 @@
 {% endif %}
 
 <div class="filter" style="width:90%; margin: auto; padding: 10px; ">
-    <!-- 1st inner div: filter for obtaining a subset of runs -->
+    <!-- 1st inner div: recap of plotting filter -->
     {% if form %}
         <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%; padding: 10px;">
             <h5>Plotting filter</h5>
@@ -24,6 +24,7 @@
             {% endfor %}
         </div>
     {% endif %}
+    <!-- 2nd potential inner div: collapsible button for displaying projects which didn't have that metric in the database -->
     {% if skipped_projects %}
         <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%; padding: 10px;">
             <p>
@@ -47,6 +48,8 @@
             </div>
         </div>
     {% endif %}
+    <!-- 3rd potential inner div: collapsible button for displaying samples which didn't have that metric -->
+    <!-- Example: X226025-GM2312272-23NGCEN4-9527-F-99347387-FR in 002_230706_A01295_0198_AHHHT5DRX3_CEN for gt_depth_sd in Somalier -->
     {% if skipped_samples %}
         <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%; padding: 10px;">
             <p>
@@ -75,6 +78,7 @@
             </div>
         </div>
     {% endif %}
+    <!-- 4th inner div: div for the reset filter button -->
     <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:10%; padding: 10px;">
         <form action="{% url 'Plot' %}" method="post"> {% csrf_token %}
                 <input type="submit" value="Go back to dashboard">
