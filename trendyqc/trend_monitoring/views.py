@@ -53,11 +53,12 @@ class Dashboard(SingleTableView):
         context["project_names"] = project_names
         context["assays"] = assays
         context["sequencer_ids"] = sequencer_ids
-        context["metrics"] = {
+        plotable_metrics = {
             **self._get_plotable_metrics(bam_qc),
             **self._get_plotable_metrics(fastq_qc),
             **self._get_plotable_metrics(vcf_qc)
         }
+        context["metrics"] = dict(sorted(plotable_metrics.items()))
         return context
 
     def _get_plotable_metrics(self, module) -> dict:
@@ -97,6 +98,8 @@ class Dashboard(SingleTableView):
                 # only get fields with those type for plotability
                 if field_type in ["FloatField", "IntegerField"]:
                     plotable_metrics[model_name_cleaned].append(field.name)
+
+            plotable_metrics[model_name_cleaned].sort()
 
         return plotable_metrics
 
