@@ -283,10 +283,13 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
             metric_name
         )[["sample_id", metric_name]]
 
+        # convert values to native python types for JSON serialisation
+        data_values = [value.item() for value in sub_df[metric_name].values]
+
         # setup each boxplot with the appropriate annotation and data points
         trace = {
             "x0": project_name,
-            "y": list(sub_df[metric_name].values),
+            "y": data_values,
             "name": str(report_date),
             "type": "box",
             "text": list(sub_df["sample_id"].values),
@@ -298,7 +301,7 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
         traces.append(trace)
 
         # add median of current boxplot for trend line
-        data_median = median(list(sub_df[metric_name].values))
+        data_median = median(data_values)
         median_trace["x"].append(project_name)
         median_trace["y"].append(data_median)
 
