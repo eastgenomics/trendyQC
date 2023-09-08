@@ -33,12 +33,16 @@
             </p>
             <div class="collapse" id="collapseSkipped">
                 <div class="card card-body">
+                    <ul>
                     {% for metric, projects in skipped_projects.items %}
-                        <h6>{{ metric }}</h6>
+                        <li>{{ metric }}</li>
+                        <ul>
                         {% for project in projects %}
                             <li>{{ project }}</li>
                         {% endfor %}
+                        </ul>
                     {% endfor %}
+                    </ul>
                 </div>
             </div>
         </div>
@@ -52,17 +56,21 @@
             </p>
             <div class="collapse" id="collapseSkipped">
                 <div class="card card-body">
+                    <ul>
                     {% for metric, projects in skipped_samples.items %}
-                        <h6>{{ metric }}</h6>
-
+                        <li>{{ metric }}</li>
+                        <ul>
                         {% for project, samples in projects.items %}
-                            <h7>{{ project }}</h7>
-
+                            <li>{{ project }}</li>
+                            <ul>
                             {% for sample in samples %}
                                 <li>{{ sample }}</li>
                             {% endfor %}
+                            </ul>
                         {% endfor %}
+                        </ul>
                     {% endfor %}
+                    </ul>
                 </div>
             </div>
         </div>
@@ -83,7 +91,11 @@ plot_data.push(trend_data);
 var layout = {
     xaxis: {
         type: "category",
-        title: "Date",
+        automargin: true,
+        title: {
+            text: "Projects (ordered by date)",
+            standoff: 10
+        }
     },
     showlegend: false,
     boxgap: 0.1
