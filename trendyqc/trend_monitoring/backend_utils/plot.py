@@ -273,7 +273,7 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
 
     metric_name = plot_data.columns[-1]
 
-    for project_name in plot_data["project_name"].unique():
+    for project_name in plot_data.sort_values("date")["project_name"].unique():
         data_one_run = plot_data[plot_data["project_name"] == project_name]
 
         report_date = data_one_run["date"].unique()[0]
