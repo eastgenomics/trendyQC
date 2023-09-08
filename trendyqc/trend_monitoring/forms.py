@@ -42,7 +42,7 @@ class FilterForm(forms.Form):
         start_date = cleaned_data.get("date_start", None)
         end_date = cleaned_data.get("date_end", None)
 
-        if cleaned_data.get("date_start", None):
+        if start_date:
             # clean was converting the type automatically, i need to do it
             # manually now
             start_date = datetime.datetime.strptime(
@@ -50,12 +50,11 @@ class FilterForm(forms.Form):
             ).date()
             cleaned_data["date_start"] = start_date
 
-        if cleaned_data.get("date_end", None):
-            end_date = end_date[0]
+        if end_date:
+            end_date = datetime.datetime.strptime(
+                end_date[0], "%Y-%m-%d"
+            ).date()
             cleaned_data["date_end"] = end_date
-
-        if not any(run_subset):
-            self.add_error(None, ValidationError("No subset of runs selected"))
 
         if not start_date and end_date:
             self.add_error(
@@ -68,6 +67,9 @@ class FilterForm(forms.Form):
             now = datetime.date.today()
             cleaned_data["date_end"] = now
             end_date = now
+
+        if not any(run_subset):
+            self.add_error(None, ValidationError("No subset of runs selected"))
 
         # basic check if the start date is later than the end date
         if end_date and start_date:
