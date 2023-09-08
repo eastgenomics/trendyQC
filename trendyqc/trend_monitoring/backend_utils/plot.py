@@ -106,18 +106,21 @@ def get_subset_queryset(data: Dict) -> QuerySet:
 
 def get_data_for_plotting(
     report_sample_queryset: QuerySet, metrics: list
-) -> pd.DataFrame:
+) -> list:
     """ Get the data from the queryset in a Pandas dataframe.
 
     Args:
         report_sample_queryset (QuerySet): Report sample queryset
         metrics (list): Metrics that we want to plot on the Y-axis.
-        Defaults to "total_sequences" for testing purposes.
 
     Returns:
-        pd.DataFrame: Dataframe that looks like this:
-                sample1 sample2 sample3
-            date1 	value1 	value2 	value3
+        list: List of Dataframes for every metric. Each dataframe has the
+        following format:
+            sample_id   date   project_name   metric_field
+        0   sample1 date1   name1   value1
+        1   sample2 date1   name1   value2
+        2   sample3 date1   name2   value3
+        3   sample4 date2   name3   value4
     """
 
     list_df = []
