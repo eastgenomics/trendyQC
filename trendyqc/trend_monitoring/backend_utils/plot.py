@@ -171,26 +171,22 @@ def get_data_for_plotting(
             # get subdataframe for a single run
             data_one_run = df[df["project_name"] == project_name]
 
-            # get the metric series and look for None and NaN
-            none_in_metric_column = data_one_run[metric_field].apply(
-                lambda x: x is None or np.isnan(x)
-            )
+            # get the metric series
+            metric_series = data_one_run[metric_field]
 
             # if all values are None/NaN
-            if all(none_in_metric_column):
+            if metric_series.isnull().all():
                 projects_no_metrics.setdefault(metric, []).append(project_name)
 
             # if one value is None/NaN
-            elif any(none_in_metric_column):
+            elif metric_series.isnull().any():
                 samples_no_metric.setdefault(metric, {})
                 samples_no_metric[metric][project_name] = data_one_run.loc[
-                    none_in_metric_column, "sample_id"
+                    metric_series.isna()
                 ].values
 
         # filter out the None/NaN values in the metric column
-        pd_data_no_none = df[
-            ~df[metric_field].apply(lambda x: x is None or np.isnan(x))
-        ]
+        pd_data_no_none = df[~df[metric_field].isna()]
 
         # convert dict into a dataframe
         list_df.append(pd_data_no_none)
