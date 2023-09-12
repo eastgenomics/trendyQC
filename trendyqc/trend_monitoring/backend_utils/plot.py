@@ -117,11 +117,14 @@ def get_data_for_plotting(
     Returns:
         list: List of Dataframes for every metric. Each dataframe has the
         following format:
-            sample_id   date   project_name   metric_field
-        0   sample1 date1   name1   value1
-        1   sample2 date1   name1   value2
-        2   sample3 date1   name2   value3
-        3   sample4 date2   name3   value4
+            +-----------+-------+--------------+--------------+
+            | sample_id | date  | project_name | metric_field |
+            +-----------+-------+--------------+--------------+
+            | sample1   | date1 | name1        | value1       |
+            | sample2   | date1 | name1        | value2       |
+            | sample3   | date1 | name2        | value3       |
+            | sample4   | date2 | name3        | value4       |
+            +-----------+-------+--------------+--------------+
 
         dict: Dict containing the projects for which no metric values were
         found.
@@ -257,11 +260,14 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
         plot_data (pd.DataFrame): Pandas Dataframe containing the data to plot
 
     Example format:
-            sample_id   date   project_name   metric_field
-        0   sample1 date1   name1   value1
-        1   sample2 date1   name1   value2
-        2   sample3 date1   name2   value3
-        3   sample4 date2   name3   value4
+        +-----------+-------+--------------+--------------+
+        | sample_id | date  | project_name | metric_field |
+        +-----------+-------+--------------+--------------+
+        | sample1   | date1 | name1        | value1       |
+        | sample2   | date1 | name1        | value2       |
+        | sample3   | date1 | name2        | value3       |
+        | sample4   | date2 | name3        | value4       |
+        +-----------+-------+--------------+--------------+
 
     Returns:
         str: Serialized string of the boxplot data that needs to be plotted
