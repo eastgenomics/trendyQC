@@ -2,8 +2,8 @@ import json
 from statistics import median
 from typing import Dict
 
+import numpy as np
 import pandas as pd
-import plotly.graph_objs as go
 
 from django.apps import apps
 from django.core.exceptions import FieldError
@@ -37,8 +37,8 @@ def prepare_filter_data(filter_recap: Dict) -> Dict:
 
     data = {}
     data.setdefault("subset", {})
-    data.setdefault("x_axis", {})
-    data.setdefault("y_axis", {})
+    data.setdefault("x_axis", [])
+    data.setdefault("y_axis", [])
 
     for field, value in filter_recap.items():
         # I'm setting a list by default because I want the user to be able to
@@ -47,7 +47,11 @@ def prepare_filter_data(filter_recap: Dict) -> Dict:
             "assay_select", "run_select", "sequencer_select"
         ]:
             data["subset"].setdefault(field, [])
-            data["subset"][field].append(value)
+
+            if isinstance(value, list):
+                data["subset"][field].extend(value)
+            else:
+                data["subset"][field].append(value)
 
         # this is kept separated from the above because you can input only one
         # date range
@@ -56,12 +60,10 @@ def prepare_filter_data(filter_recap: Dict) -> Dict:
             data["subset"][field] = value
 
         if field == "metrics_x":
-            data["x_axis"].setdefault(field, "")
-            data["x_axis"][field] = value
+            data["x_axis"].extend(value)
 
         if field == "metrics_y":
-            data["y_axis"].setdefault(field, "")
-            data["y_axis"][field] = value
+            data["y_axis"].extend(value)
 
     return data
 
@@ -103,41 +105,93 @@ def get_subset_queryset(data: Dict) -> QuerySet:
 
 
 def get_data_for_plotting(
-    report_sample_queryset: QuerySet, metric: str = "total_sequences"
-) -> pd.DataFrame:
-    """ Get the data from the queryset in a Pandas dataframe.
+    report_sample_queryset: QuerySet, metrics: list
+) -> list:
+    """ Get the data from the queryset in a Pandas dataframe. Find projects and
+    samples for which the metric is not present or empty
 
     Args:
         report_sample_queryset (QuerySet): Report sample queryset
-        metric (str, optional): Metric that we want to plot on the Y-axis.
-        Defaults to "total_sequences" for testing purposes.
+        metrics (list): Metrics that we want to plot on the Y-axis.
 
     Returns:
-        pd.DataFrame: Dataframe that looks like this:
-                sample1 sample2 sample3
-            date1 	value1 	value2 	value3
+        list: List of Dataframes for every metric. Each dataframe has the
+        following format:
+            +-----------+-------+--------------+--------------+
+            | sample_id | date  | project_name | metric_field |
+            +-----------+-------+--------------+--------------+
+            | sample1   | date1 | name1        | value1       |
+            | sample2   | date1 | name1        | value2       |
+            | sample3   | date1 | name2        | value3       |
+            | sample4   | date2 | name3        | value4       |
+            +-----------+-------+--------------+--------------+
+
+        dict: Dict containing the projects for which no metric values were
+        found.
+        Example format:
+        {
+            metric1: [project1, project2, project3],
+            metric2: [project1, project4]
+        }
+        dict: Dict containing the samples for which no metric values were
+        found.
+        Example format:
+        {
+            metric1: {
+                project1: list_sample1,
+                project2: list_sample2,
+                project3: list_sample3
+            },
+            metric2: {
+                project1: list_sample1,
+                project4: list_sample4
+            }
+        }
     """
 
-    # get the filter string needed to get the metric data from the queryset
-    metric_filter = get_metric_filter(metric)
+    list_df = []
+    projects_no_metrics = {}
+    samples_no_metric = {}
 
-    data = {}
+    for metric in metrics:
+        # get the filter string needed to get the metric data from the queryset
+        metric_filter = get_metric_filter(metric)
+        metric_field = metric_filter.split("__")[-1]
 
-    # loop through the queryset and extract sample id, date of report and
-    # metric
-    for row in report_sample_queryset.values(
-        "sample__sample_id", "report__date", "report__project_name", metric_filter
-    ):
-        sample_id = row["sample__sample_id"]
-        report_date = row["report__date"]
-        report_project_name = row["report__project_name"]
-        data.setdefault(sample_id, {})
-        data[sample_id][f"{report_date}|{report_project_name}"] = row[metric_filter]
+        df = pd.DataFrame(
+            report_sample_queryset.values(
+                "sample__sample_id", "report__date",
+                "report__project_name", metric_filter
+            )
+        )
 
-    # convert dict into a dataframe
-    data_df = pd.DataFrame(data)
+        df.columns = ["sample_id", "date", "project_name", metric_field]
 
-    return data_df
+        for project_name in df["project_name"].unique():
+            # get subdataframe for a single run
+            data_one_run = df[df["project_name"] == project_name]
+
+            # get the metric series
+            metric_series = data_one_run[metric_field]
+
+            # if all values are None/NaN
+            if metric_series.isnull().all():
+                projects_no_metrics.setdefault(metric, []).append(project_name)
+
+            # if one value is None/NaN
+            elif metric_series.isnull().any():
+                samples_no_metric.setdefault(metric, {})
+                samples_no_metric[metric][project_name] = data_one_run.loc[
+                    metric_series.isna()
+                ].values
+
+        # filter out the None/NaN values in the metric column
+        pd_data_no_none = df[~df[metric_field].isna()]
+
+        # convert dict into a dataframe
+        list_df.append(pd_data_no_none)
+
+    return list_df, projects_no_metrics, samples_no_metric
 
 
 def get_metric_filter(metric: str) -> str:
@@ -202,10 +256,14 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
         plot_data (pd.DataFrame): Pandas Dataframe containing the data to plot
 
     Example format:
-            sample1 sample2 sample3 sample4 sample5 sample6 sample7 sample8
-    run1    value1  value2  value3  NA  NA  NA  NA  NA
-    run2    NA  NA  NA  value4  value5  value6  NA  NA
-    run3    NA  NA  NA  NA  NA  NA  value7  value8
+        +-----------+-------+--------------+--------------+
+        | sample_id | date  | project_name | metric_field |
+        +-----------+-------+--------------+--------------+
+        | sample1   | date1 | name1        | value1       |
+        | sample2   | date1 | name1        | value2       |
+        | sample3   | date1 | name2        | value3       |
+        | sample4   | date2 | name3        | value4       |
+        +-----------+-------+--------------+--------------+
 
     Returns:
         str: Serialized string of the boxplot data that needs to be plotted
@@ -213,18 +271,18 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
     """
 
     date_coloring = {
-        "01": "FF7800",
-        "02": "000000",
-        "03": "969696",
-        "04": "c7962c",
-        "05": "ff1c4d",
-        "06": "ff65ff",
-        "07": "6600cc",
-        "08": "1c6dff",
-        "09": "6ddfff",
-        "10": "ffdf3c",
-        "11": "00cc99",
-        "12": "00a600",
+        1: "FF7800",
+        2: "000000",
+        3: "969696",
+        4: "c7962c",
+        5: "ff1c4d",
+        6: "ff65ff",
+        7: "6600cc",
+        8: "1c6dff",
+        9: "6ddfff",
+        10: "ffdf3c",
+        11: "00cc99",
+        12: "00a600",
     }
 
     # create the list of boxplots that will be displayed in the plot
@@ -242,29 +300,28 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
     median_trace.setdefault("x", [])
     median_trace.setdefault("y", [])
 
-    plot_data = plot_data.sort_index()
+    metric_name = plot_data.columns[-1]
 
-    for index in plot_data.index:
-        report_date, project_name = index.split("|")
+    for project_name in plot_data.sort_values("date")["project_name"].unique():
+        data_one_run = plot_data[plot_data["project_name"] == project_name]
 
-        month = report_date.split("-")[1]
-        boxplot_color = date_coloring[month]
+        report_date = data_one_run["date"].unique()[0]
+        boxplot_color = date_coloring[report_date.month]
 
-        data_for_one_run = plot_data.loc[[index]].transpose().dropna().to_dict()
-        # sort the data using the values for use in the Plotly computation
-        sorted_data = {
-            k: v for k, v in sorted(
-                data_for_one_run[index].items(), key=lambda item: item[1]
-            )
-        }
+        sub_df = data_one_run.sort_values(
+            metric_name
+        )[["sample_id", metric_name]]
+
+        # convert values to native python types for JSON serialisation
+        data_values = [value.item() for value in sub_df[metric_name].values]
 
         # setup each boxplot with the appropriate annotation and data points
         trace = {
             "x0": project_name,
-            "y": list(sorted_data.values()),
-            "name": report_date,
+            "y": data_values,
+            "name": str(report_date),
             "type": "box",
-            "text": list(sorted_data.keys()),
+            "text": list(sub_df["sample_id"].values),
             "boxpoints": "suspectedoutliers",
             "marker": {
                 "color": boxplot_color,
@@ -273,7 +330,7 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
         traces.append(trace)
 
         # add median of current boxplot for trend line
-        data_median = median(list(sorted_data.values()))
+        data_median = median(data_values)
         median_trace["x"].append(project_name)
         median_trace["y"].append(data_median)
 

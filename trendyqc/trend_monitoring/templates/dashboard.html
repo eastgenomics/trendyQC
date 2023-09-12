@@ -6,6 +6,10 @@
 {% block dashboard %}
 
 <div style="width:90%; margin: auto; padding: 10px;">
+<p>There are <b>{{ project_names|length }}</b> projects currently in TrendyQC.</p>
+</div>
+
+<div style="width:90%; margin: auto; padding: 10px;">
     {% render_table table %}
 </div>
 
@@ -35,57 +39,65 @@
 <br>
 
 <form action="{% url 'Dashboard' %}" method="post"> {% csrf_token %}
+    <!-- Div for 3 inner divs that will occupy the page horizontally -->
     <div class="filter" style="width:90%; margin: auto; padding: 10px; ">
+        <!-- 1st inner div: filter for obtaining a subset of runs -->
         <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%">
             <h5>Subset selection (select at least one)</h5>
             <div>
-                <p>Assay: 
-                    <select name="assay_select">
-                        <option value="">Select an assay</option>
+                <ul>
+                    <select class="multiselect" name="assay_select" multiple title="Choose an assay">
                         {% for assay in assays %}
                             <option value="{{ assay }}">{{ assay }}</option>
                         {% endfor %}
                     </select>
-                </p>
-                <p>Runs: 
-                    <select name="run_select">
-                        <option value="">Select a run</option>
-                        {% for report in report_data|dictsort:"project_name" %}
-                            <option value="{{ report.project_name }}">{{ report.project_name }}</option>
+                </ul>
+                <ul>
+                    <select class="multiselect" name="run_select" multiple title="Choose a run">
+                        {% for project_name in project_names %}
+                            <option value="{{ project_name }}">{{ project_name }}</option>
                         {% endfor %}
                     </select>
-                </p>
-                <p>Sequencer ID: 
-                    <select name="sequencer_select">
-                        <option value="">Select a sequencer ID</option>
+                </ul>
+                <ul>
+                    <select class="multiselect" name="sequencer_select" multiple title="Choose a sequencer id">
                         {% for sequencer_id in sequencer_ids %}
                             <option value="{{ sequencer_id }}">{{ sequencer_id }}</option>
                         {% endfor %}
                     </select>
-                </p>
-                <p>Date range: 
+                </ul>
+                <ul>
                     <input type="date" name="date_start"> - <input type="date" name="date_end">
-                </p>
+                </ul>
             </div>
         </div>
 
+        <!-- 2nd inner div: Metrics for x-axis -->
         <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%">
-            <h5>X axis</h5>
-            <p> Metrics (optional): 
-                <select name="metrics_x">
-                    <option value="">Select a metric</option>
-                </select>
-            </p>
+            <h5>X axis - Metrics</h5>
+            <select class="multiselect" name="metrics_x" disabled title="Choose a metric">
+                {% for model, fields in metrics.items %}
+                    <optgroup label={{ model }}>
+                        {% for field in fields %}
+                            <option data-subtext="{{ model }}" data-tokens="{{ model }} {{ field }}" value={{ field }}>{{ field }}</option>
+                        {% endfor %}
+                    </optgroup>
+                {% endfor %}
+            </select>
         </div>
 
+        <!-- 3rd inner div: Metrics for y-axis -->
         <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:18%">
-            <h5>Y axis</h5>
-            <label id="metrics_y">Metrics: 
-                <select name="metrics_y">
-                    <option value="">Select a metric</option>
-                    <option value="testing">Testing</option>
-                </select>
-            </label>
+            <h5>Y axis - Metrics</h5>
+            <select class="multiselect" name="metrics_y" title="Choose a metric">
+                {% for model, fields in metrics.items %}
+                    <optgroup label={{ model }}>
+                        {% for field in fields %}
+                            <option data-subtext="{{ model }}" data-tokens="{{ model }} {{ field }}" value={{ field }}>{{ field }}</option>
+                        {% endfor %}
+                    </optgroup>
+                {% endfor %}
+            </select>
         </div>
     </div>
 
@@ -105,5 +117,13 @@
         {% endfor %}
     </div>
 {% endif %}
+
+<script>
+$(function () {
+    $(".multiselect").selectpicker({
+        liveSearch: true
+    });
+});
+</script>
 
 {% endblock %}
