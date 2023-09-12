@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.views import View
@@ -13,6 +15,8 @@ from .backend_utils.plot import (
     get_subset_queryset, get_data_for_plotting, prepare_filter_data,
     format_data_for_plotly_js
 )
+
+logger = logging.getLogger("basic")
 
 
 class Dashboard(SingleTableView):
@@ -188,12 +192,16 @@ class Plot(View):
                 subset_queryset, filter_data["y_axis"]
             )
 
-            if len(data_dfs) > 1:
+            if len(data_dfs) != 1:
                 msg = (
-                    "Only one metric can be plotted at a time. Plotting: "
-                    f"{filter_data['y_axis'][0]}"
+                    "An issue has occurred. Please contact the bioinformatics "
+                    "team."
                 )
                 messages.warning(request, msg)
+                logger.debug(
+                    "An error occurred using the following filtering data: "
+                    f"{filter_data}"
+                )
 
             (
                 json_plot_data, json_trend_data
