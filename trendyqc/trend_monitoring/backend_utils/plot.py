@@ -154,8 +154,10 @@ def get_data_for_plotting(
     samples_no_metric = {}
 
     for metric in metrics:
+        model, form_metric = metric.split("|")
+
         # get the filter string needed to get the metric data from the queryset
-        metric_filter = get_metric_filter(metric)
+        metric_filter = get_metric_filter(model, form_metric)
         metric_field = metric_filter.split("__")[-1]
 
         df = pd.DataFrame(
@@ -194,12 +196,13 @@ def get_data_for_plotting(
     return list_df, projects_no_metrics, samples_no_metric
 
 
-def get_metric_filter(metric: str) -> str:
+def get_metric_filter(form_model: str, form_metric: str) -> str:
     """ Get the metric filter needed to extract the metric data from the
     queryset
 
     Args:
-        metric (str): Metric name
+        form_model (str): Model name from the form
+        form_metric (str): Metric name from the form
 
     Returns:
         str: String containing the metric in a Django format for querying the
@@ -214,13 +217,10 @@ def get_metric_filter(metric: str) -> str:
         model_name = model.__name__.lower()
 
         for field in model._meta.get_fields():
-            if field.name == metric:
-                metric_filter_dict[model_name] = f"{model_name}__{metric}"
+            if (field.name == form_metric) and (model_name == form_model):
+                metric_filter_dict[model_name] = f"{model_name}__{field.name}"
 
-    assert metric_filter_dict, f"{metric} does not exist in any model"
-    assert len(metric_filter_dict) == 1, (
-        f"{metric} is present in '{', '.join(metric_filter_dict.keys())}'"
-    )
+    assert metric_filter_dict, f"{form_metric} does not exist in any model"
 
     original_metric_filter = list(metric_filter_dict.values())[0]
 
