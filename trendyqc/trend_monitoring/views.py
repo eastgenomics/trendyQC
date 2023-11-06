@@ -89,11 +89,7 @@ class Dashboard(SingleTableView):
         )
 
         for model_name, model in module_dict.items():
-            # remove some unnecessary bits of the model name
-            model_name_cleaned = model_name.replace(
-                "_data", ""
-            ).replace("_metrics", "")
-            plotable_metrics.setdefault(model_name_cleaned, [])
+            plotable_metrics.setdefault(model_name, [])
 
             for field in model._meta.fields:
                 # get the type of the field
@@ -101,9 +97,9 @@ class Dashboard(SingleTableView):
 
                 # only get fields with those type for plotability
                 if field_type in ["FloatField", "IntegerField"]:
-                    plotable_metrics[model_name_cleaned].append(field.name)
+                    plotable_metrics[model_name].append(field.name)
 
-            plotable_metrics[model_name_cleaned].sort()
+            plotable_metrics[model_name].sort()
 
         return plotable_metrics
 

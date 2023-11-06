@@ -86,4 +86,8 @@ class FilterForm(forms.Form):
         if not cleaned_data.get("metrics_y", None):
             self.add_error(None, ValidationError("No Y-axis metric selected"))
 
+        cleaned_data["metrics_y"] = [
+            ele.lower() for ele in cleaned_data["metrics_y"]
+        ]
+
         return cleaned_data
