@@ -3,13 +3,14 @@ import logging
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.views import View
+from django.views.generic.base import TemplateView
 
-from django_tables2 import SingleTableView
+from django_tables2 import MultiTableMixin
 
-from trend_monitoring.models.metadata import Report, Report_Sample
+from trend_monitoring.models.metadata import Report, Report_Sample, Filter
 from trend_monitoring.models import bam_qc, fastq_qc, vcf_qc
 
-from .tables import ReportTable
+from .tables import ReportTable, FilterTable
 from .forms import FilterForm
 from .backend_utils.plot import (
     get_subset_queryset, get_data_for_plotting, prepare_filter_data,
@@ -19,11 +20,18 @@ from .backend_utils.plot import (
 logger = logging.getLogger("basic")
 
 
-class Dashboard(SingleTableView):
+class Dashboard(MultiTableMixin, TemplateView):
     template_name = "dashboard.html"
-    table_class = ReportTable
-    model = Report
     report_sample_data = Report_Sample.objects.all()
+    tables = [
+        ReportTable(Report.objects.all()),
+        FilterTable(Filter.objects.all())
+    ]
+    model = Report
+
+    table_pagination = {
+        "per_page": 10
+    }
 
     def _get_context_data(self):
         """ Get the basic data that needs to be displayed in the dashboard page
