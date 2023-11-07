@@ -7,7 +7,8 @@ from django.views.generic.base import TemplateView
 
 from django_tables2 import MultiTableMixin
 
-from trend_monitoring.models.metadata import Report, Report_Sample, Filter
+from trend_monitoring.models.metadata import Report, Report_Sample
+from trend_monitoring.models.filters import Filter
 from trend_monitoring.models import bam_qc, fastq_qc, vcf_qc
 
 from .tables import ReportTable, FilterTable
@@ -16,6 +17,7 @@ from .backend_utils.plot import (
     get_subset_queryset, get_data_for_plotting, prepare_filter_data,
     format_data_for_plotly_js
 )
+from .backend_utils.import_data import import_filter
 
 logger = logging.getLogger("basic")
 
@@ -137,12 +139,24 @@ class Dashboard(MultiTableMixin, TemplateView):
         context = self._get_context_data()
         form = FilterForm(request.POST)
 
+
         # call the clean function and see if the form data is valid
         if form.is_valid():
-            # save the cleaned data in the session so that it gets passed to
-            # the Plot view
-            request.session["form"] = form.cleaned_data
-            return redirect("Plot")
+            if "plot" in request.POST:
+                # save the cleaned data in the session so that it gets passed to
+                # the Plot view
+                request.session["form"] = form.cleaned_data
+                return redirect("Plot")
+
+            elif "save_filter" in request.POST:
+                filter_name = request.POST["save_filter"]
+
+                if filter_name != "Save filter":
+                    msg = import_filter(filter_name, form.cleaned_data)
+                    request.session["filter_msg"] = msg
+
+                return redirect("Dashboard")
+
         else:
             # add the errors for displaying in the dashboard template
             for error_field in form.errors:
@@ -222,5 +236,15 @@ class Plot(View):
         return render(request, self.template_name)
 
     def post(self, request):
-        request.session.pop("form", None)
-        return redirect("Dashboard")
+        if "dashboard" in request.POST:
+            request.session.pop("form", None)
+            return redirect("Dashboard")
+
+        elif "save_filter" in request.POST:
+            filter_name = request.POST["save_filter"]
+
+            if filter_name != "Save filter":
+                msg = import_filter(filter_name, request.session.get("form"))
+                request.session["filter_msg"] = msg
+
+            return redirect("Plot")
