@@ -139,7 +139,6 @@ class Dashboard(MultiTableMixin, TemplateView):
         context = self._get_context_data()
         form = FilterForm(request.POST)
 
-
         # call the clean function and see if the form data is valid
         if form.is_valid():
             if "plot" in request.POST:
@@ -152,8 +151,8 @@ class Dashboard(MultiTableMixin, TemplateView):
                 filter_name = request.POST["save_filter"]
 
                 if filter_name != "Save filter":
-                    msg = import_filter(filter_name, form.cleaned_data)
-                    request.session["filter_msg"] = msg
+                    msg, msg_status = import_filter(filter_name, form.cleaned_data)
+                    messages.add_message(request, msg_status, f"{msg}")
 
                 return redirect("Dashboard")
 
@@ -244,7 +243,9 @@ class Plot(View):
             filter_name = request.POST["save_filter"]
 
             if filter_name != "Save filter":
-                msg = import_filter(filter_name, request.session.get("form"))
-                request.session["filter_msg"] = msg
+                msg, msg_status = import_filter(
+                    filter_name, request.session.get("form")
+                )
+                messages.add_message(request, msg_status, f"Filter: {msg}")
 
             return redirect("Plot")
