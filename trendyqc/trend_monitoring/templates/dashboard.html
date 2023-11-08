@@ -18,9 +18,11 @@
 
 <br>
 
-<div style="width:90%; margin: auto; padding: 10px;">
-    {% render_table tables.1 %}
-</div>
+<form action="{% url 'Dashboard' %}" method="post" id="filter_use"> {% csrf_token %}
+    <div style="width:90%; margin: auto; padding: 10px;">
+        {% render_table tables.1 %}
+    </div>
+</form>
 
 {% endif %}
 
@@ -92,8 +94,8 @@
     <br>
 
     <div style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; padding-left:5%">
-        <input type="submit" name="plot" value="Plot">
-        <input type="submit" value="Save filter" name="save_filter" id="save_filter" onclick="saveFilter();"/>
+        <input class="btn btn-info" type="submit" name="plot" value="Plot">
+        <input class="btn btn-info" type="submit" value="Save filter" name="save_filter" id="save_filter" onclick="saveFilter();"/>
     </div>
 </form>
 
@@ -110,6 +112,11 @@ function saveFilter() {
     $("#save_filter").val(filter_name);
     $("#filter_form").submit();
 }
+
+// if a button is clicked i.e. the buttons in the filter table submit the filter use form
+$("button").click(function() {
+    $("#filter_use").submit();
+});
 </script>
 
 {% endblock %}
