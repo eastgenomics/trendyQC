@@ -1,5 +1,7 @@
+from datetime import date, datetime
 import json
 
+from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
 
 from trend_monitoring.models.filters import Filter
@@ -27,9 +29,32 @@ def import_filter(filter_name: str, data: dict) -> str:
         # no filter with that name was found
         pass
     else:
-        return f"Filter {filter_name} already exists"
+        return (f"Filter {filter_name} already exists", messages.ERROR)
 
-    filter_obj = Filter(name=filter_name, content=json.dumps(filter_data))
+    filter_obj = Filter(
+        name=filter_name,
+        content=json.dumps(filter_data, default=serialize_date)
+    )
     filter_obj.save()
 
-    return f"Filter {filter_name} has been created"
+    return (f"Filter {filter_name} has been created", messages.SUCCESS)
+
+
+def serialize_date(obj):
+    """ Serialize the given obj for import in the database
+
+    Args:
+        obj (dict): Dict containing the data that needs to be imported in the
+        database
+
+    Raises:
+        TypeError: Object is not serializable
+
+    Returns:
+        str: String date in isoformat
+    """    
+
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+
+    raise TypeError ("Type %s not serializable" % type(obj))
