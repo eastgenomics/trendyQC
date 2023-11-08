@@ -6,8 +6,6 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from trend_monitoring.models.filters import Filter
 
-from .plot import prepare_filter_data
-
 
 def import_filter(filter_name: str, data: dict) -> str:
     """ Import filter data 
@@ -20,8 +18,6 @@ def import_filter(filter_name: str, data: dict) -> str:
         str: Message to indicate whether the import was successful
     """
 
-    filter_data = prepare_filter_data(data)
-
     # attempt to find an existing filter with the same name
     try:
         Filter.objects.get(name=filter_name)
@@ -33,7 +29,7 @@ def import_filter(filter_name: str, data: dict) -> str:
 
     filter_obj = Filter(
         name=filter_name,
-        content=json.dumps(filter_data, default=serialize_date)
+        content=json.dumps(data, default=serialize_date)
     )
     filter_obj.save()
 
