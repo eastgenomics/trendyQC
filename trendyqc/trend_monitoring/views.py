@@ -1,3 +1,4 @@
+import json
 import logging
 
 from django.contrib import messages
@@ -17,7 +18,7 @@ from .backend_utils.plot import (
     get_subset_queryset, get_data_for_plotting, prepare_filter_data,
     format_data_for_plotly_js
 )
-from .backend_utils.import_data import import_filter
+from .backend_utils.filtering import import_filter
 
 logger = logging.getLogger("basic")
 
@@ -124,6 +125,7 @@ class Dashboard(MultiTableMixin, TemplateView):
         """
 
         context = self._get_context_data()
+        request.session.pop("form", None)
         return render(request, self.template_name, context)
 
     def post(self, request):
@@ -138,6 +140,17 @@ class Dashboard(MultiTableMixin, TemplateView):
 
         context = self._get_context_data()
         form = FilterForm(request.POST)
+        request.session.pop("form", None)
+
+        # button in the filter table has been clicked
+        if "filter_use" in request.POST:
+            # get the filter id from the button value
+            filter_id = request.POST["filter_use"][0]
+            # get the filter obj in the database
+            filter_obj = Filter.objects.get(id=filter_id)
+            # deserialize the filter content for use in the Plot page
+            request.session["form"] = json.loads(filter_obj.content)
+            return redirect("Plot")
 
         # call the clean function and see if the form data is valid
         if form.is_valid():
@@ -150,8 +163,12 @@ class Dashboard(MultiTableMixin, TemplateView):
             elif "save_filter" in request.POST:
                 filter_name = request.POST["save_filter"]
 
+                # the default value that the prompt return is Save filter i.e.
+                # if nothing was inputted the value is Save filter
                 if filter_name != "Save filter":
-                    msg, msg_status = import_filter(filter_name, form.cleaned_data)
+                    msg, msg_status = import_filter(
+                        filter_name, form.cleaned_data
+                    )
                     messages.add_message(request, msg_status, f"{msg}")
 
                 return redirect("Dashboard")
@@ -235,10 +252,13 @@ class Plot(View):
         return render(request, self.template_name)
 
     def post(self, request):
+        # back to dashboard button is clicked
         if "dashboard" in request.POST:
+            # clear the session of the form info
             request.session.pop("form", None)
             return redirect("Dashboard")
 
+        # same save filter logic as in the dashboard view
         elif "save_filter" in request.POST:
             filter_name = request.POST["save_filter"]
 
