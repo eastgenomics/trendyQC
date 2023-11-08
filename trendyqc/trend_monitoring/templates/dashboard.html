@@ -95,22 +95,7 @@
         <input type="submit" name="plot" value="Plot">
         <input type="submit" value="Save filter" name="save_filter" id="save_filter" onclick="saveFilter();"/>
     </div>
-    {% if request.session.filter_msg %}
-        <div>
-            <p>{{ request.session.filter_msg }}</p>
-        <div>
-    {% endif %}
 </form>
-
-<br>
-
-{% if messages %}
-    <div class="alert alert-danger">
-        {% for message in messages %}
-            <ul>{{ message }}</ul>
-        {% endfor %}
-    </div>
-{% endif %}
 
 <script>
 $(function () {
