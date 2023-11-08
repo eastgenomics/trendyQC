@@ -71,13 +71,13 @@
     <!-- 4th inner div: div for the reset filter button -->
     <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:10%; padding: 10px;">
         <form action="{% url "Plot" %}" method="post" id="return_dashboard"> {% csrf_token %}
-                <input type="submit" name="dashboard" value="Go back to dashboard">
+                <input class="btn btn-info" type="submit" name="dashboard" value="Go back to dashboard">
         </form>
 
         <br><br>
 
         <form action="{% url "Plot" %}" method="post" id="filter_form"> {% csrf_token %}
-            <input type="submit" value="Save filter" name="save_filter" id="save_filter" onclick="saveFilter();"/>
+            <input class="btn btn-info" type="submit" value="Save filter" name="save_filter" id="save_filter" onclick="saveFilter();"/>
         </form>
     </div>
 </div>
