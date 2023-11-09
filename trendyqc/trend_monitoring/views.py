@@ -145,7 +145,7 @@ class Dashboard(MultiTableMixin, TemplateView):
         # button in the filter table has been clicked
         if "filter_use" in request.POST:
             # get the filter id from the button value
-            filter_id = request.POST["filter_use"][0]
+            filter_id = request.POST["filter_use"]
             # get the filter obj in the database
             filter_obj = Filter.objects.get(id=filter_id)
             # deserialize the filter content for use in the Plot page
