@@ -18,6 +18,8 @@ def import_filter(filter_name: str, data: dict) -> str:
         str: Message to indicate whether the import was successful
     """
 
+    del data["save_filter"]
+
     # attempt to find an existing filter with the same name
     try:
         Filter.objects.get(name=filter_name)
