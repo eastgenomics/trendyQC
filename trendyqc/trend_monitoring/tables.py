@@ -1,3 +1,7 @@
+from collections import OrderedDict
+import json
+
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 import django_tables2 as tables
@@ -35,3 +39,22 @@ class FilterTable(tables.Table):
     class Meta:
         model = Filter
         order_by = "name"
+
+    def render_content(self, value):
+        order_key = [
+            "assay", "run", "sequencer",
+            "metrixs_x", "metrics_y",
+            "date_start", "date_end",
+        ]
+
+        value = json.loads(value)
+        # remove the select from the keys, and join the value if necessary
+        value = {
+            k.replace("_select", ""): (";".join(v) if isinstance(v, list) else v)
+            for k, v in value.items()
+        }
+        # order the dict for displaying in the filter table
+        value = OrderedDict((k, value[k]) for k in order_key if k in value)
+        # add bold for the key
+        value = [f"<b>{k}</b>: {v}" for k, v in value.items()]
+        return format_html(" | ".join(value))
