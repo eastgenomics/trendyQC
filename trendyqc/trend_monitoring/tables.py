@@ -19,6 +19,15 @@ class FilterButton(tables.Column):
         )
 
 
+class DeleteFilterButton(tables.Column): 
+    empty_values = list()
+
+    def render(self, value, record): 
+        return mark_safe(
+            f'<button value="{record.id}" name="delete_filter" class="btn btn-danger">Delete filter</button>'
+        )
+
+
 class ReportTable(tables.Table):
     name = tables.Column()
     project_id = tables.Column(orderable=False)
@@ -35,6 +44,7 @@ class FilterTable(tables.Table):
     name = tables.Column()
     content = tables.Column()
     apply_filter = FilterButton()
+    delete_filter = DeleteFilterButton()
 
     class Meta:
         model = Filter
