@@ -43,10 +43,8 @@ class Dashboard(MultiTableMixin, TemplateView):
             dict: Dict of report and assay data to be passed to the dashboard
         """
 
-        # object list needs to be defined for SingleTableViews but i have no
-        # need for it
-        # get the default context data (the one i need is one called table)
-        context = super().get_context_data(object_list="")
+        # get the default context data (the one key i need is one called tables)
+        context = super().get_context_data()
 
         # get all the assays and sort them
         assays = sorted({
@@ -142,7 +140,7 @@ class Dashboard(MultiTableMixin, TemplateView):
         form = FilterForm(request.POST)
         request.session.pop("form", None)
 
-        # button in the filter table has been clicked
+        # Use filter button in the filter table has been clicked
         if "filter_use" in request.POST:
             # get the filter id from the button value
             filter_id = request.POST["filter_use"]
@@ -151,6 +149,33 @@ class Dashboard(MultiTableMixin, TemplateView):
             # deserialize the filter content for use in the Plot page
             request.session["form"] = json.loads(filter_obj.content)
             return redirect("Plot")
+
+        # Delete filter button in the filter table has been clicked
+        if "delete_filter" in request.POST:
+            # get the filter id from the button value
+            filter_id = request.POST["delete_filter"]
+            # get the filter obj in the database
+            filter_obj = Filter.objects.get(id=filter_id)
+            filter_name = filter_obj.name
+            
+            try:
+                # delete the filter
+                filter_obj.delete()
+            except Exception as e:
+                messages.add_message(
+                    request, messages.ERROR,
+                    (
+                        f"Couldn't delete {filter_name}. "
+                        "Please contact the bioinformatics team"
+                    )
+                )
+                logger.error(f"Issue with trying to delete {filter_name}: {e}")
+            else:
+                msg = f"Filter {filter_name} has been deleted."
+                messages.add_message(request, messages.SUCCESS, msg)
+                logger.info(msg)
+
+            return redirect("Dashboard")
 
         # call the clean function and see if the form data is valid
         if form.is_valid():
@@ -170,6 +195,7 @@ class Dashboard(MultiTableMixin, TemplateView):
                         filter_name, form.cleaned_data
                     )
                     messages.add_message(request, msg_status, f"{msg}")
+                    logger.info(msg)
 
                 return redirect("Dashboard")
 
@@ -267,5 +293,6 @@ class Plot(View):
                     filter_name, request.session.get("form")
                 )
                 messages.add_message(request, msg_status, f"Filter: {msg}")
+                logger.info(msg)
 
             return redirect("Plot")
