@@ -133,8 +133,13 @@ class Dashboard(MultiTableMixin, TemplateView):
         # to resetup the pagination
         # i have no idea what this code does tbh
         table_counter = count()
-        filter_table.prefix = filter_table.prefix or self.table_prefix.format(next(table_counter))
-        RequestConfig(self.request, paginate=self.get_table_pagination(filter_table)).configure(filter_table)
+        filter_table.prefix = (
+            filter_table.prefix or 
+            self.table_prefix.format(next(table_counter))
+        )
+        RequestConfig(
+            self.request, paginate=self.get_table_pagination(filter_table)
+        ).configure(filter_table)
 
         context["tables"].append(filter_table)
 
