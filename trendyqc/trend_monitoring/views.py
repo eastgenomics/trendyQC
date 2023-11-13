@@ -1,3 +1,4 @@
+from itertools import count
 import json
 import logging
 
@@ -7,6 +8,7 @@ from django.views import View
 from django.views.generic.base import TemplateView
 
 from django_tables2 import MultiTableMixin
+from django_tables2.config import RequestConfig
 
 from trend_monitoring.models.metadata import Report, Report_Sample
 from trend_monitoring.models.filters import Filter
@@ -44,8 +46,6 @@ class Dashboard(MultiTableMixin, TemplateView):
 
         # get the default context data (the one key i need is one called tables)
         context = super().get_context_data()
-
-        context["tables"].append(FilterTable(Filter.objects.all()))
 
         # get all the assays and sort them
         assays = sorted({
@@ -124,6 +124,20 @@ class Dashboard(MultiTableMixin, TemplateView):
         """
 
         context = self._get_context_data()
+
+        filter_table = FilterTable(Filter.objects.all())
+
+        # so moving the FilterTable away from the class init "breaks" the
+        # default pagination for the filter table. I reused the code in the
+        # django-tables2 code (https://github.com/jieter/django-tables2/blob/master/django_tables2/views.py#L235)
+        # to resetup the pagination
+        # i have no idea what this code does tbh
+        table_counter = count()
+        filter_table.prefix = filter_table.prefix or self.table_prefix.format(next(table_counter))
+        RequestConfig(self.request, paginate=self.get_table_pagination(filter_table)).configure(filter_table)
+
+        context["tables"].append(filter_table)
+
         request.session.pop("form", None)
         return render(request, self.template_name, context)
 
