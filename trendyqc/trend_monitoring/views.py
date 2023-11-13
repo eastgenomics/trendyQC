@@ -27,8 +27,7 @@ class Dashboard(MultiTableMixin, TemplateView):
     template_name = "dashboard.html"
     report_sample_data = Report_Sample.objects.all()
     tables = [
-        ReportTable(Report.objects.all()),
-        FilterTable(Filter.objects.all())
+        ReportTable(Report.objects.all())
     ]
     model = Report
 
@@ -45,6 +44,8 @@ class Dashboard(MultiTableMixin, TemplateView):
 
         # get the default context data (the one key i need is one called tables)
         context = super().get_context_data()
+
+        context["tables"].append(FilterTable(Filter.objects.all()))
 
         # get all the assays and sort them
         assays = sorted({
