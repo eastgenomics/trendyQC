@@ -2,7 +2,6 @@ import json
 from statistics import median
 from typing import Dict
 
-import numpy as np
 import pandas as pd
 
 from django.apps import apps

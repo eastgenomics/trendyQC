@@ -9,36 +9,26 @@
 <p>There are <b>{{ project_names|length }}</b> projects currently in TrendyQC.</p>
 </div>
 
+
 <div style="width:90%; margin: auto; padding: 10px;">
-    {% render_table table %}
+    {% render_table tables.0 %}
 </div>
 
 {% if user.is_authenticated %}
 
 <br>
 
-<div>
-    <table class="table table-striped" style="width:90%; margin: auto; padding: 10px; border: 5px solid;">
-        <thead class="thead-dark">
-            <tr>
-                <th>Filter name</th>
-                <th>Filter content</th>
-            </tr>
-        </thead>
-            <tbody>
-                <tr>
-                    <td>Filter name</td>
-                    <td>Filter content</td>
-                </tr>
-            </tbody>
-    </table>
-</div>
+<form action="{% url 'Dashboard' %}" method="post" id="filter_use"> {% csrf_token %}
+    <div style="width:90%; margin: auto; padding: 10px;">
+        {% render_table tables.1 %}
+    </div>
+</form>
 
 {% endif %}
 
 <br>
 
-<form action="{% url 'Dashboard' %}" method="post"> {% csrf_token %}
+<form action="{% url 'Dashboard' %}" method="post" id="filter_form"> {% csrf_token %}
     <!-- Div for 3 inner divs that will occupy the page horizontally -->
     <div class="filter" style="width:90%; margin: auto; padding: 10px; ">
         <!-- 1st inner div: filter for obtaining a subset of runs -->
@@ -103,26 +93,29 @@
 
     <br>
 
-    <div style="padding-left:5%">
-        <input type="submit" value="Plot">
+    <div style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; padding-left:5%">
+        <input class="btn btn-info" type="submit" name="plot" value="Plot">
+        <input class="btn btn-info" type="submit" value="Save filter" name="save_filter" id="save_filter" onclick="saveFilter();"/>
     </div>
 </form>
-
-<br>
-
-{% if messages %}
-    <div class="alert alert-danger">
-        {% for message in messages %}
-            <ul>{{ message }}</ul>
-        {% endfor %}
-    </div>
-{% endif %}
 
 <script>
 $(function () {
     $(".multiselect").selectpicker({
         liveSearch: true
     });
+});
+
+function saveFilter() {
+    var filter_name = prompt("Name your filter:", "");
+    if (!filter_name) return;
+    $("#save_filter").val(filter_name);
+    $("#filter_form").submit();
+}
+
+// if a button is clicked i.e. the buttons in the filter table submit the filter use form
+$("button").click(function() {
+    $("#filter_use").submit();
 });
 </script>
 

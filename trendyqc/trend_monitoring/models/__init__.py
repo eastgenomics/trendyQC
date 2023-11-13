@@ -32,3 +32,7 @@ from .vcf_qc import (
     Happy_indel_all,
     Happy_indel_pass
 )
+
+from .filters import (
+    Filter
+)

@@ -1,29 +1,41 @@
+from itertools import count
+import json
 import logging
 
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.views import View
+from django.views.generic.base import TemplateView
 
-from django_tables2 import SingleTableView
+from django_tables2 import MultiTableMixin
+from django_tables2.config import RequestConfig
 
 from trend_monitoring.models.metadata import Report, Report_Sample
+from trend_monitoring.models.filters import Filter
 from trend_monitoring.models import bam_qc, fastq_qc, vcf_qc
 
-from .tables import ReportTable
+from .tables import ReportTable, FilterTable
 from .forms import FilterForm
 from .backend_utils.plot import (
     get_subset_queryset, get_data_for_plotting, prepare_filter_data,
     format_data_for_plotly_js
 )
+from .backend_utils.filtering import import_filter
 
 logger = logging.getLogger("basic")
 
 
-class Dashboard(SingleTableView):
+class Dashboard(MultiTableMixin, TemplateView):
     template_name = "dashboard.html"
-    table_class = ReportTable
-    model = Report
     report_sample_data = Report_Sample.objects.all()
+    tables = [
+        ReportTable(Report.objects.all())
+    ]
+    model = Report
+
+    table_pagination = {
+        "per_page": 10
+    }
 
     def _get_context_data(self):
         """ Get the basic data that needs to be displayed in the dashboard page
@@ -32,10 +44,8 @@ class Dashboard(SingleTableView):
             dict: Dict of report and assay data to be passed to the dashboard
         """
 
-        # object list needs to be defined for SingleTableViews but i have no
-        # need for it
-        # get the default context data (the one i need is one called table)
-        context = super().get_context_data(object_list="")
+        # get the default context data (the one key i need is one called tables)
+        context = super().get_context_data()
 
         # get all the assays and sort them
         assays = sorted({
@@ -114,6 +124,26 @@ class Dashboard(SingleTableView):
         """
 
         context = self._get_context_data()
+
+        filter_table = FilterTable(Filter.objects.all())
+
+        # so moving the FilterTable away from the class init "breaks" the
+        # default pagination for the filter table. I reused the code in the
+        # django-tables2 code (https://github.com/jieter/django-tables2/blob/master/django_tables2/views.py#L235)
+        # to resetup the pagination
+        # i have no idea what this code does tbh
+        table_counter = count()
+        filter_table.prefix = (
+            filter_table.prefix or 
+            self.table_prefix.format(next(table_counter))
+        )
+        RequestConfig(
+            self.request, paginate=self.get_table_pagination(filter_table)
+        ).configure(filter_table)
+
+        context["tables"].append(filter_table)
+
+        request.session.pop("form", None)
         return render(request, self.template_name, context)
 
     def post(self, request):
@@ -128,13 +158,67 @@ class Dashboard(SingleTableView):
 
         context = self._get_context_data()
         form = FilterForm(request.POST)
+        request.session.pop("form", None)
+
+        # Use filter button in the filter table has been clicked
+        if "filter_use" in request.POST:
+            # get the filter id from the button value
+            filter_id = request.POST["filter_use"]
+            # get the filter obj in the database
+            filter_obj = Filter.objects.get(id=filter_id)
+            # deserialize the filter content for use in the Plot page
+            request.session["form"] = json.loads(filter_obj.content)
+            return redirect("Plot")
+
+        # Delete filter button in the filter table has been clicked
+        if "delete_filter" in request.POST:
+            # get the filter id from the button value
+            filter_id = request.POST["delete_filter"]
+            # get the filter obj in the database
+            filter_obj = Filter.objects.get(id=filter_id)
+            filter_name = filter_obj.name
+            
+            try:
+                # delete the filter
+                filter_obj.delete()
+            except Exception as e:
+                messages.add_message(
+                    request, messages.ERROR,
+                    (
+                        f"Couldn't delete {filter_name}. "
+                        "Please contact the bioinformatics team"
+                    )
+                )
+                logger.error(f"Issue with trying to delete {filter_name}: {e}")
+            else:
+                msg = f"Filter {filter_name} has been deleted."
+                messages.add_message(request, messages.SUCCESS, msg)
+                logger.info(msg)
+
+            return redirect("Dashboard")
 
         # call the clean function and see if the form data is valid
         if form.is_valid():
-            # save the cleaned data in the session so that it gets passed to
-            # the Plot view
-            request.session["form"] = form.cleaned_data
-            return redirect("Plot")
+            if "plot" in request.POST:
+                # save the cleaned data in the session so that it gets passed to
+                # the Plot view
+                request.session["form"] = form.cleaned_data
+                return redirect("Plot")
+
+            elif "save_filter" in request.POST:
+                filter_name = request.POST["save_filter"]
+
+                # the default value that the prompt return is Save filter i.e.
+                # if nothing was inputted the value is Save filter
+                if filter_name != "Save filter":
+                    msg, msg_status = import_filter(
+                        filter_name, form.cleaned_data
+                    )
+                    messages.add_message(request, msg_status, f"{msg}")
+                    logger.info(msg)
+
+                return redirect("Dashboard")
+
         else:
             # add the errors for displaying in the dashboard template
             for error_field in form.errors:
@@ -214,5 +298,21 @@ class Plot(View):
         return render(request, self.template_name)
 
     def post(self, request):
-        request.session.pop("form", None)
-        return redirect("Dashboard")
+        # back to dashboard button is clicked
+        if "dashboard" in request.POST:
+            # clear the session of the form info
+            request.session.pop("form", None)
+            return redirect("Dashboard")
+
+        # same save filter logic as in the dashboard view
+        elif "save_filter" in request.POST:
+            filter_name = request.POST["save_filter"]
+
+            if filter_name != "Save filter":
+                msg, msg_status = import_filter(
+                    filter_name, request.session.get("form")
+                )
+                messages.add_message(request, msg_status, f"Filter: {msg}")
+                logger.info(msg)
+
+            return redirect("Plot")

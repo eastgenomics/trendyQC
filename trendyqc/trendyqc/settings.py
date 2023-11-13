@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv, find_dotenv
+from django.contrib.messages import constants as messages
 
 load_dotenv(find_dotenv())
 
@@ -28,6 +29,10 @@ DEBUG_LOG = BASE_DIR / "logs" / "debug.log"
 STORING_LOG = BASE_DIR / "logs" / "storing.log"
 
 DJANGO_TABLES2_TEMPLATE = "django_tables2/bootstrap5.html"
+
+MESSAGE_TAGS = {
+    messages.ERROR: 'danger',
+}
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
