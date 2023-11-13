@@ -18,6 +18,7 @@ def import_filter(filter_name: str, data: dict) -> str:
         str: Message to indicate whether the import was successful
     """
 
+    # delete the value of the button because it's not needed in the filter
     del data["save_filter"]
 
     # attempt to find an existing filter with the same name
@@ -50,7 +51,7 @@ def serialize_date(obj):
 
     Returns:
         str: String date in isoformat
-    """    
+    """
 
     if isinstance(obj, (datetime, date)):
         return obj.isoformat()
