@@ -12,14 +12,13 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 import os
 from pathlib import Path
-from dotenv import load_dotenv, find_dotenv
 from django.contrib.messages import constants as messages
-
-load_dotenv(find_dotenv())
 
 DX_TOKEN = os.environ.get("DNANEXUS_TOKEN")
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("TRENDYQC_SECRET_KEY")
+
+HOST = os.environ.get("HOST")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -42,7 +41,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'testserver',
-    'localhost'
+    'localhost',
+    HOST
 ]
 
 
@@ -100,7 +100,8 @@ DATABASES = {
         'NAME': 'qc_trends_db',
         'USER': 'qc_trends_db_user',
         'PASSWORD': 'qc_trends_db_password',
-        'HOST': 'qc_trends_db',
+        # this should be the name of the db service in the docker compose file
+        'HOST': 'db',
         'PORT': '5432',
     }
 }
@@ -129,7 +130,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # prod server
 # https://docs.djangoproject.com/en/4.2/ref/settings/#csrf-trusted-origins
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:8000",
+    "http://trendyqc:8006",
 ]
 
 # otherwise i get an error when passing the data from the dashboard view to the
