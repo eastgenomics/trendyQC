@@ -12,10 +12,15 @@ docker-compose up -d --build
 The env file should be named `.env` and placed at the root of the project. It should contain the following keys:
 
 ```
+# dnanexus token with access to all projects
 DNANEXUS_TOKEN=
+# trendyqc secret production key
 TRENDYQC_SECRET_KEY=
+# trendyqc settings module
 DJANGO_SETTINGS_MODULE=
+# trendyqc host
 HOST=
+# python path to add to the trendyqc container
 PYTHONPATH=
 ```
 
