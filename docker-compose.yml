@@ -7,53 +7,55 @@
 # http://ruddra.com/2016/08/14/docker-django-nginx-postgres/index.html
 # https://stackoverflow.com/questions/32180589/docker-how-to-expose-a-socket-over-a-port-for-a-django-application
 
-
 version: '3'
 
 services:
-
   # database containers, one for each db
-  qc_trends_db:
+  db:
+    container_name: trendyqc_db
     image: postgres:15.2
     volumes:
-      - trendyqc_db_volume:/var/lib/postgresql/data/
+      - trendyqc_db:/var/lib/postgresql/data/
     env_file:
       - config/db/qc_trends_db_env
-    networks:
-      - qc_trends_db_network
 
   # web container, with django + gunicorn
   trendyqc:
+    container_name: trendyqc_app
     build: .
+    image: trendyqc_app
+    command: bash -c 'python trendyqc/manage.py collectstatic --no-input && gunicorn -n trendyqc -c ./config/gunicorn/conf.py --bind :8006 --chdir /app/trendyqc trendyqc.wsgi:application'
     environment:
-      - DJANGO_SETTINGS_MODULE
-    networks:
-      - qc_trends_db_network
-      - nginx_network
+      - DJANGO_SETTINGS_MODULE=trendyqc.settings
+    env_file:
+      - ./.env
     volumes:
       - trendyqc_static:/app/trendyqc/staticfiles
+    expose:
+      - 8006
     depends_on:
-      - qc_trends_db
+      - db
 
   # reverse proxy container (nginx)
   nginx:
+    container_name: trendyqc_proxy
     image: nginx:1.13
-    ports:
-      - 8000:80
     volumes:
       - ./config/nginx/conf.d:/etc/nginx/conf.d
       - trendyqc_static:/staticfiles
-    networks:
-      - nginx_network
+    environment:
+      - VIRTUAL_HOST=dev-genomics.net.addenbrookes.nhs.uk
+      - VIRTUAL_PATH=/trendyqc
+    expose:
+      - 8008
     depends_on:
       - trendyqc
 
 networks:
-  qc_trends_db_network:
-    driver: bridge
-  nginx_network:
-    driver: bridge
+  default:
+    name: nginx_default
+    external: true
 
 volumes:
-  trendyqc_db_volume:
+  trendyqc_db:
   trendyqc_static:
