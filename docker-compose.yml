@@ -15,7 +15,7 @@ services:
     container_name: trendyqc_db
     image: postgres:15.2
     volumes:
-      - trendyqc_db:/var/lib/postgresql/data/
+      - db:/var/lib/postgresql/data/
     env_file:
       - config/db/qc_trends_db_env
 
@@ -30,32 +30,30 @@ services:
     env_file:
       - ./.env
     volumes:
-      - trendyqc_static:/app/trendyqc/staticfiles
-    expose:
-      - 8006
+      - static:/app/trendyqc/staticfiles
     depends_on:
       - db
 
   # reverse proxy container (nginx)
   nginx:
     container_name: trendyqc_proxy
+    ports:
+      - 8008:80
     image: nginx:1.13
     volumes:
       - ./config/nginx/conf.d:/etc/nginx/conf.d
-      - trendyqc_static:/staticfiles
+      - static:/static/
     environment:
       - VIRTUAL_HOST=dev-genomics.net.addenbrookes.nhs.uk
       - VIRTUAL_PATH=/trendyqc
-    expose:
-      - 8008
     depends_on:
       - trendyqc
 
 networks:
   default:
-    name: nginx_default
+    name: trendyqc_nginx
     external: true
 
 volumes:
-  trendyqc_db:
-  trendyqc_static:
+  db:
+  static:
