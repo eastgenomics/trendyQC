@@ -12,7 +12,10 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv, find_dotenv
 from django.contrib.messages import constants as messages
+
+load_dotenv(find_dotenv())
 
 DX_TOKEN = os.environ.get("DNANEXUS_TOKEN")
 # SECURITY WARNING: keep the secret key used in production secret!
