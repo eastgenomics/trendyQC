@@ -12,10 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 import os
 from pathlib import Path
-from dotenv import load_dotenv, find_dotenv
 from django.contrib.messages import constants as messages
-
-load_dotenv(find_dotenv())
 
 DX_TOKEN = os.environ.get("DNANEXUS_TOKEN")
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -100,9 +97,9 @@ WSGI_APPLICATION = 'trendyqc.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'qc_trends_db',
-        'USER': 'qc_trends_db_user',
-        'PASSWORD': 'qc_trends_db_password',
+        'NAME': os.environ.get("DB_NAME", None),
+        'USER': os.environ.get("DB_USER", None),
+        'PASSWORD': os.environ.get("DB_PASSWORD", None),
         # this should be the name of the db service in the docker compose file
         'HOST': 'db',
         'PORT': '5432',
