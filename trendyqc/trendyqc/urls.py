@@ -4,6 +4,6 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('trendyqc/', include("trend_monitoring.urls"))
+    path("trendyqc/admin/", admin.site.urls),
+    path("trendyqc/", include("trend_monitoring.urls")),
 ]
