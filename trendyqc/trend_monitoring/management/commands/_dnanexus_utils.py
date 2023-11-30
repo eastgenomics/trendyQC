@@ -1,5 +1,7 @@
-import dxpy
+import traceback
 from typing import List
+
+import dxpy
 
 from django.conf import settings
 
@@ -15,10 +17,10 @@ def login_to_dnanexus():
     dxpy.set_security_context(DX_SECURITY_CONTEXT)
 
     try:
-        dxpy.api.system_whoami()
+        dxpy.whoami()
         print("DNAnexus login successful")
-    except Exception as err:
-        print(err)
+    except Exception:
+        traceback.print_exc()
         exit()
 
 
