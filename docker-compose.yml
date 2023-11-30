@@ -50,7 +50,7 @@ services:
     image: nginx:1.23
     volumes:
       - ./config/nginx/conf.d:/etc/nginx/conf.d
-      - static:/static/
+      - static:/staticfiles/
     environment:
       - VIRTUAL_HOST=
       - VIRTUAL_PATH=
