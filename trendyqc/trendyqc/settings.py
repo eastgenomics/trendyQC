@@ -129,8 +129,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # TO-DO: put the host in the environment file + change to match the host on the
 # prod server
 # https://docs.djangoproject.com/en/4.2/ref/settings/#csrf-trusted-origins
+ORIGIN = os.environ.get("HOST")
 CSRF_TRUSTED_ORIGINS = [
-    "http://trendyqc:8006",
+    f"https://{ORIGIN}",
 ]
 
 # otherwise i get an error when passing the data from the dashboard view to the
