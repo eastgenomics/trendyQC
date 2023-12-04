@@ -3,9 +3,13 @@ import json
 import logging
 
 from django.contrib import messages
+from django.contrib.auth import authenticate
+from django.contrib.auth import login as auth_login
+from django.contrib.auth import logout as auth_logout
 from django.shortcuts import render, redirect
 from django.views import View
 from django.views.generic.base import TemplateView
+from django.views.generic.edit import FormView
 
 from django_tables2 import MultiTableMixin
 from django_tables2.config import RequestConfig
@@ -15,7 +19,7 @@ from trend_monitoring.models.filters import Filter
 from trend_monitoring.models import bam_qc, fastq_qc, vcf_qc
 
 from .tables import ReportTable, FilterTable
-from .forms import FilterForm
+from .forms import FilterForm, LoginForm
 from .backend_utils.plot import (
     get_subset_queryset, get_data_for_plotting, prepare_filter_data,
     format_data_for_plotly_js
@@ -316,3 +320,41 @@ class Plot(View):
                 logger.info(msg)
 
             return redirect("Plot")
+
+
+class Login(FormView):
+    template_name = "login.html"
+    form_class = LoginForm
+
+    def get(self, request):
+        return render(request, self.template_name, super().get_context_data())
+
+    def post(self, request):
+        form = self.form_class(request.POST)
+
+        if form.is_valid():
+            user = authenticate(
+                username=form.cleaned_data['username'],
+                password=form.cleaned_data['password'],
+            )
+
+            if user is not None:
+                auth_login(request, user)
+                msg = "Successfully logged in!"
+                messages.add_message(request, messages.SUCCESS, msg)
+                return redirect("Dashboard")
+
+        msg = "Login failed!"
+        messages.add_message(request, messages.ERROR, msg)
+
+        return render(request, self.template_name, super().get_context_data())
+
+
+class Logout(View):
+    template_name = "dashboard.html"
+
+    def get(self, request):
+        auth_logout(request)
+        msg = "Successfully logged out!"
+        messages.add_message(request, messages.SUCCESS, msg)
+        return redirect("Dashboard")
