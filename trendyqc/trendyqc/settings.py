@@ -12,13 +12,27 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 import os
 from pathlib import Path
+
+import ldap
 from django.contrib.messages import constants as messages
+from django_auth_ldap.config import LDAPSearch
 
 DX_TOKEN = os.environ.get("DNANEXUS_TOKEN")
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("TRENDYQC_SECRET_KEY")
 
 HOST = os.environ.get("HOST")
+
+AUTH_LDAP_BIND_DN = os.environ['BIND_DN']
+AUTH_LDAP_BIND_PASSWORD = os.environ['BIND_PASSWORD']
+AUTH_LDAP_SERVER_URI = os.environ['AUTH_LDAP_SERVER_URI']
+LDAP_CONF = os.environ['LDAP_CONF']
+
+LOGIN_REDIRECT_URL = "/trendyqc/"
+LOGOUT_REDIRECT_URL = "/trendyqc/"
+
+# Django crispy forms bootstrap configuration
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,7 +59,6 @@ ALLOWED_HOSTS = [
     HOST
 ]
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -56,6 +69,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'trend_monitoring',
+    'crispy_forms',
+    'crispy_bootstrap5',
     "django_tables2",
     "log_viewer",
 ]
@@ -132,7 +147,23 @@ AUTH_PASSWORD_VALIDATORS = [
 ORIGIN = os.environ.get("HOST")
 CSRF_TRUSTED_ORIGINS = [
     f"https://{ORIGIN}",
+    f"http://{ORIGIN}:8008",
+    f"https://{ORIGIN}:8008"
 ]
+
+# Authentication Configuration
+AUTHENTICATION_BACKENDS = [
+    "django_auth_ldap.backend.LDAPBackend",
+    "django.contrib.auth.backends.ModelBackend"
+]
+
+AUTH_LDAP_CONNECTION_OPTIONS = {ldap.OPT_REFERRALS: 0}
+
+AUTH_LDAP_USER_SEARCH = LDAPSearch(
+    LDAP_CONF,
+    ldap.SCOPE_SUBTREE,
+    "(samaccountname=%(user)s)"
+)
 
 # otherwise i get an error when passing the data from the dashboard view to the
 # plotting view. However the django docs share some security concerns.
