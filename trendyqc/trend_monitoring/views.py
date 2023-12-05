@@ -338,7 +338,7 @@ class Login(FormView):
                 password=form.cleaned_data['password'],
             )
 
-            if user is not None:
+            if user:
                 auth_login(request, user)
                 msg = "Successfully logged in!"
                 messages.add_message(request, messages.SUCCESS, msg)
