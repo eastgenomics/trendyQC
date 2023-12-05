@@ -5,6 +5,8 @@ import dxpy
 
 from django.conf import settings
 
+from ._notifications import slack_notify
+
 
 def login_to_dnanexus():
     """ Login to DNAnexus using a auth token present in the environment """
@@ -21,6 +23,14 @@ def login_to_dnanexus():
         print("DNAnexus login successful")
     except Exception:
         traceback.print_exc()
+        msg = (
+            "TrendyQC - Failed DNAnexus login, token may be expired.\n"
+
+            "```"
+            f"{traceback.format_exc()}"
+            "```"
+        )
+        slack_notify(msg)
         exit()
 
 
