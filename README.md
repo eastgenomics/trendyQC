@@ -70,6 +70,8 @@ sudo podman-compose up -d
 
 ## Data import
 
+### Initial import
+
 When you are setting up the database for the first time, a couple more things are needed to have the view working.
 
 You need to migrate the models to setup the database. First go into the running container for TrendyQC:
@@ -85,7 +87,18 @@ python trendyqc/manage.py migrate
 python trendyqc/manage.py initial_import -a
 ```
 
-The initial import step should take at least 20 mins.
+The initial import step should take at least 20 mins but the duration is variable and depends on the number of MultiQC reports the code found and are eligible to be imported.
+
+### Update TrendyQC's content
+
+You can also update the projects in TrendyQC using the following command:
+
+```bash
+# equivalent to python trendyqc/manage.py initial_import -a
+python trendyqc/manage.py update_projects
+# import new projects (created 48h ago at the latest)
+python trendyqc/manage.oy update_projects -t=-48h
+```
 
 ## Project structure
 
