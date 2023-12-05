@@ -20,6 +20,9 @@ SECRET_KEY = os.environ.get("TRENDYQC_SECRET_KEY")
 
 HOST = os.environ.get("HOST")
 
+SLACK_TOKEN = os.environ.get("SLACK_TOKEN")
+SLACK_CHANNEL = os.environ.get("SLACK_CHANNEL")
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
