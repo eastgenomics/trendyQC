@@ -1,25 +1,49 @@
 import logging
 
-from ._dnanexus_utils import (
-    search_multiqc_reports, is_archived
-)
+from django.apps import apps
+
+from ._check import already_in_db
+from ._dnanexus_utils import search_multiqc_reports, is_archived
 from ._multiqc import MultiQC_report
 
 logger = logging.getLogger("basic")
 storing_logger = logging.getLogger("storing")
 
 
-def import_multiqc_reports(project_ids, dry_run=False):
+def import_multiqc_reports(project_ids: list, dry_run: bool = False):
+    """ Import all the multiqc reports contained in the list of projects ids
+    given
+
+    Args:
+        project_ids (list): List of project ids to look for MultiQC reports in
+        dry_run (bool, optional): Perform import or not. Defaults to False.
+    """
+
     archived_reports = []
+
+    # get the report model object from all models
+    report_model = {
+        model.__name__.lower(): model for model in apps.get_models()
+    }["report"]
 
     for p_id in project_ids:
         report_objects = search_multiqc_reports(p_id)
 
         for report_object in report_objects:
+            report_kwargs = {
+                "dnanexus_file_id": report_object.id, "project_id": p_id
+            }
+
+            # check if the report is already in the database
+            if already_in_db(report_model, **report_kwargs):
+                continue
+
+            # check if the report is archived
             if is_archived(report_object):
                 archived_reports.append(report_object.id)
                 continue
 
+            # this will fully setup the multiqc report to be ready for import
             multiqc_report = MultiQC_report(report_object)
 
             if multiqc_report.is_importable:
