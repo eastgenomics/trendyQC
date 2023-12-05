@@ -3,39 +3,47 @@ Django app for monitoring trends in MultiQC data
 
 ## Environment
 
-The `docker-compose.yml` contains multiple environment variables. These need to be defined before running the docker-compose file.
+The `docker-compose.yml` needs multiple environment variables. These need to be defined before running the docker-compose file.
 
 Please find the description of each variable below:
 
 ```env
 # VARIABLES USED IN TRENDYQC CONTAINER
 # trendyqc settings module
-DJANGO_SETTINGS_MODULE=
+DJANGO_SETTINGS_MODULE
 # dnanexus token with access to all projects
-DNANEXUS_TOKEN=
+DNANEXUS_TOKEN
 # trendyqc secret production key
-TRENDYQC_SECRET_KEY=
+TRENDYQC_SECRET_KEY
 # database name in the postgres container
-DB_NAME=
+DB_NAME
 # database credentials in the postgres container
-DB_USER=
-DB_PASSWORD=
+DB_USER
+DB_PASSWORD
 # trendyqc host used in the settings.py to define which hosts are allowed
-HOST=
+HOST
+# LDAP credentials
+BIND_DN
+BIND_PASSWORD
+# URI of the LDAP server
+AUTH_LDAP_SERVER_URI
+# search parameters
+LDAP_CONF
+
 
 # VARIABLES USED IN POSTGRES CONTAINER
 # database username to create
-POSTGRES_USER=
+POSTGRES_USER
 # database user password
-POSTGRES_PASSWORD=
+POSTGRES_PASSWORD
 # database name to create
-POSTGRES_DB=
+POSTGRES_DB
 
 # VARIABLES USED IN NGINX CONTAINER
 # virtual host for nginx configuration
-VIRTUAL_HOST=
+VIRTUAL_HOST
 # path to the web container
-VIRTUAL_PATH=
+VIRTUAL_PATH
 ```
 
 In the end, TrendyQC will be available at the `${VIRTUAL_HOST}/${VIRTUAL_PATH}` on a Trust PC or a laptop on the Trust network.

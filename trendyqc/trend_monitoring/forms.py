@@ -1,8 +1,10 @@
 import datetime
 
 from django import forms
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
 
+username_validator = UnicodeUsernameValidator()
 
 class FilterForm(forms.Form):
     assay_select = forms.CharField(required=False)
@@ -95,3 +97,17 @@ class FilterForm(forms.Form):
             ]
 
         return cleaned_data
+
+
+class LoginForm(forms.Form):
+    username = forms.CharField(
+        label='Username',
+        widget=forms.TextInput(
+        attrs={'class': 'form-input', 'placeholder': 'Enter username'})
+    )
+
+    password = forms.CharField(
+        label='Password',
+        widget=forms.PasswordInput(
+        attrs={'class': 'form-input', 'placeholder': 'Enter password'})
+    )

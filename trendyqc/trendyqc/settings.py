@@ -12,13 +12,47 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 import os
 from pathlib import Path
+
 from django.contrib.messages import constants as messages
+from django_auth_ldap.config import LDAPSearch
 
-DX_TOKEN = os.environ.get("DNANEXUS_TOKEN")
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("TRENDYQC_SECRET_KEY")
+from dotenv import load_dotenv
+import ldap
 
-HOST = os.environ.get("HOST")
+load_dotenv()
+
+try:
+    DX_TOKEN = os.environ.get("DNANEXUS_TOKEN")
+    # SECURITY WARNING: keep the secret key used in production secret!
+    SECRET_KEY = os.environ.get("TRENDYQC_SECRET_KEY")
+
+    # list of allowed hosts for the web app
+    HOST = os.environ.get("HOST")
+
+    # list of variables for the user management using LDAP
+    AUTH_LDAP_BIND_DN = os.environ['BIND_DN']
+    AUTH_LDAP_BIND_PASSWORD = os.environ['BIND_PASSWORD']
+    AUTH_LDAP_SERVER_URI = os.environ['AUTH_LDAP_SERVER_URI']
+    LDAP_CONF = os.environ['LDAP_CONF']
+
+    # list of allowed hosts for the web app (get an error when posting forms if the
+    # host is in the ALLOWED_HOSTS variable)
+    ORIGIN = os.environ.get("HOST")
+
+    # name of db and credentials used for setting up the database
+    DB_NAME = os.environ.get("DB_NAME")
+    DB_USER = os.environ.get("DB_USER")
+    DB_PASSWORD = os.environ.get("DB_PASSWORD")
+
+except KeyError as e:
+    key = e.args[0]
+    raise KeyError(
+        f'Unable to import {key} from environment, is an .env file '
+        'present or env variables set?'
+    )
+
+# Django crispy forms bootstrap configuration
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,7 +79,6 @@ ALLOWED_HOSTS = [
     HOST
 ]
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -56,6 +89,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'trend_monitoring',
+    'crispy_forms',
+    'crispy_bootstrap5',
     "django_tables2",
     "log_viewer",
 ]
@@ -97,9 +132,9 @@ WSGI_APPLICATION = 'trendyqc.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get("DB_NAME", None),
-        'USER': os.environ.get("DB_USER", None),
-        'PASSWORD': os.environ.get("DB_PASSWORD", None),
+        'NAME': DB_NAME,
+        'USER': DB_USER,
+        'PASSWORD': DB_PASSWORD,
         # this should be the name of the db service in the docker compose file
         'HOST': 'db',
         'PORT': '5432',
@@ -129,12 +164,24 @@ AUTH_PASSWORD_VALIDATORS = [
 # TO-DO: put the host in the environment file + change to match the host on the
 # prod server
 # https://docs.djangoproject.com/en/4.2/ref/settings/#csrf-trusted-origins
-ORIGIN = os.environ.get("HOST")
 CSRF_TRUSTED_ORIGINS = [
     f"https://{ORIGIN}",
-    # for local development
-    f"http://{ORIGIN}:8008",
+    f"http://{ORIGIN}:8008"
 ]
+
+# Authentication Configuration
+AUTHENTICATION_BACKENDS = [
+    "django_auth_ldap.backend.LDAPBackend",
+    "django.contrib.auth.backends.ModelBackend"
+]
+
+AUTH_LDAP_CONNECTION_OPTIONS = {ldap.OPT_REFERRALS: 0}
+
+AUTH_LDAP_USER_SEARCH = LDAPSearch(
+    LDAP_CONF,
+    ldap.SCOPE_SUBTREE,
+    "(samaccountname=%(user)s)"
+)
 
 # otherwise i get an error when passing the data from the dashboard view to the
 # plotting view. However the django docs share some security concerns.
