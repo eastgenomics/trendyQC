@@ -132,6 +132,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ORIGIN = os.environ.get("HOST")
 CSRF_TRUSTED_ORIGINS = [
     f"https://{ORIGIN}",
+    # for local development
+    f"http://{ORIGIN}:8008",
 ]
 
 # otherwise i get an error when passing the data from the dashboard view to the
