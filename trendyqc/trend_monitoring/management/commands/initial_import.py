@@ -5,11 +5,8 @@ import regex
 
 from django.core.management.base import BaseCommand
 
-from ._dnanexus_utils import (
-    login_to_dnanexus, search_multiqc_reports, get_all_002_projects,
-    is_archived
-)
-from ._multiqc import MultiQC_report
+from .utils._dnanexus_utils import login_to_dnanexus, get_002_projects
+from .utils._import import import_multiqc_reports
 
 logger = logging.getLogger("basic")
 storing_logger = logging.getLogger("storing")
@@ -51,14 +48,12 @@ class Command(BaseCommand):
             project_ids = options["project_id"]
 
         if options["all"]:
-            project_ids = get_all_002_projects()
+            project_ids = get_002_projects()
 
         if not project_ids:
             msg = "Please use -a or -p_id"
             logger.error(msg)
             raise Exception(msg)
-
-        archived_reports = []
 
         invalid = [
             p
@@ -71,26 +66,4 @@ class Command(BaseCommand):
             logger.error(msg)
             raise AssertionError(msg)
 
-        for p_id in project_ids:
-            report_objects = search_multiqc_reports(p_id)
-
-            for report_object in report_objects:
-                if is_archived(report_object):
-                    archived_reports.append(report_object.id)
-                    continue
-
-                multiqc_report = MultiQC_report(report_object)
-
-                if multiqc_report.is_importable:
-                    if not options["dry_run"]:
-                        multiqc_report.import_instances()
-                        logger.info((
-                            f"Successfully imported: "
-                            f"{multiqc_report.multiqc_json_id}"
-                        ))
-
-        if archived_reports:
-            storing_logger.warning(
-                f"{len(archived_reports)} archived report(s): "
-                f"{','.join(archived_reports)}"
-            )
+        import_multiqc_reports(project_ids, options["dry_run"])
