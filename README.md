@@ -3,7 +3,9 @@ Django app for monitoring trends in MultiQC data
 
 ## Environment
 
-The `docker-compose.yml` contains multiple environment variables. These need to be defined before running the docker-compose file.
+The `docker-compose.yml` needs multiple environment variables. These need to be defined before running the docker-compose file.
+
+To this effect you have several options described [here](https://docs.docker.com/compose/environment-variables/envvars-precedence/) and their order of precedence is explained [here](https://docs.docker.com/compose/environment-variables/set-environment-variables/).
 
 Please find the description of each variable below:
 
@@ -22,6 +24,14 @@ DB_USER=
 DB_PASSWORD=
 # trendyqc host used in the settings.py to define which hosts are allowed
 HOST=
+# things
+BIND_DN=
+BIND_PASSWORD=
+# URI of the LDAP server
+AUTH_LDAP_SERVER_URI=
+# search parameters
+LDAP_CONF=
+
 
 # VARIABLES USED IN POSTGRES CONTAINER
 # database username to create
