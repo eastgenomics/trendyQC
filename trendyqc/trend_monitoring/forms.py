@@ -28,6 +28,10 @@ class FilterForm(forms.Form):
             # clean also removed the crsf token, removing it manually
             if key == "csrfmiddlewaretoken":
                 continue
+            # when submitting the form using the Plot button, remove it from
+            # the plotting filter recap
+            elif key == "plot":
+                continue
 
             for v in value:
                 if v:
