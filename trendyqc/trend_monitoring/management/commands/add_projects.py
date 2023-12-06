@@ -14,7 +14,7 @@ storing_logger = logging.getLogger("storing")
 
 
 class Command(BaseCommand):
-    help = "Update TrendyQC with new projects"
+    help = "Add projects in TrendyQC"
 
     def add_arguments(self, parser):
         type_addition = parser.add_mutually_exclusive_group()
@@ -26,7 +26,7 @@ class Command(BaseCommand):
             )
         )
         type_addition.add_argument(
-            "-t", "--time_back", required=False, help=(
+            "-t", "--time_back", help=(
                 "Time back in which to look for projects, use the DNAnexus ",
                 "docs for info (http://autodoc.dnanexus.com/bindings/python/current/dxpy_search.html#dxpy.bindings.search.find_data_objects) "
                 "i.e. -48h looks for projects created 48h ago at the latest"
