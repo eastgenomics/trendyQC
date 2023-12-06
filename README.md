@@ -22,6 +22,10 @@ DB_USER=
 DB_PASSWORD=
 # trendyqc host used in the settings.py to define which hosts are allowed
 HOST=
+# slack token for sending messages using Hermes bot
+SLACK_TOKEN=
+# slack channel to send messages to
+SLACK_CHANNEL=
 
 # VARIABLES USED IN POSTGRES CONTAINER
 # database username to create
@@ -70,7 +74,7 @@ sudo podman-compose up -d
 
 ## Data import
 
-### Initial import
+### Setup import
 
 When you are setting up the database for the first time, a couple more things are needed to have the view working.
 
@@ -82,23 +86,24 @@ sudo podman exec -it ${name_of_the_trendyqc_container} /bin/bash
 # once inside
 python trendyqc/manage.py makemigrations trend_monitoring
 python trendyqc/manage.py migrate
+```
 
-# initial import of DNAnexus data
-python trendyqc/manage.py initial_import -a
+### Add reports to TrendyQC
+
+You can also add projects in TrendyQC using the following commands:
+
+```bash
+# add all 002 projects
+python trendyqc/manage.py add_projects -a
+# add specific projects
+python trendyqc/manage.py add_projects -p_id ${project_id} [${project_id} ${project_id}]
+# import new projects (created 48h ago at the latest)
+python trendyqc/manage.oy add_projects -t=-48h
 ```
 
 The initial import step should take at least 20 mins but the duration is variable and depends on the number of MultiQC reports the code found and are eligible to be imported.
 
-### Update TrendyQC's content
-
-You can also update the projects in TrendyQC using the following command:
-
-```bash
-# equivalent to python trendyqc/manage.py initial_import -a
-python trendyqc/manage.py update_projects
-# import new projects (created 48h ago at the latest)
-python trendyqc/manage.oy update_projects -t=-48h
-```
+Additionally, reports already present in the database will be skipped (project_id + file_id check)
 
 ## Project structure
 
@@ -116,13 +121,14 @@ python trendyqc/manage.oy update_projects -t=-48h
 
 |  |  |- management
 |  |  |  |- commands
-|  |  |  |  |- __init__.py
-|  |  |  |  |- _check.py
-|  |  |  |  |- _dnanexus_utils_.py
-|  |  |  |  |- _multiqc.py
-|  |  |  |  |- _parsing_.py
-|  |  |  |  |- _tool.py
-|  |  |  |  |- initial_import.py
+|  |  |  |  |- utils
+|  |  |  |  |  |- __init__.py
+|  |  |  |  |  |- _check.py
+|  |  |  |  |  |- _dnanexus_utils_.py
+|  |  |  |  |  |- _multiqc.py
+|  |  |  |  |  |- _parsing_.py
+|  |  |  |  |  |- _tool.py
+|  |  |  |  |- add_projects.py
 |  |  |  |  |- readme.md
 
 |  |  |  |- config
