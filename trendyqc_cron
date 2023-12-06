@@ -1,1 +1,1 @@
-0 0 * * * python trendyqc/manage.py update_projects -t=-48h -a >> /var/log/cron.log 2>&1
+0 0 * * * python trendyqc/manage.py add_projects -t=-48h -a >> /var/log/cron.log 2>&1
