@@ -26,15 +26,16 @@ services:
     container_name: trendyqc
     build: .
     image: trendyqc:1.0
-    command: bash -c 'python trendyqc/manage.py collectstatic --no-input && gunicorn -n trendyqc -c ./config/gunicorn/conf.py --bind :8006 --chdir /app/trendyqc trendyqc.wsgi:application'
     environment:
-      - DJANGO_SETTINGS_MODULE=trendyqc.settings
+      - DJANGO_SETTINGS_MODULE=
       - DNANEXUS_TOKEN=
       - TRENDYQC_SECRET_KEY=
       - DB_NAME=
       - DB_USER=
       - DB_PASSWORD=
       - HOST=
+      - SLACK_TOKEN=
+      - SLACK_CHANNEL=
     expose:
       - 8006
     volumes:
