@@ -22,6 +22,7 @@ def import_multiqc_reports(project_ids: list, dry_run: bool = False):
     """
 
     archived_reports = []
+    imported_reports = []
 
     # get the report model object from all models
     report_model = {
@@ -73,6 +74,7 @@ def import_multiqc_reports(project_ids: list, dry_run: bool = False):
                         )
                         slack_notify(msg)
 
+                    imported_reports.append(multiqc_report)
                     logger.info((
                         f"Successfully imported: "
                         f"{multiqc_report.multiqc_json_id}"
@@ -83,3 +85,5 @@ def import_multiqc_reports(project_ids: list, dry_run: bool = False):
             f"{len(archived_reports)} archived report(s): "
             f"{','.join(archived_reports)}"
         )
+
+    return imported_reports
