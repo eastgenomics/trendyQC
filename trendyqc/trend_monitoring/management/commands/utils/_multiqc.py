@@ -19,7 +19,7 @@ from ._parsing import load_assay_config
 from ._tool import Tool
 
 # returns the /trendyqc/trend_monitoring/management folder
-BASE_DIR_MANAGEMENT = Path(__file__).resolve().parent.parent
+BASE_DIR_MANAGEMENT = Path(__file__).resolve().parent.parent.parent
 CONFIG_DIR = BASE_DIR_MANAGEMENT / "configs"
 
 logger = logging.getLogger("basic")
