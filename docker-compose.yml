@@ -36,6 +36,10 @@ services:
       - HOST
       - SLACK_TOKEN
       - SLACK_CHANNEL
+      - BIND_DN
+      - BIND_PASSWORD
+      - AUTH_LDAP_SERVER_URI
+      - LDAP_CONF
     expose:
       - 8006
     volumes:
