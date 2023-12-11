@@ -292,8 +292,10 @@ class Plot(View):
             ) = format_data_for_plotly_js(data_dfs[0])
 
             context = {
-                "form": dict(sorted(form.items())), "plot": json_plot_data,
+                "form": dict(sorted(form.items())),
+                "plot": json_plot_data,
                 "trend": json_trend_data,
+                "y_axis": " | ".join(filter_data["y_axis"]),
                 "skipped_projects": projects_no_metric,
                 "skipped_samples": samples_no_metric
             }
