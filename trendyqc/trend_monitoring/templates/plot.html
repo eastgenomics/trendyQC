@@ -8,10 +8,28 @@
     <!-- 1st inner div: recap of plotting filter -->
     {% if form %}
         <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%; padding: 10px;">
-            <h5>Plotting filter</h5>
-            {% for key, value in form.items %}
-                <ul> - <b>{{ key }}</b>: {{ value }}</ul>
-            {% endfor %}
+            <div class="recap">
+                <h5>Plotting filter</h5>
+                {% for key, value in form.items %}
+                    <ul> - <b>{{ key }}</b>: {{ value }}</ul>
+                {% endfor %}
+            </div>
+
+            <br>
+
+            <div class="buttons">
+                <div class="button-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%; padding: 10px;">
+                    <form action="{% url "Plot" %}" method="post" id="return_dashboard"> {% csrf_token %}
+                            <input class="btn btn-info" type="submit" name="dashboard" value="Go back to dashboard">
+                    </form>
+                </div>
+
+                <div class="button-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%; padding: 10px;">
+                    <form action="{% url "Plot" %}" method="post" id="filter_form"> {% csrf_token %}
+                        <input class="btn btn-info" type="submit" value="Save filter" name="save_filter" id="save_filter" onclick="saveFilter();"/>
+                    </form>
+                </div>
+            </div>
         </div>
     {% endif %}
     <!-- 2nd potential inner div: collapsible button for displaying projects which didn't have that metric in the database -->
@@ -68,19 +86,9 @@
             </div>
         </div>
     {% endif %}
-    <!-- 4th inner div: div for the reset filter button -->
-    <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:10%; padding: 10px;">
-        <form action="{% url "Plot" %}" method="post" id="return_dashboard"> {% csrf_token %}
-                <input class="btn btn-info" type="submit" name="dashboard" value="Go back to dashboard">
-        </form>
-
-        <br><br>
-
-        <form action="{% url "Plot" %}" method="post" id="filter_form"> {% csrf_token %}
-            <input class="btn btn-info" type="submit" value="Save filter" name="save_filter" id="save_filter" onclick="saveFilter();"/>
-        </form>
-    </div>
 </div>
+
+<br>
 
 <div id="plot-div"></div>
 
@@ -96,6 +104,9 @@ var layout = {
             text: "Projects (ordered by date)",
             standoff: 10
         }
+    },
+    yaxis: {
+        title: "{{y_axis|escapejs}}"
     },
     height: 1000,
     showlegend: false,
