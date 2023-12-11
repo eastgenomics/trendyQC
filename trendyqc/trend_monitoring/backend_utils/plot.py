@@ -182,9 +182,12 @@ def get_data_for_plotting(
             # if one value is None/NaN
             elif metric_series.isnull().any():
                 samples_no_metric.setdefault(metric, {})
-                samples_no_metric[metric][project_name] = data_one_run.loc[
-                    metric_series.isna()
-                ].values
+
+                for values in data_one_run.loc[metric_series.isna()].values:
+                    samples_no_metric[metric].setdefault(project_name, [])
+                    # extract sample name
+                    data = [value for value in values][0]
+                    samples_no_metric[metric][project_name].append(data)
 
         # filter out the None/NaN values in the metric column
         pd_data_no_none = df[~df[metric_field].isna()]
