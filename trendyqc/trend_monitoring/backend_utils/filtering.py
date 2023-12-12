@@ -7,11 +7,12 @@ from django.core.exceptions import ObjectDoesNotExist
 from trend_monitoring.models.filters import Filter
 
 
-def import_filter(filter_name: str, data: dict) -> str:
+def import_filter(filter_name: str, username: str, data: dict) -> str:
     """ Import filter data 
 
     Args:
         filter_name (str): Name of the filter
+        username (str): Name of the user submitting the filter data
         data (dict): Dict containing the filtering info
 
     Returns:
@@ -31,7 +32,7 @@ def import_filter(filter_name: str, data: dict) -> str:
         return f"Filter {filter_name} already exists", messages.ERROR
 
     filter_obj = Filter(
-        name=filter_name,
+        name=filter_name, user=username,
         content=json.dumps(data, default=serialize_date)
     )
     filter_obj.save()

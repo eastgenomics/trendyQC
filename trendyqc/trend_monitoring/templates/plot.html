@@ -4,19 +4,45 @@
 
 {% block plot %}
 
-<div class="filter" style="width:90%; margin: auto; padding: 10px; ">
+<div class="recap" style="width:90%; margin: auto; padding: 10px; ">
     <!-- 1st inner div: recap of plotting filter -->
     {% if form %}
-        <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%; padding: 10px;">
-            <h5>Plotting filter</h5>
-            {% for key, value in form.items %}
-                <ul> - <b>{{ key }}</b>: {{ value }}</ul>
-            {% endfor %}
+        <div class="recap-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%; padding: 10px;">
+            <div class="recap">
+                <h5>Plotting filter</h5>
+                {% for key, values in form.items %}
+                    <ul>
+                        - <b>{{ key }}</b>:
+                        {% for value in values %}
+                            <ul>- {{ value }}</ul>
+                        {% endfor %}
+                    </ul>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="button-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%; padding: 10px;">
+            <form action="{% url "Plot" %}" method="post" id="return_dashboard"> {% csrf_token %}
+                    <input class="btn btn-info" type="submit" name="dashboard" value="Go back to dashboard">
+            </form>
+
+            <br>
+
+            {% if user.is_authenticated %}
+                <form action="{% url "Plot" %}" method="post" id="filter_form"> {% csrf_token %}
+                    <button class="btn btn-info" type="submit" value="Save filter" name="save_filter" id="save_filter" onclick="saveFilter();"/>Save filter</button>
+                </form>
+            {% endif %}
         </div>
     {% endif %}
+</div>
+
+<br>
+
+<div class="skipped_div" style="width:90%; margin: auto; padding: 10px; ">
     <!-- 2nd potential inner div: collapsible button for displaying projects which didn't have that metric in the database -->
     {% if skipped_projects %}
-        <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%; padding: 10px;">
+        <div class="skipped-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:45%; padding: 10px;">
             <p>
                 <button class="btn btn-warning" type="button" data-toggle="collapse" data-target="#collapseSkipped" aria-expanded="false" aria-controls="collapseSkipped">
                     Skipped projects (no metrics found)
@@ -41,7 +67,7 @@
     <!-- 3rd potential inner div: collapsible button for displaying samples which didn't have that metric -->
     <!-- Example: X226025-GM2312272-23NGCEN4-9527-F-99347387-FR in 002_230706_A01295_0198_AHHHT5DRX3_CEN for gt_depth_sd in Somalier -->
     {% if skipped_samples %}
-        <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%; padding: 10px;">
+        <div class="skipped-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:45%; padding: 10px;">
             <p>
                 <button class="btn btn-warning" type="button" data-toggle="collapse" data-target="#collapseSkipped" aria-expanded="false" aria-controls="collapseSkipped">
                     Skipped samples (no metrics found)
@@ -68,18 +94,6 @@
             </div>
         </div>
     {% endif %}
-    <!-- 4th inner div: div for the reset filter button -->
-    <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:10%; padding: 10px;">
-        <form action="{% url "Plot" %}" method="post" id="return_dashboard"> {% csrf_token %}
-                <input class="btn btn-info" type="submit" name="dashboard" value="Go back to dashboard">
-        </form>
-
-        <br><br>
-
-        <form action="{% url "Plot" %}" method="post" id="filter_form"> {% csrf_token %}
-            <input class="btn btn-info" type="submit" value="Save filter" name="save_filter" id="save_filter" onclick="saveFilter();"/>
-        </form>
-    </div>
 </div>
 
 <div id="plot-div"></div>
@@ -96,6 +110,9 @@ var layout = {
             text: "Projects (ordered by date)",
             standoff: 10
         }
+    },
+    yaxis: {
+        title: "{{y_axis|escapejs}}"
     },
     height: 1000,
     showlegend: false,
