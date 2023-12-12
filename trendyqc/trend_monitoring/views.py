@@ -216,7 +216,7 @@ class Dashboard(MultiTableMixin, TemplateView):
                 # if nothing was inputted the value is Save filter
                 if filter_name != "Save filter":
                     msg, msg_status = import_filter(
-                        filter_name, form.cleaned_data
+                        filter_name, request.user.username, form.cleaned_data
                     )
                     messages.add_message(request, msg_status, f"{msg}")
                     logger.info(msg)
@@ -316,7 +316,8 @@ class Plot(View):
 
             if filter_name != "Save filter":
                 msg, msg_status = import_filter(
-                    filter_name, request.session.get("form")
+                    filter_name, request.user.username,
+                    request.session.get("form")
                 )
                 messages.add_message(request, msg_status, f"Filter: {msg}")
                 logger.info(msg)
