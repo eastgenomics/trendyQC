@@ -111,12 +111,19 @@ function saveFilter() {
     if (!filter_name) return;
     $("#save_filter").val(filter_name);
     $("#filter_form").submit();
-}
+};
 
-// if a button is clicked i.e. the buttons in the filter table submit the filter use form
-$("button").click(function() {
+function submitFilterUse() {
     $("#filter_use").submit();
-});
+};
+
+function confirmDelete(e) {
+    if (confirm("Do you want to delete?") == true) {
+        $("#filter_use").submit();
+    } else {
+        e.preventDefault();
+    }
+};
 </script>
 
 {% endblock %}
