@@ -57,7 +57,7 @@ class FilterContentColumn(tables.Column):
                     data += f"<li>{value}</li>"
             else:
                 data += f"<li>{values}</li>"
-            
+
             data += "</ul></li></ul>"
 
             formatted_data.append(data)
