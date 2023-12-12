@@ -291,8 +291,13 @@ class Plot(View):
                 json_plot_data, json_trend_data
             ) = format_data_for_plotly_js(data_dfs[0])
 
+            formatted_form_data = {
+                k: ([v] if not isinstance(v, list) else v)
+                for k, v in form.items()
+            }
+
             context = {
-                "form": dict(sorted(form.items())),
+                "form": dict(sorted(formatted_form_data.items())),
                 "plot": json_plot_data,
                 "trend": json_trend_data,
                 "y_axis": " | ".join(filter_data["y_axis"]),
