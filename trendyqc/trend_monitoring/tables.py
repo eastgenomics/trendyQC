@@ -68,7 +68,7 @@ class FilterButton(tables.Column):
 
     def render(self, value, record): 
         return mark_safe(
-            f'<button value="{record.id}" name="filter_use" class="btn btn-info">Use filter</button>'
+            f'<button value="{record.id}" name="filter_use" class="btn btn-primary" onclick="submitFilterUse()">Use filter</button>'
         )
 
 
@@ -77,7 +77,7 @@ class DeleteFilterButton(tables.Column):
 
     def render(self, value, record): 
         return mark_safe(
-            f'<button value="{record.id}" name="delete_filter" class="btn btn-danger">Delete filter</button>'
+            f'<button value="{record.id}" name="delete_filter" class="btn btn-danger" onclick="confirmDelete(event)">Delete filter</button>'
         )
 
 
