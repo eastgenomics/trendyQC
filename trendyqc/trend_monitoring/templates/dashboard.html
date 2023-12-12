@@ -15,15 +15,13 @@
 </div>
 
 {% if user.is_authenticated %}
+    <br>
 
-<br>
-
-<form action="{% url 'Dashboard' %}" method="post" id="filter_use"> {% csrf_token %}
-    <div style="width:90%; margin: auto; padding: 10px;">
-        {% render_table tables.1 %}
-    </div>
-</form>
-
+    <form action="{% url 'Dashboard' %}" method="post" id="filter_use"> {% csrf_token %}
+        <div style="width:90%; margin: auto; padding: 10px;">
+            {% render_table tables.1 %}
+        </div>
+    </form>
 {% endif %}
 
 <br>
@@ -95,7 +93,9 @@
 
     <div style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; padding-left:5%">
         <button class="btn btn-info" type="submit" name="plot" value="Plot">Plot</button>
-        <button class="btn btn-info" type="submit" value="Save filter" name="save_filter" id="save_filter" onclick="saveFilter();"/>Save filter</button>
+        {% if user.is_authenticated %}
+            <button class="btn btn-info" type="submit" value="Save filter" name="save_filter" id="save_filter" onclick="saveFilter();"/>Save filter</button>
+        {% endif %}
     </div>
 </form>
 
