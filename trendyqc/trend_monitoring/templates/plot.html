@@ -4,32 +4,35 @@
 
 {% block plot %}
 
-<div class="filter" style="width:90%; margin: auto; padding: 10px; ">
+<div class="recap" style="width:90%; margin: auto; padding: 10px; ">
     <!-- 1st inner div: recap of plotting filter -->
     {% if form %}
-        <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%; padding: 10px;">
+        <div class="recap-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%; padding: 10px;">
             <div class="recap">
                 <h5>Plotting filter</h5>
-                {% for key, value in form.items %}
-                    <ul> - <b>{{ key }}</b>: {{ value }}</ul>
+                {% for key, values in form.items %}
+                    <ul>
+                        - <b>{{ key }}</b>:
+                        {% for value in values %}
+                            <ul>- {{ value }}</ul>
+                        {% endfor %}
+                    </ul>
                 {% endfor %}
             </div>
+        </div>
+
+        <div class="button-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%; padding: 10px;">
+            <form action="{% url "Plot" %}" method="post" id="return_dashboard"> {% csrf_token %}
+                    <input class="btn btn-info" type="submit" name="dashboard" value="Go back to dashboard">
+            </form>
 
             <br>
 
-            <div class="buttons">
-                <div class="button-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:60%">
-                    <form action="{% url "Plot" %}" method="post" id="return_dashboard"> {% csrf_token %}
-                            <input class="btn btn-info" type="submit" name="dashboard" value="Go back to dashboard">
-                    </form>
-                </div>
-
-                <div class="button-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%">
-                    <form action="{% url "Plot" %}" method="post" id="filter_form"> {% csrf_token %}
-                        <input class="btn btn-info" type="submit" value="Save filter" name="save_filter" id="save_filter" onclick="saveFilter();"/>
-                    </form>
-                </div>
-            </div>
+            {% if user.is_authenticated %}
+                <form action="{% url "Plot" %}" method="post" id="filter_form"> {% csrf_token %}
+                    <button class="btn btn-info" type="submit" value="Save filter" name="save_filter" id="save_filter" onclick="saveFilter();"/>Save filter</button>
+                </form>
+            {% endif %}
         </div>
     {% endif %}
 </div>
