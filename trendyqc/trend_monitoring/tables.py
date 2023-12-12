@@ -52,8 +52,11 @@ class FilterContentColumn(tables.Column):
         for key, values in filter_data.items():
             data = f"<ul><li><b>{key}</b>: <ul>"
 
-            for value in values:
-                data += f"<li>{value}</li>"
+            if isinstance(values, list):
+                for value in values:
+                    data += f"<li>{value}</li>"
+            else:
+                data += f"<li>{values}</li>"
             
             data += "</ul></li></ul>"
 
