@@ -3,6 +3,8 @@
 # turn on bash's job control
 set -me
 
+printenv >> /etc/environment
+
 # collect static command
 python trendyqc/manage.py collectstatic --no-input
 
@@ -11,7 +13,6 @@ gunicorn -n trendyqc -c ./config/gunicorn/conf.py --bind :8006 --chdir /app/tren
 
 # cron
 cron -f &
-
 # now we bring the primary process back into the foreground
 # and leave it there
 fg %1
