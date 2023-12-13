@@ -25,7 +25,9 @@ RUN touch /var/log/cron.log
 
 # copy the gunicorn/cron script
 COPY trendyqc.sh trendyqc.sh
+COPY trendyqc_update.sh trendyqc_update.sh
 # make it executable
 RUN chmod 100 trendyqc.sh
+RUN chmod 100 trendyqc_update.sh
 # execute the script when the container is ran
 CMD ["./trendyqc.sh"]
