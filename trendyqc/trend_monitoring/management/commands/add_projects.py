@@ -1,5 +1,6 @@
 import datetime
 import logging
+import traceback
 import sys
 
 from django.core.management.base import BaseCommand
@@ -68,34 +69,44 @@ class Command(BaseCommand):
         if options["all"]:
             project_ids = get_002_projects()
 
+            if not project_ids:
+                msg = (
+                    "No projects found using following command: "
+                    f"{' '.join(sys.argv)}"
+                )
+                logger.error(msg)
+                raise Exception(msg)
+
         if options["time_back"]:
             project_ids = get_002_projects(created_after=options["time_back"])
+
+            if not project_ids:
+                msg = (
+                    f"No new projects found in the last {options['time_back']}"
+                )
+                logger.info(msg)
+                print(msg)
 
         if options["project_id"]:
             project_ids = options["project_id"]
 
-        if not project_ids:
-            msg = (
-                "No projects found using following command: "
-                f"{' '.join(sys.argv)}"
+            invalid = [
+                p
+                for p in project_ids
+                if not regex.fullmatch(r"project-[a-zA-Z0-9]{24}", p)
+            ]
+
+            if invalid:
+                msg = f"Invalid DNAnexus project id(s): {','.join(invalid)}"
+                logger.error(msg)
+                raise AssertionError(msg)
+
+        try:
+            imported_reports = import_multiqc_reports(
+                project_ids, options["dry_run"]
             )
-            logger.error(msg)
-            raise Exception(msg)
-
-        invalid = [
-            p
-            for p in project_ids
-            if not regex.fullmatch(r"project-[a-zA-Z0-9]{24}", p)
-        ]
-
-        if invalid:
-            msg = f"Invalid DNAnexus project id(s): {','.join(invalid)}"
-            logger.error(msg)
-            raise AssertionError(msg)
-
-        imported_reports = import_multiqc_reports(
-            project_ids, options["dry_run"]
-        )
+        except Exception:
+            traceback.print_exc()
 
         if is_automated_update:
             now = datetime.datetime.now().strftime("%y%m%d|%I:%M")
