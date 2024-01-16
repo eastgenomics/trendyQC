@@ -26,15 +26,28 @@ logger = logging.getLogger("basic")
 
 
 class MultiQC_report():
-    def __init__(self, multiqc_report: dxpy.DXFile) -> None:
+    def __init__(
+        self,
+        multiqc_report_id: str,
+        multiqc_project_id: str,
+        multiqc_job_id: str,
+        data: str
+    ) -> None:
         """ Initialize MultiQC report
 
         Args:
-            multiqc_report (dxpy.DXFile): DXFile object
+            multiqc_report_id (str): DNAnexus file id for MultiQC report data
+            multiqc_project_id (str): DNAnexus project id for MultiQC report
+            data
+            multiqc_job_id (str): DNAnexus job id for MultiQC report data
+            data (str): Content of MultiQC report data 
         """
 
-        self.dnanexus_report = multiqc_report
-        self.original_data = json.loads(multiqc_report.read())
+        self.project_id = multiqc_project_id
+        self.multiqc_json_id = multiqc_report_id
+        self.job_id = multiqc_job_id
+
+        self.original_data = json.loads(data)
         self.assay = self.original_data.get("config_subtitle", None)
         self.is_importable = True
         # Store the Django models as a dict of model names to model objects
@@ -216,20 +229,12 @@ class MultiQC_report():
     def get_metadata(self):
         """ Get the metadata from the MultiQC DNAnexus object """
 
-        # get project metadata
-        self.project_id = self.dnanexus_report.describe()["project"]
         project_obj = dxpy.DXProject(self.project_id)
         self.project_name = project_obj.name
         project_date = self.project_name.split("_")[1]
 
         # get the sequencer id
         self.sequencer_id = self.project_name.split("_")[2]
-
-        # get the multiqc metadata
-        self.multiqc_json_id = self.dnanexus_report.describe()["id"]
-
-        # Get the job ID from the multiqc report
-        self.job_id = self.dnanexus_report.describe()["createdBy"]["job"]
 
         # get the job object
         report_job = dxpy.DXJob(self.job_id)
