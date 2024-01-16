@@ -22,9 +22,12 @@ class TestIngestion(TestCase):
 
     def untar_stream_reports(self, tar):
         with tarfile.open(tar) as tf:
-            for file in tf:
-                data = tf.extractfile(file)
-                yield data
+            for obj in tf:
+                data = tf.extractfile(obj)
+
+                # None is returned for folders, so skipping them
+                if data is not None:
+                    yield data
 
     def test_import_reports(self):
         reports_tar = self.get_reports_tar()
