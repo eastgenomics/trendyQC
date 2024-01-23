@@ -96,11 +96,15 @@ class TestIngestion(TestCase):
 
         multiqc_report_objects = []
 
-        for report, subkey in reports.items():
-            multiqc_report = MultiQC_report(
-                subkey["file_id"], subkey["project_id"], subkey["job_id"],
-                subkey["data"]
-            )
+        for assay, subkey in reports.items():
+            test_dict = {
+                "multiqc_report_id": subkey["file_id"],
+                "multiqc_project_id": subkey["project_id"],
+                "multiqc_job_id": subkey["job_id"],
+                "data": subkey["data"] 
+            }
+
+            multiqc_report = MultiQC_report(**test_dict)
             multiqc_report.import_instances()
             multiqc_report_objects.append(multiqc_report)
 
@@ -118,8 +122,8 @@ class TestIngestion(TestCase):
         super(TestIngestion, cls).setUpClass()
         login_to_dnanexus()
         reports_tar = cls.get_reports_tar()
-        reports = cls.untar_stream_reports(reports_tar)
-        cls.multiqc_objects = cls.import_test_reports(reports)
+        cls.reports = cls.untar_stream_reports(reports_tar)
+        cls.multiqc_objects = cls.import_test_reports(cls.reports)
 
     def test_multiqc_assay(self):
         """ Test if the assay data i.e. the multiqc fields + tool/subtool name
@@ -144,6 +148,24 @@ class TestIngestion(TestCase):
                 test_data=test_data, expected_values=expected_values
             ):
                 self.assertEqual(test_data, expected_values)
+
+    def test_import_already_in_db(self):
+        """ Test that the report is defined as being not importable """
+
+        for assay, subkey in self.reports.items():
+            test_dict = {
+                "multiqc_report_id": subkey["file_id"],
+                "multiqc_project_id": subkey["project_id"],
+                "multiqc_job_id": subkey["job_id"],
+                "data": subkey["data"] 
+            }
+
+            test_report = MultiQC_report(**test_dict)
+            error_msg = (
+                f"{test_report.multiqc_json_id} is deemed importable when it "
+                "shouldn't be"
+            )
+            self.assertFalse(test_report.is_importable, error_msg)
 
     # def test_data_integrity(self):
     #     """ Actual test to check if the data has been imported correctly """
