@@ -13,9 +13,8 @@ from trendyqc.settings import BASE_DIR
 
 class TestIngestion(TestCase):
     """
-    This test case will import reports from TWE, CEN, TSO500, MYE assays.
-    It imports them and the test will compare every single value imported in
-    the database against the values in the JSON raw data.
+    To setup this battery of tests, the setUpClass will import reports from
+    TWE, CEN, TSO500, MYE assays.
     """
 
     @classmethod
@@ -88,16 +87,12 @@ class TestIngestion(TestCase):
         return reports
 
     @classmethod
-    def import_test_reports(cls):
+    def import_test_reports(cls, reports):
         """ Import the test reports
 
         Returns:
             list: List of MultiQC reports objects
         """
-
-        login_to_dnanexus()
-        reports_tar = cls.get_reports_tar()
-        reports = cls.untar_stream_reports(reports_tar)
 
         multiqc_report_objects = []
 
@@ -113,10 +108,24 @@ class TestIngestion(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        """ Set up the data for the battery of tests by:
+        - Logging into dnanexus
+        - Getting the test tar and performing some checks
+        - Untar-ing the reports
+        - Importing said reports
+        """
+
         super(TestIngestion, cls).setUpClass()
-        cls.multiqc_objects = cls.import_test_reports()
+        login_to_dnanexus()
+        reports_tar = cls.get_reports_tar()
+        reports = cls.untar_stream_reports(reports_tar)
+        cls.multiqc_objects = cls.import_test_reports(reports)
 
     def test_multiqc_assay(self):
+        """ Test if the assay data i.e. the multiqc fields + tool/subtool name
+        associated match the appropriate content of the assay file
+        """
+
         assay_file = BASE_DIR / "trend_monitoring" / "management" / "configs" / "assays.json"
 
         with open(assay_file) as f:
@@ -139,15 +148,13 @@ class TestIngestion(TestCase):
     # def test_data_integrity(self):
     #     """ Actual test to check if the data has been imported correctly """
 
-    #     report_objects = self.import_test_reports()
-
     #     reports_db = Report.objects.all()
 
     #     # go through the reports in the database
     #     for report in reports_db:
     #         # get the MultiQC report object matching the report in the database
     #         report_obj = [
-    #             report_obj for report_obj in report_objects
+    #             report_obj for report_obj in self.report_objects
     #             if report.dnanexus_file_id == report_obj.multiqc_json_id
     #         ][0]
 
