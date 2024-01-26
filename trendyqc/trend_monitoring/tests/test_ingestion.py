@@ -17,6 +17,10 @@ class TestIngestion(TestCase):
     TWE, CEN, TSO500, MYE assays.
     """
 
+    def shortDescription(self):
+        doc = [ele.strip() for ele in self._testMethodDoc.strip().split("\n")]
+        return "\n".join(doc) or None
+
     @classmethod
     def get_reports_tar(cls):
         """ Get the report tar file
@@ -166,7 +170,8 @@ class TestIngestion(TestCase):
             break
 
     def test_assay_key_missing(self):
-        """ Test that a report is not importable because the assay key doesn't
+        """
+        Test that a report is not importable because the assay key doesn't
         exist in the JSON file
         """
 
@@ -217,7 +222,7 @@ class TestIngestion(TestCase):
             )
 
             with self.assertRaises(AssertionError, msg=test_msg):
-                test_report = MultiQC_report(**test_dict)
+                MultiQC_report(**test_dict)
 
             break
 
