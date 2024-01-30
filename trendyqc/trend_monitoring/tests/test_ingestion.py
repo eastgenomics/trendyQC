@@ -1,15 +1,9 @@
 import json
 import json
 import tarfile
+import random
 
 from django.test import TestCase
-import pandas as pd
-
-from trend_monitoring.backend_utils.plot import get_metric_filter
-from trend_monitoring.management.commands.utils._multiqc import MultiQC_report
-from trend_monitoring.management.commands.utils._dnanexus_utils import login_to_dnanexus
-from trend_monitoring.models.metadata import Report, Report_Sample
-from trendyqc.settings import BASE_DIR
 import pandas as pd
 
 from trend_monitoring.backend_utils.plot import get_metric_filter
@@ -49,21 +43,6 @@ class TestIngestion(TestCase):
         )
 
         return test_reports_tar
-
-    @classmethod
-    def untar_stream_reports(cls, tar):
-        """ Untar and uncompress the tar file to extract the JSON Multiqc file
-        and the metadata file associated with every report file
-
-        Args:
-            tar (str): Name and path to the tar file
-
-        Returns:
-            dict: Dict containing the file id, project id and job id as well as
-            the JSON content
-        """
-
-        reports = {}
 
     @classmethod
     def untar_stream_reports(cls, tar):
@@ -176,21 +155,20 @@ class TestIngestion(TestCase):
     def test_import_already_in_db(self):
         """ Test that the report is defined as being not importable """
 
-        for assay, subkey in self.reports.items():
-            test_dict = {
-                "multiqc_report_id": subkey["file_id"],
-                "multiqc_project_id": subkey["project_id"],
-                "multiqc_job_id": subkey["job_id"],
-                "data": subkey["data"] 
-            }
+        assay, subkey = random.choice(list(self.reports.items()))
+        test_dict = {
+            "multiqc_report_id": subkey["file_id"],
+            "multiqc_project_id": subkey["project_id"],
+            "multiqc_job_id": subkey["job_id"],
+            "data": subkey["data"] 
+        }
 
-            test_report = MultiQC_report(**test_dict)
-            test_msg = (
-                f"Testing if {test_report.multiqc_json_id} is not importable "
-                "because it is already in the db"
-            )
-            self.assertFalse(test_report.is_importable, test_msg)
-            break
+        test_report = MultiQC_report(**test_dict)
+        test_msg = (
+            f"Testing if {test_report.multiqc_json_id} is not importable "
+            "because it is already in the db"
+        )
+        self.assertFalse(test_report.is_importable, test_msg)
 
     def test_assay_key_missing(self):
         """
@@ -198,63 +176,60 @@ class TestIngestion(TestCase):
         exist in the JSON file
         """
 
-        for assay, subkey in self.reports.items():
-            # remove the config_subtitle key from the data to trigger the
-            # "not importable" status
-            data = json.loads(subkey["data"])
-            del data["config_subtitle"]
-            test_data = json.dumps(data)
+        assay, subkey = random.choice(list(self.reports.items()))
+        # remove the config_subtitle key from the data to trigger the
+        # "not importable" status
+        data = json.loads(subkey["data"])
+        del data["config_subtitle"]
+        test_data = json.dumps(data)
 
-            test_dict = {
-                "multiqc_report_id": subkey["file_id"],
-                "multiqc_project_id": subkey["project_id"],
-                "multiqc_job_id": subkey["job_id"],
-                "data": test_data
-            }
+        test_dict = {
+            "multiqc_report_id": subkey["file_id"],
+            "multiqc_project_id": subkey["project_id"],
+            "multiqc_job_id": subkey["job_id"],
+            "data": test_data
+        }
 
-            test_report = MultiQC_report(**test_dict)
-            test_msg = (
-                f"Testing if {test_report.multiqc_json_id} is not importable "
-                "because of the missing key in the JSON file"
-            )
-            self.assertFalse(test_report.is_importable, test_msg)
-            break
+        test_report = MultiQC_report(**test_dict)
+        test_msg = (
+            f"Testing if {test_report.multiqc_json_id} is not importable "
+            "because of the missing key in the JSON file"
+        )
+        self.assertFalse(test_report.is_importable, test_msg)
 
     def test_assay_not_in_config(self):
         """ Test that a report is not importable because the assay value in the
         MultiQC data doesn't exist in the assays.json file
         """
 
-        for assay, subkey in self.reports.items():
-            # replace the value for the assay in the MultiQC data
-            data = json.loads(subkey["data"])
-            data["config_subtitle"] = "Unknown assay"
-            test_data = json.dumps(data)
+        assay, subkey = random.choice(list(self.reports.items()))
+        # replace the value for the assay in the MultiQC data
+        data = json.loads(subkey["data"])
+        data["config_subtitle"] = "Unknown assay"
+        test_data = json.dumps(data)
 
-            test_dict = {
-                "multiqc_report_id": subkey["file_id"],
-                "multiqc_project_id": subkey["project_id"],
-                "multiqc_job_id": subkey["job_id"],
-                "data": test_data
-            }
+        test_dict = {
+            "multiqc_report_id": subkey["file_id"],
+            "multiqc_project_id": subkey["project_id"],
+            "multiqc_job_id": subkey["job_id"],
+            "data": test_data
+        }
 
-            test_msg = (
-                f"Testing if {subkey['file_id']} is not importable "
-                "because the assay in the MultiQC data doesn't exist in the "
-                "assays.json file"
-            )
+        test_msg = (
+            f"Testing if {subkey['file_id']} is not importable "
+            "because the assay in the MultiQC data doesn't exist in the "
+            "assays.json file"
+        )
 
-            with self.assertRaises(AssertionError, msg=test_msg):
-                MultiQC_report(**test_dict)
-
-            break
+        with self.assertRaises(AssertionError, msg=test_msg):
+            MultiQC_report(**test_dict)
 
     def test_clean_sample_naming(self):
         """ Test the merging of data occurring when sample naming has not been 
         solved automatically
         """
 
-        multiqc_object = self.multiqc_objects[0]
+        multiqc_object = random.choice(self.multiqc_objects)
         original_data = multiqc_object.data
 
         multiqc_object.data = {
