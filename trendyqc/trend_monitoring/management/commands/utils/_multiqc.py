@@ -80,9 +80,10 @@ class MultiQC_report():
         else:
             self.is_importable = False
             logger.warning((
-                f"{self.dnanexus_report.id} doesn't have an "
-                "assay name present in the trendyqc/trend_monitoring/"
-                "management/configs/assays.json. Skipping.."
+                f"{self.multiqc_json_id}: the gathered assay name in "
+                "the MultiQC JSON ('config_subtitle') is not present in the "
+                "trendyqc/trend_monitoring/management/configs/assays.json. "
+                "Skipping.."
             ))
 
     def setup_tools(self):
