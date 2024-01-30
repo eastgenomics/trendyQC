@@ -1,7 +1,15 @@
 import json
+import json
 import tarfile
 
 from django.test import TestCase
+import pandas as pd
+
+from trend_monitoring.backend_utils.plot import get_metric_filter
+from trend_monitoring.management.commands.utils._multiqc import MultiQC_report
+from trend_monitoring.management.commands.utils._dnanexus_utils import login_to_dnanexus
+from trend_monitoring.models.metadata import Report, Report_Sample
+from trendyqc.settings import BASE_DIR
 import pandas as pd
 
 from trend_monitoring.backend_utils.plot import get_metric_filter
@@ -41,6 +49,21 @@ class TestIngestion(TestCase):
         )
 
         return test_reports_tar
+
+    @classmethod
+    def untar_stream_reports(cls, tar):
+        """ Untar and uncompress the tar file to extract the JSON Multiqc file
+        and the metadata file associated with every report file
+
+        Args:
+            tar (str): Name and path to the tar file
+
+        Returns:
+            dict: Dict containing the file id, project id and job id as well as
+            the JSON content
+        """
+
+        reports = {}
 
     @classmethod
     def untar_stream_reports(cls, tar):
