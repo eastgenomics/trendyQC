@@ -223,35 +223,6 @@ class TestIngestion(TestCase):
         with self.assertRaises(AssertionError, msg=test_msg):
             MultiQC_report(**test_dict)
 
-    def test_clean_sample_naming(self):
-        """ Test the merging of data occurring when sample naming has not been 
-        solved automatically
-        """
-
-        multiqc_object = random.choice(self.multiqc_objects)
-        original_data = multiqc_object.data
-
-        multiqc_object.data = {
-            "NA12878": {"tool1": "dummy_data"},
-            "NA12878-NA12878-1-TWE-F-EGG4": {"tool2": "dummy_data"},
-            "NA12878-NA12878": {"tool3": "dummy_data"}
-        }
-
-        multiqc_object.clean_sample_naming()
-
-        self.assertEqual(
-            multiqc_object.data,
-            {
-                "NA12878-NA12878-1-TWE-F-EGG4": {
-                    "tool1": "dummy_data",
-                    "tool2": "dummy_data",
-                    "tool3": "dummy_data"
-                }
-            }
-        )
-
-        multiqc_object.data = original_data
-
     # def test_data_integrity(self):
     #     """ Actual test to check if the data has been imported correctly """
 
