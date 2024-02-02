@@ -1,10 +1,11 @@
-from collections import defaultdict
-from difflib import SequenceMatcher
+import logging
 import math
-import operator
+import os
 import re
-from typing import Any, Iterable
+from typing import Any
 
+
+error_logger = logging.getLogger("error")
 
 def clean_value(value: str) -> Any:
     """ Determine if the value needs its type changed because for example,
@@ -74,17 +75,20 @@ def clean_sample_naming(data):
         # one sample name is present in other sample name
         if len(matches) > 1:
             # look for the longest common substring in the matches
-            longest_common_substring = find_longest_common_substring(matches)
+            longest_common_substring = os.path.commonprefix(matches)
             data_to_add.setdefault(
                 longest_common_substring.rstrip("-").rstrip("_"), []
             ).extend(matches)
 
         elif len(matches) == 1:
-            # sample name matched itself, leaving this if for visibility
+            # sample name matched itself and these will not be modified
+            # leaving this "if" for visibility
             continue
 
         else:
-            raise Exception("Well mate time to go to sleep")
+            msg = f"{sample} did not match itself, please investigate"
+            error_logger.error(msg)
+            raise Exception(msg)
 
     filter_longer_sample_names = []
 
@@ -118,32 +122,3 @@ def clean_sample_naming(data):
         data[sample_to_add] = merged_data
 
     return data
-
-def find_longest_common_substring(strings: Iterable) -> str:
-    """ Find the longest common substring in a given iterable
-
-    Args:
-        strings (Iterable): Iterable containing strings
-
-    Returns:
-        str: Longest common string found in the iterable
-    """
-
-    count_substrings = defaultdict(int)
-
-    # look for the longest common substring in the matches
-    for i in range(0, len(strings)):
-        for j in range(i+1, len(strings)):
-            match = SequenceMatcher(
-                None, strings[i], strings[j]
-            ).find_longest_match(
-                0, len(strings[i]), 0, len(strings[j])
-            )
-            matching_substring = strings[i][match.a:match.a + match.size]
-            count_substrings[matching_substring] += 1
-
-    max_occurring_substring = max(
-        count_substrings.items(), key=operator.itemgetter(1)
-    )[0]
-
-    return max_occurring_substring
