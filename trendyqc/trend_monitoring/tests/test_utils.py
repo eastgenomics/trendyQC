@@ -10,13 +10,12 @@ class TestUtils(unittest.TestCase):
         doc = [ele.strip() for ele in self._testMethodDoc.strip().split("\n")]
         return "\n".join(doc) or None
 
-    @classmethod
-    def setUpClass(cls):
-        """ Set up data for use in the only test present right now (will 
-        probably evolve in the future to account for other tests)
+    def test_cleaning_multiqc_data_correct_values(self):
+        """ Test to assess the various outcomes of the clean value function in 
+        the MultiQC_report class
         """
 
-        cls.test_and_expected_values = (
+        test_and_expected_values = (
             [None, None],
             ["?", None],
             ["NA", None],
@@ -28,12 +27,16 @@ class TestUtils(unittest.TestCase):
             ["1", 1]
         )
 
-    def test_cleaning_multiqc_data_correct_values(self):
-        """ Test to assess the various outcomes of the clean value function in 
-        the MultiQC_report class
-        """
-
-        for test_parameter, expected_value in self.test_and_expected_values:
+        for test_parameter, expected_value in test_and_expected_values:
             with self.subTest(f"Testing {test_parameter}"):
                 test_value = MultiQC_report.clean_value(test_parameter)
                 self.assertEqual(test_value, expected_value)
+
+    def test_cleaning_sample_names(self):
+        """ Test to check if the merging of sample names works properly """
+
+        expected_value = {
+            "NA12878-NA12878": {"tool1": "dummy_data"},
+            "NA12878": {"tool2": "dummy_data"},
+            "NA12878-NA12878-TWE-F": {"tool3": "dummy_data"}
+        }
