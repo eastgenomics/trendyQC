@@ -2,9 +2,8 @@ from collections import defaultdict
 from datetime import datetime
 import logging
 import json
-import math
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Dict, List
 
 import dxpy
 import regex
@@ -17,6 +16,7 @@ from django.utils import timezone
 from ._check import already_in_db
 from ._parsing import load_assay_config
 from ._tool import Tool
+from ._utils import clean_value, clean_sample_naming
 
 # returns the /trendyqc/trend_monitoring/management folder
 BASE_DIR_MANAGEMENT = Path(__file__).resolve().parent.parent.parent
@@ -74,7 +74,7 @@ class MultiQC_report():
             else:
                 self.setup_tools()
                 self.parse_multiqc_report()
-                self.clean_sample_naming()
+                self.data = clean_sample_naming(self.data)
                 self.map_models_to_tools()
                 self.create_all_instances()
         else:
@@ -299,93 +299,8 @@ class MultiQC_report():
         """
 
         return {
-            field: self.clean_value(value) for field, value in data.items()
+            field: clean_value(value) for field, value in data.items()
         }
-
-    @staticmethod
-    def clean_value(value: str) -> Any:
-        """ Determine if the value needs its type changed because for example,
-        Happy returns strings for this numbers. Additionally, return None if an
-        empty string is provided.
-
-        Args:
-            value (str): Value stored for a field
-
-        Returns:
-            Any: Value that has correct type if it passed tests or cleaned
-            value
-        """
-
-        # check if value is an empty string + check if value is not 0
-        # otherwise it returns None
-        if not value and value != 0:
-            return None
-
-        try:
-            float(value)
-        except ValueError:
-            # some picard tool can return "?", why i do not know but i wanna
-            # find those people and have a talk with them
-            # other tools have NA, so handle those cases
-            if value == "?" or value == "NA":
-                return None
-
-            # Probably str
-            return value
-
-        # nan doesn't trigger the exception, so handle them separately
-        if math.isnan(float(value)):
-            return None
-
-        # it can float, check if it's an int or float
-        if '.' in str(value):
-            return float(value)
-        else:
-            return int(value)
-
-    def clean_sample_naming(self):
-        """ Clean the sample names.
-        Issue encountered with old RD runs for NA12878:
-        NA12878-NA12878-1-TWE-F-EGG4_S31_L001_R1 for FastQC NA12878_INDEL_ALL
-        for Happy.
-        This means that 2 instances of NA12878 are created and the data for the
-        sample is split between the 2 instances.
-        This function tries to fix that and merge the data.
-        """
-
-        data_to_add = {}
-        data_to_remove = set()
-
-        for sample1 in self.data.keys():
-            for sample2 in self.data.keys():
-                # check if some sample names overlap (and are not identical)
-                if sample1 != sample2 and (sample1 in sample2 or sample2 in sample1):
-                    # check which sample name is the longest, assume that it is
-                    # the one we want
-                    if len(sample1) > len(sample2):
-                        sample = sample1
-                    else:
-                        sample = sample2
-
-                    data_to_add.setdefault(sample, {})
-
-                    # merge the data from the 2 instances of the sample names
-                    # being similar
-                    data_to_add[sample].update(self.data[sample1])
-                    data_to_add[sample].update(self.data[sample2])
-
-                    # store the sample names for later removal
-                    data_to_remove.add(sample1)
-                    data_to_remove.add(sample2)
-
-        # delete the data from the sample names we have stored
-        for sample in data_to_remove:
-            del self.data[sample]
-
-        # create new entry in the self.data with the sample name we want and
-        # the merged data
-        for sample, data in data_to_add.items():
-            self.data[sample] = data
 
     def create_all_instances(self):
         """ Create instances for everything that needs to get imported
