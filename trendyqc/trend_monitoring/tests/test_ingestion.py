@@ -1,15 +1,11 @@
 import json
-import json
 import tarfile
 import random
 
 from django.test import TestCase
-import pandas as pd
 
-from trend_monitoring.backend_utils.plot import get_metric_filter
 from trend_monitoring.management.commands.utils._multiqc import MultiQC_report
 from trend_monitoring.management.commands.utils._dnanexus_utils import login_to_dnanexus
-from trend_monitoring.models.metadata import Report, Report_Sample
 from trendyqc.settings import BASE_DIR
 
 
@@ -223,64 +219,3 @@ class TestIngestion(TestCase):
 
         with self.assertRaises(AssertionError, msg=test_msg):
             MultiQC_report(**test_dict)
-
-    # def test_data_integrity(self):
-    #     """ Actual test to check if the data has been imported correctly """
-
-    #     reports_db = Report.objects.all()
-
-    #     # go through the reports in the database
-    #     for report in reports_db:
-    #         # get the MultiQC report object matching the report in the database
-    #         report_obj = [
-    #             report_obj for report_obj in self.report_objects
-    #             if report.dnanexus_file_id == report_obj.multiqc_json_id
-    #         ][0]
-
-    #         # go through the tools of the MultiQC report
-    #         for tool in report_obj.tools:
-    #             # get the data in the JSON file for that tool
-    #             df = pd.DataFrame(
-    #                 report_obj.original_data["report_saved_raw_data"][tool.multiqc_field_name]
-    #             ).T
-
-    #             # get the report_sample links in preparation
-    #             report_samples = Report_Sample.objects.filter(report=report)
-    #             # get list of samples for current report
-    #             samples = list(
-    #                 report_samples.values_list("sample__sample_id", flat=True)
-    #             )
-
-    #             # go through the samples of that MultiQC report
-    #             for sample in samples:
-    #                 # get the row(s) with that sample name
-    #                 filtered_df = df[
-    #                     [sample in index for index in df.index]
-    #                 ]
-
-    #                 # only one match which is the expected outcome for most
-    #                 # cases
-    #                 if filtered_df.shape[0] == 1:
-    #                     # go through the fields for the tool
-    #                     for multiqc_field, db_field in tool.fields.items():
-    #                         # get and clean the value in the dataframe
-    #                         value_from_file = MultiQC_report.clean_value(
-    #                             filtered_df[multiqc_field].to_numpy()[0]
-    #                         )
-
-    #                         # build a metric field
-    #                         metric_filter = get_metric_filter(
-    #                             tool.model.__name__.lower(), db_field
-    #                         )
-    #                         # get the value from the database using the metric
-    #                         # filter
-    #                         value_imported = list(
-    #                             report_samples.filter(
-    #                                 sample__sample_id=sample
-    #                             ).values_list(metric_filter, flat=True)
-    #                         )[0]
-
-    #                         self.assertEqual(value_from_file, value_imported)
-
-    #                 elif filtered_df.shape[0] >= 2:
-    #                     pass
