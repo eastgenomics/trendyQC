@@ -1,7 +1,9 @@
 from math import nan
 import unittest
 
-from trend_monitoring.management.commands.utils._multiqc import MultiQC_report
+from trend_monitoring.management.commands.utils._utils import (
+    clean_value, clean_sample_naming
+)
 
 class TestUtils(unittest.TestCase):
     """ This class will test the utils type functions """
@@ -29,14 +31,25 @@ class TestUtils(unittest.TestCase):
 
         for test_parameter, expected_value in test_and_expected_values:
             with self.subTest(f"Testing {test_parameter}"):
-                test_value = MultiQC_report.clean_value(test_parameter)
+                test_value = clean_value(test_parameter)
                 self.assertEqual(test_value, expected_value)
 
     def test_cleaning_sample_names(self):
         """ Test to check if the merging of sample names works properly """
 
-        expected_value = {
+        test_data = {
             "NA12878-NA12878": {"tool1": "dummy_data"},
             "NA12878": {"tool2": "dummy_data"},
             "NA12878-NA12878-TWE-F": {"tool3": "dummy_data"}
         }
+
+        expected_data = {
+            "NA12878": {
+                "tool1": "dummy_data",
+                "tool2": "dummy_data",
+                "tool3": "dummy_data"
+            }
+        }
+
+        test_return = clean_sample_naming(test_data)
+        self.assertEqual(test_return, expected_data)
