@@ -93,9 +93,8 @@ class Command(BaseCommand):
             logger.error(msg)
             raise AssertionError(msg)
 
-        imported_reports = import_multiqc_reports(
-            project_ids, options["dry_run"]
-        )
+        if not options["dry_run"]:
+            imported_reports = import_multiqc_reports(project_ids)
 
         if is_automated_update:
             now = datetime.datetime.now().strftime("%y%m%d|%I:%M")

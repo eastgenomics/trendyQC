@@ -12,13 +12,12 @@ logger = logging.getLogger("basic")
 storing_logger = logging.getLogger("storing")
 
 
-def import_multiqc_reports(project_ids: list, dry_run: bool = False):
+def import_multiqc_reports(project_ids: list):
     """ Import all the multiqc reports contained in the list of projects ids
     given
 
     Args:
         project_ids (list): List of project ids to look for MultiQC reports in
-        dry_run (bool, optional): Perform import or not. Defaults to False.
     """
 
     archived_reports = []
@@ -66,25 +65,24 @@ def import_multiqc_reports(project_ids: list, dry_run: bool = False):
                 slack_notify(msg)
 
             if multiqc_report.is_importable:
-                if not dry_run:
-                    try:
-                        multiqc_report.import_instances()
-                    except Exception:
-                        msg = (
-                            "TrendyQC - Failed to import "
-                            f"{multiqc_report.multiqc_json_id}\n"
+                try:
+                    multiqc_report.import_instances()
+                except Exception:
+                    msg = (
+                        "TrendyQC - Failed to import "
+                        f"{multiqc_report.multiqc_json_id}\n"
 
-                            "```"
-                            f"{traceback.format_exc()}"
-                            "```"
-                        )
-                        slack_notify(msg)
+                        "```"
+                        f"{traceback.format_exc()}"
+                        "```"
+                    )
+                    slack_notify(msg)
 
-                    imported_reports.append(multiqc_report)
-                    logger.info((
-                        f"Successfully imported: "
-                        f"{multiqc_report.multiqc_json_id}"
-                    ))
+                imported_reports.append(multiqc_report)
+                logger.info((
+                    f"Successfully imported: "
+                    f"{multiqc_report.multiqc_json_id}"
+                ))
 
     if archived_reports:
         storing_logger.warning(
