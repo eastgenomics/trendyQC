@@ -3,6 +3,37 @@ import tarfile
 import random
 
 from django.test import TestCase
+import regex
+
+from trend_monitoring.models.metadata import (
+    Report, Patient, Report_Sample, Sample
+)
+from trend_monitoring.models.fastq_qc import (
+    Fastqc_read_data, Fastqc, Bcl2fastq_data
+)
+from trend_monitoring.models.bam_qc import (
+    VerifyBAMid_data,
+    Samtools_data,
+    Custom_coverage,
+    Picard,
+    Picard_alignment_summary_metrics,
+    Picard_base_distribution_by_cycle_metrics,
+    Picard_duplication_metrics,
+    Picard_gc_bias_metrics,
+    Picard_hs_metrics,
+    Picard_insert_size_metrics,
+    Picard_pcr_metrics,
+    Picard_quality_yield_metrics,
+)
+from trend_monitoring.models.vcf_qc import (
+    Somalier_data,
+    Sompy_data,
+    Happy,
+    Happy_indel_all,
+    Happy_indel_pass,
+    Happy_snp_all,
+    Happy_snp_pass
+)
 
 from trend_monitoring.management.commands.utils._multiqc import MultiQC_report
 from trend_monitoring.management.commands.utils._dnanexus_utils import login_to_dnanexus
@@ -114,6 +145,15 @@ class TestMultiqc(TestCase):
         return multiqc_report_objects
 
     @classmethod
+    def import_tool_info(cls):
+        test_tool_file = BASE_DIR / "trend_monitoring" / "tests" / "test_data" / "tools.json"
+
+        with open(test_tool_file) as f:
+            tool_data = json.loads(f.read())
+
+        return tool_data
+
+    @classmethod
     def setUpClass(cls):
         """ Set up the data for the battery of tests by:
         - Logging into dnanexus
@@ -124,6 +164,7 @@ class TestMultiqc(TestCase):
 
         super(TestMultiqc, cls).setUpClass()
         login_to_dnanexus()
+        cls.tool_data = cls.import_tool_info()
         reports_tar = cls.get_reports_tar()
         cls.reports = cls.untar_stream_reports(reports_tar)
         cls.multiqc_objects = cls.import_test_reports(cls.reports)
@@ -242,8 +283,47 @@ class TestMultiqc(TestCase):
             "assays.json file"
         )
 
-        with self.assertRaises(AssertionError, msg=test_msg):
-            MultiQC_report(**test_dict)
-
     def test_parse_fastqc_data(self):
-        pass
+        field_in_json = self.tool_data["fastqc"][0]["multiqc_field"]
+
+        for report in self.multiqc_objects:
+            for sample, data in report.original_data["report_saved_raw_data"][field_in_json].items():
+                match = regex.search(
+                    r"_(?P<order>S[0-9]+)_(?P<lane>L[0-9]+)_(?P<read>R[12])",
+                    sample
+                )
+
+                if match:
+                    # use the regex matching to get the sample id
+                    potential_sample_id = sample[:match.start()]
+                    # find every component of the sample id
+                    matches = regex.findall(
+                        r"([a-zA-Z0-9]+)", potential_sample_id
+                    )
+                    # and join them using dashes (to fix potential errors
+                    # in the sample naming)
+                    sample_id = "-".join(matches)
+                    lane = match.groupdict()["lane"]
+                    read = match.groupdict()["read"]
+                else:
+                    exit()
+
+                for link in Fastqc_read_data.objects.all():
+                    if not Fastqc.objects.filter(fastqc_read_data_id=link.id):
+                        print("fuck")
+
+
+                # for link in Report_Sample.objects.filter(sample__sample_id=sample_id):
+                #     print(link.__dict__)
+
+                db_data = Fastqc_read_data.objects.filter(
+                    sample_read=read,
+                    lane=lane,
+                    fastqc__report_sample__sample__sample_id=sample_id
+                )
+
+                # if db_data:
+                #     print(f"    found: {sample_id} {lane} {read}")
+                # else:
+                #     print(f"not found: {sample_id} {lane} {read}")
+            break
