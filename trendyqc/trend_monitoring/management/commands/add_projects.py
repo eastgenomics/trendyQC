@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 import regex
 
 from .utils._dnanexus_utils import login_to_dnanexus, get_002_projects
-from .utils._import import import_multiqc_reports
+from .utils._report import setup_report_objects, import_multiqc_reports
 
 logger = logging.getLogger("basic")
 storing_logger = logging.getLogger("storing")
@@ -93,8 +93,10 @@ class Command(BaseCommand):
             logger.error(msg)
             raise AssertionError(msg)
 
+        reports = setup_report_objects(project_ids)
+
         if not options["dry_run"]:
-            imported_reports = import_multiqc_reports(project_ids)
+            imported_reports = import_multiqc_reports(reports)
 
         if is_automated_update:
             now = datetime.datetime.now().strftime("%y%m%d|%I:%M")
