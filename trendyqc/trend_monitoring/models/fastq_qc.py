@@ -2,7 +2,10 @@ from django.db import models
 
 
 class Fastqc(models.Model):
-    fastqc_read_data = models.ForeignKey("Fastqc_read_data", on_delete=models.DO_NOTHING)
+    fastqc_L001_R1 = models.ForeignKey("Fastqc_read_data", on_delete=models.DO_NOTHING, related_name="fastqc_L001_R1")
+    fastqc_L001_R2 = models.ForeignKey("Fastqc_read_data", on_delete=models.DO_NOTHING, related_name="fastqc_L001_R2")
+    fastqc_L002_R1 = models.ForeignKey("Fastqc_read_data", on_delete=models.DO_NOTHING, related_name="fastqc_L002_R1")
+    fastqc_L002_R2 = models.ForeignKey("Fastqc_read_data", on_delete=models.DO_NOTHING, related_name="fastqc_L002_R2")
 
 
 class Fastqc_read_data(models.Model):
