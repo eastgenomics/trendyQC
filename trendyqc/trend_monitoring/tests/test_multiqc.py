@@ -283,6 +283,9 @@ class TestMultiqc(TestCase):
             "assays.json file"
         )
 
+        test_report = MultiQC_report(**test_dict)
+        self.assertFalse(test_report.is_importable, test_msg)
+
     def test_parse_fastqc_data(self):
         field_in_json = self.tool_data["fastqc"][0]["multiqc_field"]
 
