@@ -311,22 +311,14 @@ class TestMultiqc(TestCase):
                 else:
                     exit()
 
-                for link in Fastqc_read_data.objects.all():
-                    if not Fastqc.objects.filter(fastqc_read_data_id=link.id):
-                        print("fuck")
-
-
-                # for link in Report_Sample.objects.filter(sample__sample_id=sample_id):
-                #     print(link.__dict__)
-
                 db_data = Fastqc_read_data.objects.filter(
                     sample_read=read,
                     lane=lane,
                     fastqc__report_sample__sample__sample_id=sample_id
                 )
 
-                # if db_data:
-                #     print(f"    found: {sample_id} {lane} {read}")
-                # else:
-                #     print(f"not found: {sample_id} {lane} {read}")
+                if db_data:
+                    print(f"    found: {sample_id} {lane} {read}")
+                else:
+                    print(f"not found: {sample_id} {lane} {read}")
             break
