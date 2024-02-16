@@ -334,20 +334,12 @@ class MultiQC_report():
                     self.create_tool_data_instance(tool, sample_data[tool])
                 )
 
-            fastqc_link_table = self.create_link_table_instance("fastqc")
-            picard_instance = self.create_link_table_instance("picard")
-            happy_instance = self.create_link_table_instance("happy")
+            for type_table in ["fastqc", "picard", "happy"]:
+                link_table = self.create_link_table_instance(type_table)
 
-            # check if a fastqc link table was created
-            if fastqc_link_table:
-                self.all_instances[sample].append(fastqc_link_table)
-
-            # picard and happy are not used for every assay
-            if picard_instance:
-                self.all_instances[sample].append(picard_instance)
-
-            if happy_instance:
-                self.all_instances[sample].append(happy_instance)
+                # picard and happy are not used for every assay
+                if link_table:
+                    self.all_instances[sample].append(link_table)
 
             report_sample_data = {**self.gather_instances_for("report_sample")}
             report_sample_data["assay"] = self.assay
