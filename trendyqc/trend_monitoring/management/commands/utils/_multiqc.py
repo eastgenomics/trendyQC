@@ -466,12 +466,26 @@ class MultiQC_report():
             the given type table
         """
 
-        return {
-            instance._meta.model.__name__.lower(): instance
-            for link_table, instances in self.instances_per_sample.items()
-            for instance in instances
-            if link_table == type_table
-        }
+        instance_type_tables = {}
+
+        # go through the instances stored for one sample
+        for link_table, instances in self.instances_per_sample.items():
+            for instance in instances:
+                # if the instances are the type "link_table"
+                if link_table == type_table:
+                    model_name = instance._meta.model.__name__.lower()
+
+                    # the model for linking fastqc data to the sample requires
+                    # 4 instances of the fastqc_read_data model
+                    if type_table == "fastqc":
+                        read = instance.sample_read
+                        lane = instance.lane
+                        instance_type_tables[f"fastqc_{lane}_{read}"] = instance
+                    else:
+                        # i.e. "picard_hs_metrics": picard_hs_metrics instance
+                        instance_type_tables[model_name] = instance
+
+        return instance_type_tables
 
     @transaction.atomic
     def import_instances(self):
