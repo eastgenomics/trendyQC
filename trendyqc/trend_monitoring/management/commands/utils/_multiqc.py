@@ -314,10 +314,10 @@ class MultiQC_report():
         report_instance = self.create_report_instance()
 
         for sample in self.data:
-            # reset the self.instances_one_sample variable to keep instances
-            # per sample
-            self.instances_one_sample = defaultdict(list)
-            self.instances_one_sample["report_sample"].append(report_instance)
+            # reset the self.instances_per_sample variable to keep
+            # instances per sample
+            self.instances_per_sample = defaultdict(list)
+            self.instances_per_sample["report_sample"].append(report_instance)
             # setup the all instances per sample so that they are appended in
             # order of future import
             self.all_instances.setdefault(sample, [])
@@ -386,18 +386,18 @@ class MultiQC_report():
                 model_instance = model(**data)
                 # store the fastqc instances using their parent table i.e.
                 # fastqc as key
-                self.instances_one_sample["fastqc"].append(model_instance)
+                self.instances_per_sample["fastqc"].append(model_instance)
                 instances_to_return.append(model_instance)
         else:
             model_instance = model(**tool_data)
 
             if tool_obj.parent:
                 # store these tools using their parent table name as key
-                self.instances_one_sample[tool_obj.parent].append(model_instance)
+                self.instances_per_sample[tool_obj.parent].append(model_instance)
             else:
                 # if they have no parent that means that their parent is
                 # directly the report sample table so use that as the key
-                self.instances_one_sample["report_sample"].append(model_instance)
+                self.instances_per_sample["report_sample"].append(model_instance)
 
             instances_to_return.append(model_instance)
 
@@ -415,7 +415,7 @@ class MultiQC_report():
 
         sample = self.models["sample"]
         sample_instance = sample(sample_id=sample_id)
-        self.instances_one_sample["report_sample"].append(sample_instance)
+        self.instances_per_sample["report_sample"].append(sample_instance)
         return sample_instance
 
     def create_report_instance(self) -> Model:
@@ -452,20 +452,19 @@ class MultiQC_report():
 
         if instances:
             # instantiate the link table by gathering the data from the
-            # self.instances_one_sample dict
-            link_table_instance = model(
-                **self.gather_instances_for(type_table)
-            )
+            # self.instances_per_sample dict
+            link_table_instance = model(**instances)
             # all those tables are linked to the report sample table to store them
             # accordingly
-            self.instances_one_sample["report_sample"].append(link_table_instance)
+            self.instances_per_sample["report_sample"].append(link_table_instance)
+
             return link_table_instance
         else:
             return
 
     def gather_instances_for(self, type_table: str) -> Dict:
         """ Gather the instances for the given type table using the
-        self.instances_one_sample keys
+        self.instances_per_sample keys
 
         Args:
             type_table (str): Name of the table
@@ -477,7 +476,7 @@ class MultiQC_report():
 
         return {
             instance._meta.model.__name__.lower(): instance
-            for link_table, instances in self.instances_one_sample.items()
+            for link_table, instances in self.instances_per_sample.items()
             for instance in instances
             if link_table == type_table
         }
