@@ -287,6 +287,8 @@ class TestMultiqc(TestCase):
             MultiQC_report(**test_dict)
 
     def test_parse_fastqc_data(self):
+        """ Test that the fastqc data has been imported and imported correctly
+        """
         field_in_json = self.tool_data["fastqc"][0]["multiqc_field"]
 
         for report in self.multiqc_objects:
