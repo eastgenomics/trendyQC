@@ -317,10 +317,17 @@ class TestMultiqc(TestCase):
                     f"fastqc_{lane}_{read}__report_sample__sample__sample_id": sample_id
                 }
 
-                db_data = Fastqc_read_data.objects.filter(**filter_dict)
+                db_data = Fastqc_read_data.objects.get(**filter_dict)
+                json_fields = self.tool_data["fastqc"][1]
+
+                msg = f"Couldn't find data for {sample_id} using {filter_dict}"
+                self.assertTrue(db_data, msg)
 
                 if db_data:
-                    print(f"    found: {sample_id} {lane} {read}")
-                else:
-                    print(f"not found: {sample_id} {lane} {read}")
-            break
+                    for json_field, db_field in json_fields.items():
+                        msg = f"Testing for {sample_id}: {json_field}"
+
+                        with self.subTest(msg):
+                            self.assertEqual(
+                                data[json_field], db_data.__dict__[db_field]
+                            )
