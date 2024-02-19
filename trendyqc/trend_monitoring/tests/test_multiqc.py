@@ -311,11 +311,13 @@ class TestMultiqc(TestCase):
                 else:
                     exit()
 
-                db_data = Fastqc_read_data.objects.filter(
-                    sample_read=read,
-                    lane=lane,
-                    fastqc__report_sample__sample__sample_id=sample_id
-                )
+                filter_dict = {
+                    "sample_read": read,
+                    "lane": lane,
+                    f"fastqc_{lane}_{read}__report_sample__sample__sample_id": sample_id
+                }
+
+                db_data = Fastqc_read_data.objects.filter(**filter_dict)
 
                 if db_data:
                     print(f"    found: {sample_id} {lane} {read}")
