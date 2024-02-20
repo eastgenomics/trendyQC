@@ -88,35 +88,28 @@ class TestMultiqc(TestCase):
         reports = {}
 
         with tarfile.open(tar) as tf:
-            tar_dict = {}
-
             # go through the files in the tar
             for member in tf.getmembers():
                 # folders are present in the tar, skip them
                 if member.isfile():
                     folder_name, file_name = member.name.split("/")
-                    tar_dict.setdefault(folder_name, []).append(member)
+                    metadata_file = member if "metadata" in file_name else None
+                    data_file = member if "metadata" not in file_name else None
 
-            # should probably be another function
-            # looping through the assays and the files
-            for assay, files in tar_dict.items():
-                metadata_file = [
-                    file for file in files if "metadata" in file.name
-                ][0]
+                    reports.setdefault(folder_name, {})
 
-                data_file = [
-                    file for file in files if "metadata" not in file.name
-                ][0]
+                    if metadata_file:
+                        # get the data from the metadata file
+                        metadata_file_content = tf.extractfile(metadata_file).read()
+                        metadata_json = json.loads(metadata_file_content)
 
-                # get the data from the metadata file
-                metadata_file_content = tf.extractfile(metadata_file).read()
-                metadata_json = json.loads(metadata_file_content)
-                # get the JSON data from the report
-                file_content = tf.extractfile(data_file).read()
+                        for key, value in metadata_json.items():
+                            reports[folder_name][key] = value
 
-                reports.setdefault(assay, {})
-                reports[assay] = metadata_json
-                reports[assay]["data"] = file_content
+                    if data_file:
+                        # get the JSON data from the report
+                        file_content = tf.extractfile(data_file).read()
+                        reports[folder_name]["data"] = file_content
 
         return reports
 
