@@ -342,3 +342,68 @@ class TestMultiqc(TestCase):
                         self.assertEqual(
                             data[json_field], db_data.__dict__[db_field]
                         )
+
+    def test_parse_bcl2fastq_data(self):
+        """ Test that the bcl2fastq data has been imported and imported correctly
+        """
+
+        # name of the data field in the multiqc json i.e. multiqc_bcl2fastq_bysample for bcl2fastq
+        field_in_json = self.tool_data["bcl2fastq"][0]["multiqc_field"]
+
+        # go over the imported multiqc objects
+        for report in self.multiqc_objects:
+            # go through the raw data stored in the json that is saved in the
+            # multiqc object
+            if field_in_json not in report.original_data["report_saved_raw_data"]:
+                continue
+
+            for sample, data in report.original_data["report_saved_raw_data"][field_in_json].items():
+                if sample == "undetermined":
+                    continue
+                # some tools provide the order in the sample name, so find
+                # that element
+                match = regex.search(r"_(?P<order>S[0-9]+)", sample)
+
+                if match:
+                    # and get the sample id remaining
+                    potential_sample_id = sample[:match.start()]
+                else:
+                    # remove the happy suffixes, they were causing issues
+                    # because it had a longer sample name breaking the
+                    # merging of data under one sample id
+                    sample = regex.sub(
+                        "_INDEL_PASS|_INDEL_ALL|_SNP_PASS|_SNP_ALL", "",
+                        sample
+                    )
+
+                    potential_sample_id = sample
+
+                # same as before, find every element in the sample id
+                matches = regex.findall(
+                    r"([a-zA-Z0-9]+)", potential_sample_id
+                )
+                # and join using dashes
+                sample_id = "-".join(matches)
+
+                # build a filter dict to have dynamic search of the sample id
+                filter_dict = {
+                    "report_sample__sample__sample_id": sample_id
+                }
+                # look for the fastqc read data object (should be unique)
+                db_data = Bcl2fastq_data.objects.filter(**filter_dict)
+                # in this dict, key = field name in json / value = field name
+                # in db model
+                json_fields = self.tool_data["bcl2fastq"][1]
+
+                msg = (
+                    f"Couldn't find unique data for {sample_id} using {filter_dict}"
+                )
+                self.assertEqual(len(db_data), 1, msg)
+
+                for json_field, db_field in json_fields.items():
+                    msg = f"Testing for {sample_id}: {json_field}"
+
+                    with self.subTest(msg):
+                        self.assertEqual(
+                            data[json_field], db_data[0].__dict__[db_field]
+                        )
