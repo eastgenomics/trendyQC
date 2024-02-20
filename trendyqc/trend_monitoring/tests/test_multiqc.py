@@ -146,6 +146,13 @@ class TestMultiqc(TestCase):
 
     @classmethod
     def import_tool_info(cls):
+        """ Read the JSON containing tool information like the mapping between
+        the field names in the report and the field names in the models
+
+        Returns:
+            dict: Dict containing the JSON file content
+        """        
+
         test_tool_file = BASE_DIR / "trend_monitoring" / "tests" / "test_data" / "tools.json"
 
         with open(test_tool_file) as f:
