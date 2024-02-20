@@ -3,7 +3,7 @@ import tarfile
 import random
 
 from django.test import TestCase
-import regex
+import re
 
 from trend_monitoring.models.metadata import (
     Report, Patient, Report_Sample, Sample
