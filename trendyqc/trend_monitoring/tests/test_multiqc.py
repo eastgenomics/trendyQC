@@ -324,7 +324,10 @@ class TestMultiqc(TestCase):
                     lane = match.groupdict()["lane"]
                     read = match.groupdict()["read"]
                 else:
-                    exit()
+                    # give up on the samples that don't have lane and read
+                    sample_id = sample
+                    lane = ""
+                    read = ""
 
                 # build a filter dict to have dynamic search of the sample id
                 filter_dict = {
