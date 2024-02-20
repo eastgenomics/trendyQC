@@ -306,7 +306,7 @@ class TestMultiqc(TestCase):
             # multiqc object
             for sample, data in report.original_data["report_saved_raw_data"][field_in_json].items():
                 # use the same code to identify the sample id
-                match = regex.search(
+                match = re.search(
                     r"_(?P<order>S[0-9]+)_(?P<lane>L[0-9]+)_(?P<read>R[12])",
                     sample
                 )
@@ -315,7 +315,7 @@ class TestMultiqc(TestCase):
                     # use the regex matching to get the sample id
                     potential_sample_id = sample[:match.start()]
                     # find every component of the sample id
-                    matches = regex.findall(
+                    matches = re.findall(
                         r"([a-zA-Z0-9]+)", potential_sample_id
                     )
                     # and join them using dashes (to fix potential errors
