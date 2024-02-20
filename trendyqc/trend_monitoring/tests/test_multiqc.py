@@ -415,3 +415,55 @@ class TestParsingAndImport(BaseTestCases.TestMultiqc):
                         self.assertEqual(
                             data[json_field], db_data[0].__dict__[db_field]
                         )
+
+    def test_parse_picard_alignment_summary_metrics_data(self):
+        """ Test that the picard data has been imported and imported correctly
+        """
+
+        tool_name = "picard_alignment_summary_metrics"
+        # name of the data field in the multiqc json i.e.
+        # multiqc_picard_AlignmentSummaryMetrics for
+        # picard alignmentsummarymetrics
+        field_in_json = self.tool_data[tool_name][0]["multiqc_field"]
+
+        # go over the imported multiqc objects
+        for report in self.multiqc_objects:
+            # not all reports have picard data
+            if field_in_json not in report.original_data["report_saved_raw_data"]:
+                continue
+            # go through the raw data stored in the json that is saved in the
+            # multiqc object
+            for sample, data in report.original_data["report_saved_raw_data"][field_in_json].items():
+                if sample == "undetermined":
+                    continue
+
+                sample_id, lane, read = self._parsing_like_multiqc_report(
+                    tool_name, sample
+                )
+
+                # build a filter dict to have dynamic search of the sample id
+                filter_dict = {
+                    (
+                        "picard__report_sample__sample__sample_id"
+                    ): sample_id
+                }
+
+                # look for the picard data object (should be unique)
+                db_data = Picard_alignment_summary_metrics.objects.filter(**filter_dict)
+                # in this dict, key = field name in json / value = field name
+                # in db model
+                json_fields = self.tool_data[tool_name][1]
+
+                msg = (
+                    f"Couldn't find data or unique data for {sample_id} "
+                    f"using {filter_dict}"
+                )
+                self.assertEqual(len(db_data), 1, msg)
+
+                for json_field, db_field in json_fields.items():
+                    msg = f"Testing for {sample_id}: {json_field}"
+
+                    with self.subTest(msg):
+                        self.assertEqual(
+                            data[json_field], db_data[0].__dict__[db_field]
+                        )
