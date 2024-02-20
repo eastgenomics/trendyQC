@@ -289,10 +289,16 @@ class TestMultiqc(TestCase):
     def test_parse_fastqc_data(self):
         """ Test that the fastqc data has been imported and imported correctly
         """
+
+        # name of the data field in the multiqc json i.e. multiqc_fastqc for fastqc
         field_in_json = self.tool_data["fastqc"][0]["multiqc_field"]
 
+        # go over the imported multiqc objects
         for report in self.multiqc_objects:
+            # go through the raw data stored in the json that is saved in the
+            # multiqc object
             for sample, data in report.original_data["report_saved_raw_data"][field_in_json].items():
+                # use the same code to identify the sample id
                 match = regex.search(
                     r"_(?P<order>S[0-9]+)_(?P<lane>L[0-9]+)_(?P<read>R[12])",
                     sample
@@ -313,23 +319,26 @@ class TestMultiqc(TestCase):
                 else:
                     exit()
 
+                # build a filter dict to have dynamic search of the sample id
                 filter_dict = {
                     "sample_read": read,
                     "lane": lane,
                     f"fastqc_{lane}_{read}__report_sample__sample__sample_id": sample_id
                 }
 
+                # look for the fastqc read data object (should be unique)
                 db_data = Fastqc_read_data.objects.get(**filter_dict)
+                # in this dict, key = field name in json / value = field name
+                # in db model
                 json_fields = self.tool_data["fastqc"][1]
 
                 msg = f"Couldn't find data for {sample_id} using {filter_dict}"
                 self.assertTrue(db_data, msg)
 
-                if db_data:
-                    for json_field, db_field in json_fields.items():
-                        msg = f"Testing for {sample_id}: {json_field}"
+                for json_field, db_field in json_fields.items():
+                    msg = f"Testing for {sample_id}: {json_field}"
 
-                        with self.subTest(msg):
-                            self.assertEqual(
-                                data[json_field], db_data.__dict__[db_field]
-                            )
+                    with self.subTest(msg):
+                        self.assertEqual(
+                            data[json_field], db_data.__dict__[db_field]
+                        )
