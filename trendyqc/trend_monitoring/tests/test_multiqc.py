@@ -40,10 +40,133 @@ from trend_monitoring.management.commands.utils._dnanexus_utils import login_to_
 from trendyqc.settings import BASE_DIR
 
 
-class TestMultiqc(TestCase):
-    """
-    To setup this battery of tests, the setUpClass will import reports from
-    TWE, CEN, TSO500, MYE assays.
+class BaseTestCases:
+    class TestMultiqc(TestCase):
+        """
+        To setup this battery of tests, the setUpClass will import reports from
+        TWE, CEN, TSO500, MYE assays.
+        """
+
+        def test_multiqc_assay(self):
+            """ Test if the assay data i.e. the multiqc fields + tool/subtool name
+            associated match the appropriate content of the assay file
+            """
+
+            assay_file = BASE_DIR / "trend_monitoring" / "management" / "configs" / "assays.json"
+
+            with open(assay_file) as f:
+                assay_file_content = json.loads(f.read())
+
+            for multiqc_object in self.multiqc_objects:
+                test_data = multiqc_object.assay_data
+                test_msg = (
+                    f"Testing the assay data for {multiqc_object.multiqc_json_id}"
+                )
+
+                expected_values = assay_file_content[multiqc_object.assay]
+
+                with self.subTest(test_msg):
+                    self.assertEqual(test_data, expected_values)
+
+        def test_import_already_in_db(self):
+            """ Test that the report is defined as being not importable """
+
+            assay, subkey = random.choice(list(self.reports.items()))
+            test_dict = {
+                "multiqc_report_id": subkey["file_id"],
+                "multiqc_project_id": subkey["project_id"],
+                "multiqc_job_id": subkey["job_id"],
+                "data": subkey["data"] 
+            }
+
+            test_report = MultiQC_report(**test_dict)
+            test_msg = (
+                f"Testing if {test_report.multiqc_json_id} is not importable "
+                "because it is already in the db"
+            )
+            self.assertFalse(test_report.is_importable, test_msg)
+
+        def test_import_not_in_db(self):
+            """ Test to check if the report will be imported """
+
+            # find the test CEN report to get its data for creating new fake report
+            for report in self.multiqc_objects:
+                if report.assay == "Cancer Endocrine Neurology":
+                    data = json.dumps(report.original_data)
+
+            # MultiQC json from 002_211222_A01295_0042_AHV5W2DRXY_CEN
+            # + data from test CEN report
+            test_dict = {
+                "multiqc_report_id": "file-G72y9vQ4fJb1y7v8F51qXg3v",
+                "multiqc_project_id": "project-G72pFZ04p90bVB6FP1fYBGBg",
+                "multiqc_job_id": "job-G72y2BQ4p90gF31v23KJ57qQ",
+                "data": data,
+            }
+
+            test_report = MultiQC_report(**test_dict)
+            test_msg = (
+                f"Testing if {test_report.multiqc_json_id} is importable "
+                "because it is not in the db"
+            )
+            self.assertTrue(test_report.is_importable, test_msg)
+
+        def test_assay_key_missing(self):
+            """
+            Test that a report is not importable because the assay key doesn't
+            exist in the JSON file
+            """
+
+            assay, subkey = random.choice(list(self.reports.items()))
+            # remove the config_subtitle key from the data to trigger the
+            # "not importable" status
+            data = json.loads(subkey["data"])
+            del data["config_subtitle"]
+            test_data = json.dumps(data)
+
+            test_dict = {
+                "multiqc_report_id": subkey["file_id"],
+                "multiqc_project_id": subkey["project_id"],
+                "multiqc_job_id": subkey["job_id"],
+                "data": test_data
+            }
+
+            test_report = MultiQC_report(**test_dict)
+            test_msg = (
+                f"Testing if {test_report.multiqc_json_id} is not importable "
+                "because of the missing key in the JSON file"
+            )
+            self.assertFalse(test_report.is_importable, test_msg)
+
+        def test_assay_not_in_config(self):
+            """ Test that a report is not importable because the assay value in the
+            MultiQC data doesn't exist in the assays.json file
+            """
+
+            assay, subkey = random.choice(list(self.reports.items()))
+            # replace the value for the assay in the MultiQC data
+            data = json.loads(subkey["data"])
+            data["config_subtitle"] = "Unknown assay"
+            test_data = json.dumps(data)
+
+            test_dict = {
+                "multiqc_report_id": subkey["file_id"],
+                "multiqc_project_id": subkey["project_id"],
+                "multiqc_job_id": subkey["job_id"],
+                "data": test_data
+            }
+
+            test_msg = (
+                f"Testing if {subkey['file_id']} is not importable "
+                "because the assay in the MultiQC data doesn't exist in the "
+                "assays.json file"
+            )
+
+            with self.assertRaises(AssertionError, msg=test_msg):
+                MultiQC_report(**test_dict)
+
+class TestParsingAndImport(BaseTestCases.TestMultiqc):
+    """ Organise the code so that it is structured.
+    Contains all the tests for parsing and import the data
     """
 
     def shortDescription(self):
@@ -138,6 +261,22 @@ class TestMultiqc(TestCase):
         return multiqc_report_objects
 
     @classmethod
+    def setUpClass(cls):
+        """ Set up the data for the battery of tests by:
+        - Logging into dnanexus
+        - Getting the test tar and performing some checks
+        - Untar-ing the reports
+        - Importing said reports
+        """
+
+        super().setUpClass()
+        login_to_dnanexus()
+        reports_tar = cls.get_reports_tar()
+        cls.reports = cls.untar_stream_reports(reports_tar)
+        cls.tool_data = cls.import_tool_info()
+        cls.multiqc_objects = cls.import_test_reports(cls.reports)
+
+    @classmethod
     def import_tool_info(cls):
         """ Read the JSON containing tool information like the mapping between
         the field names in the report and the field names in the models
@@ -153,174 +292,102 @@ class TestMultiqc(TestCase):
 
         return tool_data
 
-    @classmethod
-    def setUpClass(cls):
-        """ Set up the data for the battery of tests by:
-        - Logging into dnanexus
-        - Getting the test tar and performing some checks
-        - Untar-ing the reports
-        - Importing said reports
+    # @classmethod
+    # def setUpClass(cls):
+    #     """ Set up the data for the battery of tests by:
+    #     - get tool info
+    #     """
+
+    #     cls.tool_data = cls.import_tool_info()
+
+    def _parsing_like_multiqc_report(self, tool_name, sample):
+        """ Parse the sample name
+
+        Args:
+            tool_name (str): Tool name
+            sample (str): Sample name to parse
+
+        Returns:
+            list: List containing the sample id, lane and read
         """
 
-        super(TestMultiqc, cls).setUpClass()
-        login_to_dnanexus()
-        cls.tool_data = cls.import_tool_info()
-        reports_tar = cls.get_reports_tar()
-        cls.reports = cls.untar_stream_reports(reports_tar)
-        cls.multiqc_objects = cls.import_test_reports(cls.reports)
+        lane = ""
+        read = ""
 
-    def test_multiqc_assay(self):
-        """ Test if the assay data i.e. the multiqc fields + tool/subtool name
-        associated match the appropriate content of the assay file
-        """
+        # SNP genotyping adds a "sorted" in the sample name
+        sample = sample.replace("_sorted", "")
 
-        assay_file = BASE_DIR / "trend_monitoring" / "management" / "configs" / "assays.json"
-
-        with open(assay_file) as f:
-            assay_file_content = json.loads(f.read())
-
-        for multiqc_object in self.multiqc_objects:
-            test_data = multiqc_object.assay_data
-            test_msg = (
-                f"Testing the assay data for {multiqc_object.multiqc_json_id}"
+        # fastqc contains data at the lane and read level
+        if tool_name == "fastqc":
+            # look for the order, lane and read using regex
+            match = re.search(
+                r"_(?P<order>S[0-9]+)_(?P<lane>L[0-9]+)_(?P<read>R[12])",
+                sample
             )
 
-            expected_values = assay_file_content[multiqc_object.assay]
+            if match:
+                # use the regex matching to get the sample id
+                potential_sample_id = sample[:match.start()]
+                # find every component of the sample id
+                matches = re.findall(
+                    r"([a-zA-Z0-9]+)", potential_sample_id
+                )
+                # and join them using dashes (to fix potential errors
+                # in the sample naming)
+                sample_id = "-".join(matches)
+                lane = match.groupdict()["lane"]
+                read = match.groupdict()["read"]
+            else:
+                # give up on the samples that don't have lane and read
+                sample_id = sample
+        else:
+            # some tools provide the order in the sample name, so find
+            # that element
+            match = re.search(r"_(?P<order>S[0-9]+)", sample)
 
-            with self.subTest(test_msg):
-                self.assertEqual(test_data, expected_values)
+            if match:
+                # and get the sample id remaining
+                potential_sample_id = sample[:match.start()]
+            else:
+                # remove the happy suffixes, they were causing issues
+                # because it had a longer sample name breaking the
+                # merging of data under one sample id
+                sample = re.sub(
+                    "_INDEL_PASS|_INDEL_ALL|_SNP_PASS|_SNP_ALL", "",
+                    sample
+                )
 
-    def test_import_already_in_db(self):
-        """ Test that the report is defined as being not importable """
+                potential_sample_id = sample
 
-        assay, subkey = random.choice(list(self.reports.items()))
-        test_dict = {
-            "multiqc_report_id": subkey["file_id"],
-            "multiqc_project_id": subkey["project_id"],
-            "multiqc_job_id": subkey["job_id"],
-            "data": subkey["data"] 
-        }
+            # same as before, find every element in the sample id
+            matches = re.findall(
+                r"([a-zA-Z0-9]+)", potential_sample_id
+            )
+            # and join using dashes
+            sample_id = "-".join(matches)
 
-        test_report = MultiQC_report(**test_dict)
-        test_msg = (
-            f"Testing if {test_report.multiqc_json_id} is not importable "
-            "because it is already in the db"
-        )
-        self.assertFalse(test_report.is_importable, test_msg)
-
-    def test_import_not_in_db(self):
-        """ Test to check if the report will be imported """
-
-        # find the test CEN report to get its data for creating new fake report
-        for report in self.multiqc_objects:
-            if report.assay == "Cancer Endocrine Neurology":
-                data = json.dumps(report.original_data)
-
-        # MultiQC json from 002_211222_A01295_0042_AHV5W2DRXY_CEN
-        # + data from test CEN report
-        test_dict = {
-            "multiqc_report_id": "file-G72y9vQ4fJb1y7v8F51qXg3v",
-            "multiqc_project_id": "project-G72pFZ04p90bVB6FP1fYBGBg",
-            "multiqc_job_id": "job-G72y2BQ4p90gF31v23KJ57qQ",
-            "data": data,
-        }
-
-        test_report = MultiQC_report(**test_dict)
-        test_msg = (
-            f"Testing if {test_report.multiqc_json_id} is importable "
-            "because it is not in the db"
-        )
-        self.assertTrue(test_report.is_importable, test_msg)
-
-    def test_assay_key_missing(self):
-        """
-        Test that a report is not importable because the assay key doesn't
-        exist in the JSON file
-        """
-
-        assay, subkey = random.choice(list(self.reports.items()))
-        # remove the config_subtitle key from the data to trigger the
-        # "not importable" status
-        data = json.loads(subkey["data"])
-        del data["config_subtitle"]
-        test_data = json.dumps(data)
-
-        test_dict = {
-            "multiqc_report_id": subkey["file_id"],
-            "multiqc_project_id": subkey["project_id"],
-            "multiqc_job_id": subkey["job_id"],
-            "data": test_data
-        }
-
-        test_report = MultiQC_report(**test_dict)
-        test_msg = (
-            f"Testing if {test_report.multiqc_json_id} is not importable "
-            "because of the missing key in the JSON file"
-        )
-        self.assertFalse(test_report.is_importable, test_msg)
-
-    def test_assay_not_in_config(self):
-        """ Test that a report is not importable because the assay value in the
-        MultiQC data doesn't exist in the assays.json file
-        """
-
-        assay, subkey = random.choice(list(self.reports.items()))
-        # replace the value for the assay in the MultiQC data
-        data = json.loads(subkey["data"])
-        data["config_subtitle"] = "Unknown assay"
-        test_data = json.dumps(data)
-
-        test_dict = {
-            "multiqc_report_id": subkey["file_id"],
-            "multiqc_project_id": subkey["project_id"],
-            "multiqc_job_id": subkey["job_id"],
-            "data": test_data
-        }
-
-        test_msg = (
-            f"Testing if {subkey['file_id']} is not importable "
-            "because the assay in the MultiQC data doesn't exist in the "
-            "assays.json file"
-        )
-
-        with self.assertRaises(AssertionError, msg=test_msg):
-            MultiQC_report(**test_dict)
+        return sample_id, lane, read
 
     def test_parse_fastqc_data(self):
         """ Test that the fastqc data has been imported and imported correctly
         """
 
+        # name of the tool in the config
+        tool_name = "fastqc"
         # name of the data field in the multiqc json i.e. multiqc_fastqc for fastqc
-        field_in_json = self.tool_data["fastqc"][0]["multiqc_field"]
+        field_in_json = self.tool_data[tool_name][0]["multiqc_field"]
 
         # go over the imported multiqc objects
         for report in self.multiqc_objects:
             # go through the raw data stored in the json that is saved in the
             # multiqc object
             for sample, data in report.original_data["report_saved_raw_data"][field_in_json].items():
-                # use the same code to identify the sample id
-                match = re.search(
-                    r"_(?P<order>S[0-9]+)_(?P<lane>L[0-9]+)_(?P<read>R[12])",
-                    sample
-                )
+                if sample == "undetermined":
+                    continue
 
-                if match:
-                    # use the regex matching to get the sample id
-                    potential_sample_id = sample[:match.start()]
-                    # find every component of the sample id
-                    matches = re.findall(
-                        r"([a-zA-Z0-9]+)", potential_sample_id
-                    )
-                    # and join them using dashes (to fix potential errors
-                    # in the sample naming)
-                    sample_id = "-".join(matches)
-                    lane = match.groupdict()["lane"]
-                    read = match.groupdict()["read"]
-                else:
-                    # give up on the samples that don't have lane and read
-                    sample_id = sample
-                    lane = ""
-                    read = ""
+                sample_id, lane, read = self._parsing_like_multiqc_report(
+                    tool_name, sample
+                )
 
                 # build a filter dict to have dynamic search of the sample id
                 filter_dict = {
@@ -330,18 +397,21 @@ class TestMultiqc(TestCase):
                 }
 
                 # look for the fastqc read data object (should be unique)
-                db_data = Fastqc_read_data.objects.get(**filter_dict)
+                db_data = Fastqc_read_data.objects.filter(**filter_dict)
                 # in this dict, key = field name in json / value = field name
                 # in db model
-                json_fields = self.tool_data["fastqc"][1]
+                json_fields = self.tool_data[tool_name][1]
 
-                msg = f"Couldn't find data for {sample_id} using {filter_dict}"
-                self.assertTrue(db_data, msg)
+                msg = (
+                    f"Couldn't find data or unique data for {sample_id} "
+                    f"using {filter_dict}"
+                )
+                self.assertEqual(len(db_data), 1, msg)
 
                 for json_field, db_field in json_fields.items():
                     msg = f"Testing for {sample_id}: {json_field}"
 
                     with self.subTest(msg):
                         self.assertEqual(
-                            data[json_field], db_data.__dict__[db_field]
+                            data[json_field], db_data[0].__dict__[db_field]
                         )
