@@ -459,6 +459,6 @@ class TestParsingAndImport(TestCase):
                     msg = f"Testing for {sample_id}: {json_field}"
 
                     with self.subTest(msg):
-                        self.assertAlmostEqual(
+                        self.assertEqual(
                             data[json_field], db_data[0].__dict__[db_field]
                         )
