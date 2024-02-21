@@ -41,8 +41,9 @@ def clean_value(value: str) -> Any:
     if math.isnan(float(value)):
         return None
 
-    # it can float, check if it's an int or float
-    if '.' in str(value):
+    # it can float --> either it possesses a dot or an e for scientific
+    # notation, or it's an integer
+    if "." in str(value) or "e" in str(value):
         return float(value)
     else:
         return int(value)
