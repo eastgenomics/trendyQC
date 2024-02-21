@@ -1,9 +1,9 @@
 import json
 import tarfile
 import random
+import re
 
 from django.test import TestCase
-import re
 
 from trend_monitoring.models.metadata import (
     Report, Patient, Report_Sample, Sample
@@ -39,134 +39,131 @@ from trend_monitoring.management.commands.utils._multiqc import MultiQC_report
 from trend_monitoring.management.commands.utils._dnanexus_utils import login_to_dnanexus
 from trendyqc.settings import BASE_DIR
 
+def get_reports_tar():
+    """ Get the report tar file
 
-class BaseTestCases:
-    class TestMultiqc(TestCase):
-        """
-        To setup this battery of tests, the setUpClass will import reports from
-        TWE, CEN, TSO500, MYE assays.
-        """
+    Returns:
+        str: Name of the test report tar
+    """
 
-        def test_multiqc_assay(self):
-            """ Test if the assay data i.e. the multiqc fields + tool/subtool name
-            associated match the appropriate content of the assay file
-            """
+    test_reports_dir = BASE_DIR / "trend_monitoring" / "tests" / "test_reports"
+    test_reports_tar = list(test_reports_dir.iterdir())
 
-            assay_file = BASE_DIR / "trend_monitoring" / "management" / "configs" / "assays.json"
+    assert len(test_reports_tar) == 1, "Multiple files in test_reports dir"
 
-            with open(assay_file) as f:
-                assay_file_content = json.loads(f.read())
+    test_reports_tar = test_reports_tar[0]
 
-            for multiqc_object in self.multiqc_objects:
-                test_data = multiqc_object.assay_data
-                test_msg = (
-                    f"Testing the assay data for {multiqc_object.multiqc_json_id}"
-                )
+    assert test_reports_tar.name == "test_reports.tar.gz", (
+        "Name of report tar is not as expected"
+    )
 
-                expected_values = assay_file_content[multiqc_object.assay]
+    return test_reports_tar
 
-                with self.subTest(test_msg):
-                    self.assertEqual(test_data, expected_values)
 
-        def test_import_already_in_db(self):
-            """ Test that the report is defined as being not importable """
+def untar_stream_reports(tar):
+    """ Untar and uncompress the tar file to extract the JSON Multiqc file
+    and the metadata file associated with every report file
 
-            assay, subkey = random.choice(list(self.reports.items()))
-            test_dict = {
-                "multiqc_report_id": subkey["file_id"],
-                "multiqc_project_id": subkey["project_id"],
-                "multiqc_job_id": subkey["job_id"],
-                "data": subkey["data"] 
-            }
+    Args:
+        tar (str): Name and path to the tar file
 
-            test_report = MultiQC_report(**test_dict)
-            test_msg = (
-                f"Testing if {test_report.multiqc_json_id} is not importable "
-                "because it is already in the db"
-            )
-            self.assertFalse(test_report.is_importable, test_msg)
+    Returns:
+        dict: Dict containing the file id, project id and job id as well as
+        the JSON content
+    """
 
-        def test_import_not_in_db(self):
-            """ Test to check if the report will be imported """
+    reports = {}
 
-            # find the test CEN report to get its data for creating new fake report
-            for report in self.multiqc_objects:
-                if report.assay == "Cancer Endocrine Neurology":
-                    data = json.dumps(report.original_data)
+    with tarfile.open(tar) as tf:
+        # go through the files in the tar
+        for member in tf.getmembers():
+            # folders are present in the tar, skip them
+            if member.isfile():
+                folder_name, file_name = member.name.split("/")
+                metadata_file = member if "metadata" in file_name else None
+                data_file = member if "metadata" not in file_name else None
 
-            # MultiQC json from 002_211222_A01295_0042_AHV5W2DRXY_CEN
-            # + data from test CEN report
-            test_dict = {
-                "multiqc_report_id": "file-G72y9vQ4fJb1y7v8F51qXg3v",
-                "multiqc_project_id": "project-G72pFZ04p90bVB6FP1fYBGBg",
-                "multiqc_job_id": "job-G72y2BQ4p90gF31v23KJ57qQ",
-                "data": data,
-            }
+                reports.setdefault(folder_name, {})
 
-            test_report = MultiQC_report(**test_dict)
-            test_msg = (
-                f"Testing if {test_report.multiqc_json_id} is importable "
-                "because it is not in the db"
-            )
-            self.assertTrue(test_report.is_importable, test_msg)
+                if metadata_file:
+                    # get the data from the metadata file
+                    metadata_file_content = tf.extractfile(metadata_file).read()
+                    metadata_json = json.loads(metadata_file_content)
 
-        def test_assay_key_missing(self):
-            """
-            Test that a report is not importable because the assay key doesn't
-            exist in the JSON file
-            """
+                    for key, value in metadata_json.items():
+                        reports[folder_name][key] = value
 
-            assay, subkey = random.choice(list(self.reports.items()))
-            # remove the config_subtitle key from the data to trigger the
-            # "not importable" status
-            data = json.loads(subkey["data"])
-            del data["config_subtitle"]
-            test_data = json.dumps(data)
+                if data_file:
+                    # get the JSON data from the report
+                    file_content = tf.extractfile(data_file).read()
+                    reports[folder_name]["data"] = file_content
 
-            test_dict = {
-                "multiqc_report_id": subkey["file_id"],
-                "multiqc_project_id": subkey["project_id"],
-                "multiqc_job_id": subkey["job_id"],
-                "data": test_data
-            }
+    return reports
 
-            test_report = MultiQC_report(**test_dict)
-            test_msg = (
-                f"Testing if {test_report.multiqc_json_id} is not importable "
-                "because of the missing key in the JSON file"
-            )
-            self.assertFalse(test_report.is_importable, test_msg)
 
-        def test_assay_not_in_config(self):
-            """ Test that a report is not importable because the assay value in the
-            MultiQC data doesn't exist in the assays.json file
-            """
+def import_tool_info():
+    """ Read the JSON containing tool information like the mapping between
+    the field names in the report and the field names in the models
 
-            assay, subkey = random.choice(list(self.reports.items()))
-            # replace the value for the assay in the MultiQC data
-            data = json.loads(subkey["data"])
-            data["config_subtitle"] = "Unknown assay"
-            test_data = json.dumps(data)
+    Returns:
+        dict: Dict containing the JSON file content
+    """        
 
-            test_dict = {
-                "multiqc_report_id": subkey["file_id"],
-                "multiqc_project_id": subkey["project_id"],
-                "multiqc_job_id": subkey["job_id"],
-                "data": test_data
-            }
+    test_tool_file = BASE_DIR / "trend_monitoring" / "tests" / "test_data" / "tools.json"
 
-            test_msg = (
-                f"Testing if {subkey['file_id']} is not importable "
-                "because the assay in the MultiQC data doesn't exist in the "
-                "assays.json file"
-            )
+    with open(test_tool_file) as f:
+        tool_data = json.loads(f.read())
+    
+    return tool_data
 
-            with self.assertRaises(AssertionError, msg=test_msg):
-                MultiQC_report(**test_dict)
 
-class TestParsingAndImport(BaseTestCases.TestMultiqc):
-    """ Organise the code so that it is structured.
-    Contains all the tests for parsing and import the data
+def import_test_reports(reports):
+    """ Import the test reports
+
+    Returns:
+        list: List of MultiQC reports objects
+    """
+
+    multiqc_report_objects = []
+
+    for assay, subkey in reports.items():
+        test_dict = {
+            "multiqc_report_id": subkey["file_id"],
+            "multiqc_project_id": subkey["project_id"],
+            "multiqc_job_id": subkey["job_id"],
+            "data": subkey["data"] 
+        }
+
+        multiqc_report = MultiQC_report(**test_dict)
+        multiqc_report.import_instances()
+        multiqc_report_objects.append(multiqc_report)
+
+    return multiqc_report_objects
+
+
+def setUpModule():
+    """ Set up the data for the battery of tests by:
+    - Logging into dnanexus
+    - Getting the test tar and performing some checks
+    - Untar-ing the reports
+    - Importing said reports
+    """
+
+    global reports
+    global tool_data
+    global multiqc_objects
+
+    login_to_dnanexus()
+    reports_tar = get_reports_tar()
+    reports = untar_stream_reports(reports_tar)
+    tool_data = import_tool_info()
+    multiqc_objects = import_test_reports(reports)
+
+
+class TestMultiqc(TestCase):
+    """
+    To setup this battery of tests, the setUpClass will import reports from
+    TWE, CEN, TSO500, MYE assays.
     """
 
     def shortDescription(self):
@@ -174,131 +171,129 @@ class TestParsingAndImport(BaseTestCases.TestMultiqc):
             doc = [ele.strip() for ele in self._testMethodDoc.strip().split("\n")]
             return "\n".join(doc) or None
 
-    @classmethod
-    def get_reports_tar(cls):
-        """ Get the report tar file
 
-        Returns:
-            str: Name of the test report tar
+    def test_multiqc_assay(self):
+        """ Test if the assay data i.e. the multiqc fields + tool/subtool name
+        associated match the appropriate content of the assay file
         """
 
-        test_reports_dir = BASE_DIR / "trend_monitoring" / "tests" / "test_reports"
-        test_reports_tar = list(test_reports_dir.iterdir())
+        assay_file = BASE_DIR / "trend_monitoring" / "management" / "configs" / "assays.json"
 
-        assert len(test_reports_tar) == 1, "Multiple files in test_reports dir"
+        with open(assay_file) as f:
+            assay_file_content = json.loads(f.read())
 
-        test_reports_tar = test_reports_tar[0]
+        for multiqc_object in multiqc_objects:
+            test_data = multiqc_object.assay_data
+            test_msg = (
+                f"Testing the assay data for {multiqc_object.multiqc_json_id}"
+            )
 
-        assert test_reports_tar.name == "test_reports.tar.gz", (
-            "Name of report tar is not as expected"
+            expected_values = assay_file_content[multiqc_object.assay]
+
+            with self.subTest(test_msg):
+                self.assertEqual(test_data, expected_values)
+
+    def test_import_already_in_db(self):
+        """ Test that the report is defined as being not importable """
+
+        assay, subkey = random.choice(list(reports.items()))
+        test_dict = {
+            "multiqc_report_id": subkey["file_id"],
+            "multiqc_project_id": subkey["project_id"],
+            "multiqc_job_id": subkey["job_id"],
+            "data": subkey["data"] 
+        }
+
+        test_report = MultiQC_report(**test_dict)
+        test_msg = (
+            f"Testing if {test_report.multiqc_json_id} is not importable "
+            "because it is already in the db"
+        )
+        self.assertFalse(test_report.is_importable, test_msg)
+
+    def test_import_not_in_db(self):
+        """ Test to check if the report will be imported """
+
+        # find the test CEN report to get its data for creating new fake report
+        for report in multiqc_objects:
+            if report.assay == "Cancer Endocrine Neurology":
+                data = json.dumps(report.original_data)
+
+        # MultiQC json from 002_211222_A01295_0042_AHV5W2DRXY_CEN
+        # + data from test CEN report
+        test_dict = {
+            "multiqc_report_id": "file-G72y9vQ4fJb1y7v8F51qXg3v",
+            "multiqc_project_id": "project-G72pFZ04p90bVB6FP1fYBGBg",
+            "multiqc_job_id": "job-G72y2BQ4p90gF31v23KJ57qQ",
+            "data": data,
+        }
+
+        test_report = MultiQC_report(**test_dict)
+        test_msg = (
+            f"Testing if {test_report.multiqc_json_id} is importable "
+            "because it is not in the db"
+        )
+        self.assertTrue(test_report.is_importable, test_msg)
+
+    def test_assay_key_missing(self):
+        """
+        Test that a report is not importable because the assay key doesn't
+        exist in the JSON file
+        """
+
+        assay, subkey = random.choice(list(reports.items()))
+        # remove the config_subtitle key from the data to trigger the
+        # "not importable" status
+        data = json.loads(subkey["data"])
+        del data["config_subtitle"]
+        test_data = json.dumps(data)
+
+        test_dict = {
+            "multiqc_report_id": subkey["file_id"],
+            "multiqc_project_id": subkey["project_id"],
+            "multiqc_job_id": subkey["job_id"],
+            "data": test_data
+        }
+
+        test_report = MultiQC_report(**test_dict)
+        test_msg = (
+            f"Testing if {test_report.multiqc_json_id} is not importable "
+            "because of the missing key in the JSON file"
+        )
+        self.assertFalse(test_report.is_importable, test_msg)
+
+    def test_assay_not_in_config(self):
+        """ Test that a report is not importable because the assay value in the
+        MultiQC data doesn't exist in the assays.json file
+        """
+
+        assay, subkey = random.choice(list(reports.items()))
+        # replace the value for the assay in the MultiQC data
+        data = json.loads(subkey["data"])
+        data["config_subtitle"] = "Unknown assay"
+        test_data = json.dumps(data)
+
+        test_dict = {
+            "multiqc_report_id": subkey["file_id"],
+            "multiqc_project_id": subkey["project_id"],
+            "multiqc_job_id": subkey["job_id"],
+            "data": test_data
+        }
+
+        test_msg = (
+            f"Testing if {subkey['file_id']} is not importable "
+            "because the assay in the MultiQC data doesn't exist in the "
+            "assays.json file"
         )
 
-        return test_reports_tar
+        with self.assertRaises(AssertionError, msg=test_msg):
+            MultiQC_report(**test_dict)
 
-    @classmethod
-    def untar_stream_reports(cls, tar):
-        """ Untar and uncompress the tar file to extract the JSON Multiqc file
-        and the metadata file associated with every report file
 
-        Args:
-            tar (str): Name and path to the tar file
-
-        Returns:
-            dict: Dict containing the file id, project id and job id as well as
-            the JSON content
-        """
-
-        reports = {}
-
-        with tarfile.open(tar) as tf:
-            # go through the files in the tar
-            for member in tf.getmembers():
-                # folders are present in the tar, skip them
-                if member.isfile():
-                    folder_name, file_name = member.name.split("/")
-                    metadata_file = member if "metadata" in file_name else None
-                    data_file = member if "metadata" not in file_name else None
-
-                    reports.setdefault(folder_name, {})
-
-                    if metadata_file:
-                        # get the data from the metadata file
-                        metadata_file_content = tf.extractfile(metadata_file).read()
-                        metadata_json = json.loads(metadata_file_content)
-
-                        for key, value in metadata_json.items():
-                            reports[folder_name][key] = value
-
-                    if data_file:
-                        # get the JSON data from the report
-                        file_content = tf.extractfile(data_file).read()
-                        reports[folder_name]["data"] = file_content
-
-        return reports
-
-    @classmethod
-    def import_test_reports(cls, reports):
-        """ Import the test reports
-
-        Returns:
-            list: List of MultiQC reports objects
-        """
-
-        multiqc_report_objects = []
-
-        for assay, subkey in reports.items():
-            test_dict = {
-                "multiqc_report_id": subkey["file_id"],
-                "multiqc_project_id": subkey["project_id"],
-                "multiqc_job_id": subkey["job_id"],
-                "data": subkey["data"] 
-            }
-
-            multiqc_report = MultiQC_report(**test_dict)
-            multiqc_report.import_instances()
-            multiqc_report_objects.append(multiqc_report)
-
-        return multiqc_report_objects
-
-    @classmethod
-    def setUpClass(cls):
-        """ Set up the data for the battery of tests by:
-        - Logging into dnanexus
-        - Getting the test tar and performing some checks
-        - Untar-ing the reports
-        - Importing said reports
-        """
-
-        super().setUpClass()
-        login_to_dnanexus()
-        reports_tar = cls.get_reports_tar()
-        cls.reports = cls.untar_stream_reports(reports_tar)
-        cls.tool_data = cls.import_tool_info()
-        cls.multiqc_objects = cls.import_test_reports(cls.reports)
-
-    @classmethod
-    def import_tool_info(cls):
-        """ Read the JSON containing tool information like the mapping between
-        the field names in the report and the field names in the models
-
-        Returns:
-            dict: Dict containing the JSON file content
-        """        
-
-        test_tool_file = BASE_DIR / "trend_monitoring" / "tests" / "test_data" / "tools.json"
-
-        with open(test_tool_file) as f:
-            tool_data = json.loads(f.read())
-
-        return tool_data
-
-    # @classmethod
-    # def setUpClass(cls):
-    #     """ Set up the data for the battery of tests by:
-    #     - get tool info
-    #     """
-
-    #     cls.tool_data = cls.import_tool_info()
+class TestParsingAndImport(TestCase):
+    """ Organise the code so that it is structured.
+    Contains all the tests for parsing and import the data
+    """
 
     def _parsing_like_multiqc_report(self, tool_name, sample):
         """ Parse the sample name
@@ -375,10 +370,10 @@ class TestParsingAndImport(BaseTestCases.TestMultiqc):
         # name of the tool in the config
         tool_name = "fastqc"
         # name of the data field in the multiqc json i.e. multiqc_fastqc for fastqc
-        field_in_json = self.tool_data[tool_name][0]["multiqc_field"]
+        field_in_json = tool_data[tool_name][0]["multiqc_field"]
 
         # go over the imported multiqc objects
-        for report in self.multiqc_objects:
+        for report in multiqc_objects:
             # go through the raw data stored in the json that is saved in the
             # multiqc object
             for sample, data in report.original_data["report_saved_raw_data"][field_in_json].items():
@@ -400,7 +395,7 @@ class TestParsingAndImport(BaseTestCases.TestMultiqc):
                 db_data = Fastqc_read_data.objects.filter(**filter_dict)
                 # in this dict, key = field name in json / value = field name
                 # in db model
-                json_fields = self.tool_data[tool_name][1]
+                json_fields = tool_data[tool_name][1]
 
                 msg = (
                     f"Couldn't find data or unique data for {sample_id} "
@@ -424,10 +419,10 @@ class TestParsingAndImport(BaseTestCases.TestMultiqc):
         # name of the data field in the multiqc json i.e.
         # multiqc_picard_AlignmentSummaryMetrics for
         # picard alignmentsummarymetrics
-        field_in_json = self.tool_data[tool_name][0]["multiqc_field"]
+        field_in_json = tool_data[tool_name][0]["multiqc_field"]
 
         # go over the imported multiqc objects
-        for report in self.multiqc_objects:
+        for report in multiqc_objects:
             # not all reports have picard data
             if field_in_json not in report.original_data["report_saved_raw_data"]:
                 continue
@@ -452,7 +447,7 @@ class TestParsingAndImport(BaseTestCases.TestMultiqc):
                 db_data = Picard_alignment_summary_metrics.objects.filter(**filter_dict)
                 # in this dict, key = field name in json / value = field name
                 # in db model
-                json_fields = self.tool_data[tool_name][1]
+                json_fields = tool_data[tool_name][1]
 
                 msg = (
                     f"Couldn't find data or unique data for {sample_id} "
@@ -464,6 +459,6 @@ class TestParsingAndImport(BaseTestCases.TestMultiqc):
                     msg = f"Testing for {sample_id}: {json_field}"
 
                     with self.subTest(msg):
-                        self.assertEqual(
+                        self.assertAlmostEqual(
                             data[json_field], db_data[0].__dict__[db_field]
                         )
