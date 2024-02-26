@@ -2,8 +2,10 @@ import json
 import tarfile
 import random
 import re
+from string import Formatter
 
 from django.test import TestCase
+from django.db.models import Model
 
 from trend_monitoring.models.metadata import (
     Report, Patient, Report_Sample, Sample
@@ -295,7 +297,7 @@ class TestParsingAndImport(TestCase):
     Contains all the tests for parsing and import the data
     """
 
-    def _parsing_like_multiqc_report(self, tool_name, sample):
+    def _parsing_like_multiqc_report(self, tool_name: str, sample: str) -> list:
         """ Parse the sample name
 
         Args:
@@ -363,59 +365,71 @@ class TestParsingAndImport(TestCase):
 
         return sample_id, lane, read
 
-    def test_parse_fastqc_data(self):
-        """ Test that the fastqc data has been imported and imported correctly
+    def _build_filter_dict(self, filter_dict: dict, template_dict: dict) -> dict:
+        """ Build a filter dictionary to replpace the string formatting keys
+        with the actual values
+
+        Args:
+            filter_dict (dict): Dictionary containing the keys and values that
+            need formatting
+            template_dict (dict): Dictionary containing the values to associate
+            to in the filter dictionary
+
+        Returns:
+            dict: Dictionary containing the keys and values formatted using the
+            values in the template dict
         """
 
-        # name of the tool in the config
-        tool_name = "fastqc"
-        # name of the data field in the multiqc json i.e. multiqc_fastqc for fastqc
-        field_in_json = tool_data[tool_name][0]["multiqc_field"]
+        dynamic_filter_dict = {}
 
-        # go over the imported multiqc objects
-        for report in multiqc_objects:
-            # go through the raw data stored in the json that is saved in the
-            # multiqc object
-            for sample, data in report.original_data["report_saved_raw_data"][field_in_json].items():
-                if sample == "undetermined":
-                    continue
+        for key, value in filter_dict.items():
+            # get the keys of the keys that are in need of formatting
+            # replacement
+            keys_to_replace_in_key = [
+                ele[1]
+                for ele in Formatter().parse(key)
+                if ele[1] is not None and ele[1] in template_dict
+            ]
 
-                sample_id, lane, read = self._parsing_like_multiqc_report(
-                    tool_name, sample
-                )
+            # get the keys of the values that are in need of formatting
+            # replacement
+            keys_to_replace_in_value = [
+                ele[1]
+                for ele in Formatter().parse(value)
+                if ele[1] is not None and ele[1] in template_dict
+            ]
 
-                # build a filter dict to have dynamic search of the sample id
-                filter_dict = {
-                    "sample_read": read,
-                    "lane": lane,
-                    f"fastqc_{lane}_{read}__report_sample__sample__sample_id": sample_id
-                }
+            # if keys were found to possess elements that need formatting
+            if keys_to_replace_in_key:
+                filtering_key = key.format(**template_dict)
+            else:
+                filtering_key = key
 
-                # look for the fastqc read data object (should be unique)
-                db_data = Fastqc_read_data.objects.filter(**filter_dict)
-                # in this dict, key = field name in json / value = field name
-                # in db model
-                json_fields = tool_data[tool_name][1]
+            # if values were found to possess elements that need formatting
+            if keys_to_replace_in_value:
+                filtering_value = value.format(**template_dict)
+            else:
+                filtering_value = value
 
-                msg = (
-                    f"Couldn't find data or unique data for {sample_id} "
-                    f"using {filter_dict}"
-                )
-                self.assertEqual(len(db_data), 1, msg)
+            # build final filtering dict
+            dynamic_filter_dict[filtering_key] = filtering_value
 
-                for json_field, db_field in json_fields.items():
-                    msg = f"Testing for {sample_id}: {json_field}"
+        return dynamic_filter_dict
 
-                    with self.subTest(msg):
-                        self.assertEqual(
-                            data[json_field], db_data[0].__dict__[db_field]
-                        )
+    def _get_data_for(self, tool_name: str, filter_dict: dict, model: Model):
+        """ Generator function that yields the subtest info message and the
+        values to compare for a given tool
 
-    def test_parse_picard_alignment_summary_metrics_data(self):
-        """ Test that the picard data has been imported and imported correctly
+        Args:
+            tool_name (str): Tool name
+            filter_dict (dict): Filter dictionary containing the keys/values to filter the model instances with
+            model (Model): Model object to use for finding model instances
+
+        Yields:
+            tuple: Tuple containing the subtest info message and for a given
+            tool: the value from the json and the value from the database
         """
 
-        tool_name = "picard_alignment_summary_metrics"
         # name of the data field in the multiqc json i.e.
         # multiqc_picard_AlignmentSummaryMetrics for
         # picard alignmentsummarymetrics
@@ -436,29 +450,75 @@ class TestParsingAndImport(TestCase):
                     tool_name, sample
                 )
 
-                # build a filter dict to have dynamic search of the sample id
-                filter_dict = {
-                    (
-                        "picard__report_sample__sample__sample_id"
-                    ): sample_id
+                template_dict = {
+                    "read": read,
+                    "lane": lane,
+                    "sample_id": sample_id
                 }
 
-                # look for the picard data object (should be unique)
-                db_data = Picard_alignment_summary_metrics.objects.filter(**filter_dict)
+                dynamic_filter_dict = self._build_filter_dict(
+                    filter_dict, template_dict
+                )
+
+                # look for the fastqc read data object (should be unique)
+                db_data = model.objects.filter(**dynamic_filter_dict)
                 # in this dict, key = field name in json / value = field name
                 # in db model
                 json_fields = tool_data[tool_name][1]
 
                 msg = (
                     f"Couldn't find data or unique data for {sample_id} "
-                    f"using {filter_dict}"
+                    f"using {dynamic_filter_dict}"
                 )
                 self.assertEqual(len(db_data), 1, msg)
 
                 for json_field, db_field in json_fields.items():
-                    msg = f"Testing for {sample_id}: {json_field}"
+                    msg = (
+                        f"Testing for {report.report_name}|"
+                        f"{report.multiqc_json_id} - {sample_id}: {json_field}"
+                    )
 
-                    with self.subTest(msg):
-                        self.assertEqual(
-                            data[json_field], db_data[0].__dict__[db_field]
-                        )
+                    yield msg, data[json_field], db_data[0].__dict__[db_field]
+
+    def test_parse_fastqc_data(self):
+        """ Test that the fastqc data has been imported and imported correctly
+        """
+
+        # name of the tool in the config
+        tool_name = "fastqc"
+
+        # build a filter dict to have dynamic search of the sample id
+        filter_dict = {
+            "sample_read": "{read}",
+            "lane": "{lane}",
+            "fastqc_{lane}_{read}__report_sample__sample__sample_id": "{sample_id}"
+        }
+
+        model = Fastqc_read_data
+
+        for msg, json_data, db_data in self._get_data_for(
+            tool_name, filter_dict, model
+        ):
+            with self.subTest(msg):
+                self.assertEqual(json_data, db_data)
+
+    def test_parse_picard_alignment_summary_metrics_data(self):
+        """ Test that the picard data has been imported and imported correctly
+        """
+
+        tool_name = "picard_alignment_summary_metrics"
+
+        # build a filter dict to have dynamic search of the sample id
+        filter_dict = {
+            (
+                "picard__report_sample__sample__sample_id"
+            ): "{sample_id}"
+        }
+
+        model = Picard_alignment_summary_metrics
+
+        for msg, json_data, db_data in self._get_data_for(
+            tool_name, filter_dict, model
+        ):
+            with self.subTest(msg):
+                self.assertEqual(json_data, db_data)
