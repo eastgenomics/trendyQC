@@ -447,6 +447,11 @@ class TestParsingAndImport(TestCase, CustomTests):
                 if sample == "undetermined":
                     continue
 
+                # remove some elements that are added in the sample name by
+                # tools (these are handled by the clean_sample_naming function
+                # in the _utils.py script) 
+                sample = sample.replace("_FR", "").replace("_sorted", "")
+
                 sample_id, lane, read = self._parsing_like_multiqc_report(
                     tool_name, sample
                 )
@@ -583,4 +588,3 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertKindaEqual(json_data, db_data)
                 else:
                     self.assertEqual(json_data, db_data)
-
