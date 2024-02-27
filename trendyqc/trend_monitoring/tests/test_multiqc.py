@@ -525,10 +525,15 @@ class TestParsingAndImport(TestCase, CustomTests):
         for msg, db_field, json_data, db_data in self._get_data_for(
             tool_name, filter_dict, model
         ):
-            model_field_type = model._meta.get_field(db_field)
+            model_field = model._meta.get_field(db_field)
 
             with self.subTest(msg):
-                if isinstance(model_field_type, models.FloatField):
+                # because of a quirk with some tools, empty strings are
+                # imported as None
+                # these cannot be compared directly, so I wrote a custom
+                # assertion test to account for those cases --> more
+                # information in the docstring of the assertKindaEqual test
+                if isinstance(model_field, models.FloatField):
                     self.assertKindaEqual(json_data, db_data)
                 else:
                     self.assertEqual(json_data, db_data)
@@ -548,10 +553,10 @@ class TestParsingAndImport(TestCase, CustomTests):
         for msg, db_field, json_data, db_data in self._get_data_for(
             tool_name, filter_dict, model
         ):
-            model_field_type = model._meta.get_field(db_field)
+            model_field = model._meta.get_field(db_field)
 
             with self.subTest(msg):
-                if isinstance(model_field_type, models.FloatField):
+                if isinstance(model_field, models.FloatField):
                     self.assertKindaEqual(json_data, db_data)
                 else:
                     self.assertEqual(json_data, db_data)
