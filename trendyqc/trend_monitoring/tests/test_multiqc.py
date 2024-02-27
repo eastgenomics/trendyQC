@@ -560,3 +560,27 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertKindaEqual(json_data, db_data)
                 else:
                     self.assertEqual(json_data, db_data)
+
+    def test_parse_picard_insertsize(self):
+        """ Test that the picard data has been imported and imported correctly
+        """
+
+        tool_name = "picard_insertsize"
+        filter_dict = {
+            (
+                "picard__report_sample__sample__sample_id"
+            ): "{sample_id}"
+        }
+        model = Picard_insert_size_metrics
+
+        for msg, db_field, json_data, db_data in self._get_data_for(
+            tool_name, filter_dict, model
+        ):
+            model_field = model._meta.get_field(db_field)
+
+            with self.subTest(msg):
+                if isinstance(model_field, models.FloatField):
+                    self.assertKindaEqual(json_data, db_data)
+                else:
+                    self.assertEqual(json_data, db_data)
+
