@@ -73,9 +73,9 @@ class MultiQC_report():
                 ))
             else:
                 self.setup_tools()
+                self.map_models_to_tools()
                 self.parse_multiqc_report()
                 self.data = clean_sample_naming(self.data)
-                self.map_models_to_tools()
                 self.create_all_instances()
         else:
             self.is_importable = False
@@ -112,13 +112,13 @@ class MultiQC_report():
                 happy_tool = Tool(
                     tool, CONFIG_DIR, multiqc_field_in_config, subtool
                 )
-                happy_tool.set_happy_type("pass")
+                happy_tool.set_happy_type("PASS")
                 self.tools.append(happy_tool)
 
                 happy_tool = Tool(
                     tool, CONFIG_DIR, multiqc_field_in_config, subtool
                 )
-                happy_tool.set_happy_type("all")
+                happy_tool.set_happy_type("ALL")
                 self.tools.append(happy_tool)
             else:
                 tool_obj = Tool(
@@ -230,6 +230,14 @@ class MultiQC_report():
                         **self.data[sample_id][tool_obj][lane_read],
                         **cleaned_data
                     }
+
+                elif tool_name == "happy":
+                    if tool_obj.happy_type in cleaned_data.values():
+                        self.data[sample_id][tool_obj] = {
+                            **self.data[sample_id][tool_obj],
+                            **cleaned_data
+                        }
+
                 else:
                     self.data[sample_id][tool_obj] = {
                         **self.data[sample_id][tool_obj],
