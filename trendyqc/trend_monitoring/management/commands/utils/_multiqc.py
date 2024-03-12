@@ -183,11 +183,13 @@ class MultiQC_report():
                         sample_id = "-".join(matches)
                         lane = match.groupdict()["lane"]
                         read = match.groupdict()["read"]
+                        lane_read = f"{lane}_{read}"
                     else:
                         # give up on the samples that don't have lane and read
                         sample_id = sample
                         lane = ""
                         read = ""
+                        lane_read = f"{lane}_{read}"
                 else:
                     # some tools provide the order in the sample name, so find
                     # that element
@@ -223,9 +225,16 @@ class MultiQC_report():
                 # fastqc needs a new level to take into account the lane and
                 # the read
                 if tool_name == "fastqc":
-                    self.data[sample_id][tool_obj][f"{lane}_{read}"] = cleaned_data
+                    self.data[sample_id][tool_obj].setdefault(lane_read, {})
+                    self.data[sample_id][tool_obj][lane_read] = {
+                        **self.data[sample_id][tool_obj][lane_read],
+                        **cleaned_data
+                    }
                 else:
-                    self.data[sample_id][tool_obj] = cleaned_data
+                    self.data[sample_id][tool_obj] = {
+                        **self.data[sample_id][tool_obj],
+                        **cleaned_data
+                    }
 
     def get_metadata(self):
         """ Get the metadata from the MultiQC DNAnexus object """
