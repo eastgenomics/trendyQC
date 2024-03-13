@@ -693,7 +693,6 @@ class TestParsingAndImport(TestCase, CustomTests):
                     else:
                         self.assertEqual(int(json_data), int(db_data))
 
-
     def test_parse_happy_snp_all(self):
         """ Test that the Happy snp all data has been imported and imported
         correctly
