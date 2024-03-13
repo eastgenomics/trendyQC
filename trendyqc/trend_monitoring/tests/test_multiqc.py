@@ -661,3 +661,98 @@ class TestParsingAndImport(TestCase, CustomTests):
                         self.assertEqual(json_data, db_data)
                     else:
                         self.assertEqual(int(json_data), int(db_data))
+
+    def test_parse_happy_indel_pass(self):
+        """ Test that the Happy indel pass data has been imported and imported
+        correctly
+        """
+
+        tool_name = "happy_indel"
+        filter_dict = {
+            "happy__report_sample__sample__sample_id": "{sample_id}",
+            "filter_indel": "PASS"
+        }
+        model = Happy_indel_pass
+
+        for msg, db_field, json_data, db_data in self._get_data_for(
+            tool_name, filter_dict, model
+        ):
+            model_field = model._meta.get_field(db_field)
+
+            with self.subTest(msg):
+                if isinstance(model_field, models.FloatField):
+                    self.assertKindaEqual(json_data, db_data)
+                else:
+                    # happy stores data as strings, need to convert them into
+                    # integers before comparing
+                    try:
+                        int(json_data)
+                        int(db_data)
+                    except ValueError:
+                        self.assertEqual(json_data, db_data)
+                    else:
+                        self.assertEqual(int(json_data), int(db_data))
+
+
+    def test_parse_happy_snp_all(self):
+        """ Test that the Happy snp all data has been imported and imported
+        correctly
+        """
+
+        tool_name = "happy_snp"
+        filter_dict = {
+            "happy__report_sample__sample__sample_id": "{sample_id}",
+            "filter_snp": "ALL"
+        }
+        model = Happy_snp_all
+
+        for msg, db_field, json_data, db_data in self._get_data_for(
+            tool_name, filter_dict, model
+        ):
+            model_field = model._meta.get_field(db_field)
+
+            with self.subTest(msg):
+                if isinstance(model_field, models.FloatField):
+                    self.assertKindaEqual(json_data, db_data)
+                else:
+                    # happy stores data as strings, need to convert them into
+                    # integers before comparing
+                    try:
+                        int(json_data)
+                        int(db_data)
+                    except ValueError:
+                        self.assertEqual(json_data, db_data)
+                    else:
+                        self.assertEqual(int(json_data), int(db_data))
+
+    def test_parse_happy_snp_pass(self):
+        """ Test that the Happy snp pass data has been imported and imported
+        correctly
+        """
+
+        tool_name = "happy_snp"
+        filter_dict = {
+            "happy__report_sample__sample__sample_id": "{sample_id}",
+            "filter_snp": "PASS"
+        }
+        model = Happy_snp_pass
+
+        for msg, db_field, json_data, db_data in self._get_data_for(
+            tool_name, filter_dict, model
+        ):
+            model_field = model._meta.get_field(db_field)
+
+            with self.subTest(msg):
+                if isinstance(model_field, models.FloatField):
+                    self.assertKindaEqual(json_data, db_data)
+                else:
+                    # happy stores data as strings, need to convert them into
+                    # integers before comparing
+                    try:
+                        int(json_data)
+                        int(db_data)
+                    except ValueError:
+                        self.assertEqual(json_data, db_data)
+                    else:
+                        self.assertEqual(int(json_data), int(db_data))
+
