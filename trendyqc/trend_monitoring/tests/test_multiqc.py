@@ -755,3 +755,46 @@ class TestParsingAndImport(TestCase, CustomTests):
                     else:
                         self.assertEqual(int(json_data), int(db_data))
 
+    def test_parse_sentieon_alignment_summary_metrics_data(self):
+        """ Test that the Sentieon alignment summary metrics data has been
+        imported and imported correctly
+        """
+
+        tool_name = "sentieon_alignment_summary_metrics"
+        filter_dict = {
+            "picard__report_sample__sample__sample_id": "{sample_id}",
+        }
+        model = Picard_alignment_summary_metrics
+
+        for msg, db_field, json_data, db_data in self._get_data_for(
+            tool_name, filter_dict, model
+        ):
+            model_field = model._meta.get_field(db_field)
+
+            with self.subTest(msg):
+                if isinstance(model_field, models.FloatField):
+                    self.assertKindaEqual(json_data, db_data)
+                else:
+                    self.assertEqual(json_data, db_data)
+
+    def test_parse_sentieon_insertsize(self):
+        """ Test that the Sentieon insert size data has been imported and 
+        imported correctly
+        """
+
+        tool_name = "sentieon_insertsize"
+        filter_dict = {
+            "picard__report_sample__sample__sample_id": "{sample_id}",
+        }
+        model = Picard_insert_size_metrics
+
+        for msg, db_field, json_data, db_data in self._get_data_for(
+            tool_name, filter_dict, model
+        ):
+            model_field = model._meta.get_field(db_field)
+
+            with self.subTest(msg):
+                if isinstance(model_field, models.FloatField):
+                    self.assertKindaEqual(json_data, db_data)
+                else:
+                    self.assertEqual(json_data, db_data)
