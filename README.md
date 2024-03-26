@@ -1,5 +1,9 @@
 # trendyQC
-Django app for monitoring trends in MultiQC data
+Django app for monitoring trends in MultiQC data. It is comprised of 3 docker containers:
+
+- trendyqc_db: Postgres database for containing the data
+- trendyqc: Django web app which contains the backend and frontend as well as providing the importing functionality
+- trendyqc_proxy: Web proxy in order to function in the prod/dev servers of the bioinformatics team
 
 ## Environment
 
@@ -80,6 +84,8 @@ sudo podman-compose up -d
 ```
 
 ## Data import
+
+MultiQC reports are extracted from 002 projects in DNAnexus and will be parsed by the TrendyQC app which will store it in the Postgres database.
 
 ### Setup import
 
