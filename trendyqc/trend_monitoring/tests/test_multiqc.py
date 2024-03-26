@@ -109,13 +109,13 @@ def import_tool_info():
 
     Returns:
         dict: Dict containing the JSON file content
-    """        
+    """
 
     test_tool_file = BASE_DIR / "trend_monitoring" / "tests" / "test_data" / "tools.json"
 
     with open(test_tool_file) as f:
         tool_data = json.loads(f.read())
-    
+
     return tool_data
 
 
