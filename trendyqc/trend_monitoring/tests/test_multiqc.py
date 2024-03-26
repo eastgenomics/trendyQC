@@ -30,6 +30,7 @@ from trend_monitoring.models.bam_qc import (
 from trend_monitoring.models.vcf_qc import (
     Somalier_data,
     Sompy_data,
+    Vcfqc_data,
     Happy,
     Happy_indel_all,
     Happy_indel_pass,
@@ -516,7 +517,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                     )
 
     def test_parse_bcl2fastq(self):
-        """ Test that the fastqc data has been imported and imported correctly
+        """ Test that the bcl2fastq data has been imported and imported correctly
         """
 
         # name of the tool in the config
@@ -650,6 +651,29 @@ class TestParsingAndImport(TestCase, CustomTests):
 
             with self.subTest(msg):
                 if isinstance(model_field, models.FloatField):
+                    self.assertKindaEqual(json_data, db_data)
+                else:
+                    self.assertEqual(json_data, db_data)
+
+    def test_parse_vcfqc(self):
+        """ Test that the vcfqc data has been imported and imported correctly
+        """
+
+        # name of the tool in the config
+        tool_name = "vcfqc"
+        # build a filter dict to have dynamic search of the sample id
+        filter_dict = {
+            "report_sample__sample__sample_id": "{sample_id}"
+        }
+        model = Vcfqc_data
+
+        for msg, db_field, json_data, db_data in self._get_data_for(
+            tool_name, filter_dict, model
+        ):
+            model_field_type = model._meta.get_field(db_field)
+
+            with self.subTest(msg):
+                if isinstance(model_field_type, models.FloatField):
                     self.assertKindaEqual(json_data, db_data)
                 else:
                     self.assertEqual(json_data, db_data)
