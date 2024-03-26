@@ -51,7 +51,7 @@ def get_reports_tar():
     test_reports_dir = BASE_DIR / "trend_monitoring" / "tests" / "test_reports"
     test_reports_tar = list(test_reports_dir.iterdir())
 
-    assert len(test_reports_tar) == 1, "Multiple files in test_reports dir"
+    assert len(test_reports_tar) == 1, "Expected only one file"
 
     test_reports_tar = test_reports_tar[0]
 
