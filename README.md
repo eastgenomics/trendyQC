@@ -118,6 +118,19 @@ The initial import step should take at least 20 mins but the duration is variabl
 
 Additionally, reports already present in the database will be skipped (project_id + file_id check)
 
+## Unittesting
+
+Unittesting has been implemented for the TrendyQC app in order to insure the parsing of the MultiQC reports is correct.
+
+In order to run the suite of tests, the user needs to access the TrendyQC container:
+
+```bash
+sudo podman exec -it ${name_of_the_trendyqc_container} /bin/bash
+
+# once inside
+python trendyqc/manage.py test trend_monitoring.tests
+```
+
 ## Project structure
 
 ```tree
