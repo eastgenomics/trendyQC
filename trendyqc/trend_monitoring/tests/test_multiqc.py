@@ -516,7 +516,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                     )
 
     def test_parse_bcl2fastq(self):
-        """ Test that the fastqc data has been imported and imported correctly
+        """ Test that the bcl2fastq data has been imported and imported correctly
         """
 
         # name of the tool in the config
