@@ -702,6 +702,30 @@ class TestParsingAndImport(TestCase, CustomTests):
                 else:
                     self.assertEqual(json_data, db_data)
 
+    def test_parse_somalier(self):
+        """ Test that the somalier data has been imported and imported
+        correctly
+        """
+
+        # name of the tool in the config
+        tool_name = "somalier"
+        # build a filter dict to have dynamic search of the sample id
+        filter_dict = {
+            "report_sample__sample__sample_id": "{sample_id}"
+        }
+        model = Somalier_data
+
+        for msg, db_field, json_data, db_data in self._get_data_for(
+            tool_name, filter_dict, model
+        ):
+            model_field_type = model._meta.get_field(db_field)
+
+            with self.subTest(msg):
+                if isinstance(model_field_type, models.FloatField):
+                    self.assertKindaEqual(json_data, db_data)
+                else:
+                    self.assertEqual(json_data, db_data)
+
     def test_parse_happy_indel_all(self):
         """ Test that the Happy indel all data has been imported and imported
         correctly
