@@ -1,5 +1,6 @@
 asgiref==3.6.0
 backports.zoneinfo==0.2.1
+coverage==7.4.2
 crispy-bootstrap5==2023.10
 Django==4.2.8
 django-auth-ldap==4.2.0

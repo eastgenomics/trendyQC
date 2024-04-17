@@ -1,5 +1,9 @@
 # trendyQC
-Django app for monitoring trends in MultiQC data
+Django app for monitoring trends in MultiQC data using Python 3.8. It is comprised of 3 docker containers:
+
+- trendyqc_db: Postgres database for containing the data
+- trendyqc: Django web app which contains the backend and frontend as well as providing the importing functionality
+- trendyqc_proxy: Web proxy in order to function in the prod/dev servers of the bioinformatics team
 
 ## Environment
 
@@ -81,6 +85,8 @@ sudo podman-compose up -d
 
 ## Data import
 
+MultiQC reports are extracted from 002 projects in DNAnexus and will be parsed by the TrendyQC app which will store it in the Postgres database.
+
 ### Setup import
 
 When you are setting up the database for the first time, a couple more things are needed to have the view working.
@@ -111,6 +117,19 @@ python trendyqc/manage.oy add_projects -t=-48h
 The initial import step should take at least 20 mins but the duration is variable and depends on the number of MultiQC reports the code found and are eligible to be imported.
 
 Additionally, reports already present in the database will be skipped (project_id + file_id check)
+
+## Unittesting
+
+Unittesting has been implemented for the TrendyQC app in order to insure the parsing of the MultiQC reports is correct.
+
+In order to run the suite of tests, the user needs to access the TrendyQC container:
+
+```bash
+sudo podman exec -it ${name_of_the_trendyqc_container} /bin/bash
+
+# once inside
+python trendyqc/manage.py test trend_monitoring.tests
+```
 
 ## Project structure
 
