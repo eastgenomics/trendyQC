@@ -1,5 +1,5 @@
 # trendyQC
-Django app for monitoring trends in MultiQC data. It is comprised of 3 docker containers:
+Django app for monitoring trends in MultiQC data using Python 3.8. It is comprised of 3 docker containers:
 
 - trendyqc_db: Postgres database for containing the data
 - trendyqc: Django web app which contains the backend and frontend as well as providing the importing functionality
