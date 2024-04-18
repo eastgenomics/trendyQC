@@ -5,7 +5,7 @@ import re
 from string import Formatter
 
 from django.test import TestCase
-from django.db.models import Model
+from django.db import models
 
 from trend_monitoring.models.metadata import (
     Report, Patient, Report_Sample, Sample
@@ -40,6 +40,7 @@ from trend_monitoring.models.vcf_qc import (
 from trend_monitoring.management.commands.utils._multiqc import MultiQC_report
 from trend_monitoring.management.commands.utils._dnanexus_utils import login_to_dnanexus
 from trendyqc.settings import BASE_DIR
+from .custom_tests import CustomTests
 
 def get_reports_tar():
     """ Get the report tar file
@@ -292,7 +293,7 @@ class TestMultiqc(TestCase):
             MultiQC_report(**test_dict)
 
 
-class TestParsingAndImport(TestCase):
+class TestParsingAndImport(TestCase, CustomTests):
     """ Organise the code so that it is structured.
     Contains all the tests for parsing and import the data
     """
@@ -416,7 +417,7 @@ class TestParsingAndImport(TestCase):
 
         return dynamic_filter_dict
 
-    def _get_data_for(self, tool_name: str, filter_dict: dict, model: Model):
+    def _get_data_for(self, tool_name: str, filter_dict: dict, model: models.Model):
         """ Generator function that yields the subtest info message and the
         values to compare for a given tool
 
@@ -445,6 +446,11 @@ class TestParsingAndImport(TestCase):
             for sample, data in report.original_data["report_saved_raw_data"][field_in_json].items():
                 if sample == "undetermined":
                     continue
+
+                # remove some elements that are added in the sample name by
+                # tools (these are handled by the clean_sample_naming function
+                # in the _utils.py script) 
+                sample = sample.replace("_FR", "").replace("_sorted", "")
 
                 sample_id, lane, read = self._parsing_like_multiqc_report(
                     tool_name, sample
@@ -478,7 +484,10 @@ class TestParsingAndImport(TestCase):
                         f"{report.multiqc_json_id} - {sample_id}: {json_field}"
                     )
 
-                    yield msg, data[json_field], db_data[0].__dict__[db_field]
+                    yield (
+                        msg, db_field,
+                        data[json_field], db_data[0].__dict__[db_field]
+                    )
 
     def test_parse_fastqc_data(self):
         """ Test that the fastqc data has been imported and imported correctly
@@ -486,39 +495,96 @@ class TestParsingAndImport(TestCase):
 
         # name of the tool in the config
         tool_name = "fastqc"
-
         # build a filter dict to have dynamic search of the sample id
         filter_dict = {
             "sample_read": "{read}",
             "lane": "{lane}",
             "fastqc_{lane}_{read}__report_sample__sample__sample_id": "{sample_id}"
         }
-
         model = Fastqc_read_data
 
-        for msg, json_data, db_data in self._get_data_for(
+        for msg, db_field, json_data, db_data in self._get_data_for(
             tool_name, filter_dict, model
         ):
+            model_field_type = model._meta.get_field(db_field)
+
             with self.subTest(msg):
-                self.assertEqual(json_data, db_data)
+                if isinstance(model_field_type, models.FloatField):
+                    self.assertKindaEqual(json_data, db_data)
+                else:
+                    self.assertEqual(json_data, db_data)
 
     def test_parse_picard_alignment_summary_metrics_data(self):
         """ Test that the picard data has been imported and imported correctly
         """
 
         tool_name = "picard_alignment_summary_metrics"
-
         # build a filter dict to have dynamic search of the sample id
         filter_dict = {
             (
                 "picard__report_sample__sample__sample_id"
             ): "{sample_id}"
         }
-
         model = Picard_alignment_summary_metrics
 
-        for msg, json_data, db_data in self._get_data_for(
+        for msg, db_field, json_data, db_data in self._get_data_for(
             tool_name, filter_dict, model
         ):
+            model_field = model._meta.get_field(db_field)
+
             with self.subTest(msg):
-                self.assertEqual(json_data, db_data)
+                # because of a quirk with some tools, empty strings are
+                # imported as None
+                # these cannot be compared directly, so I wrote a custom
+                # assertion test to account for those cases --> more
+                # information in the docstring of the assertKindaEqual test
+                if isinstance(model_field, models.FloatField):
+                    self.assertKindaEqual(json_data, db_data)
+                else:
+                    self.assertEqual(json_data, db_data)
+
+    def test_parse_picard_hs_metrics(self):
+        """ Test that the picard data has been imported and imported correctly
+        """
+
+        tool_name = "picard_hsmetrics"
+        filter_dict = {
+            (
+                "picard__report_sample__sample__sample_id"
+            ): "{sample_id}"
+        }
+        model = Picard_hs_metrics
+
+        for msg, db_field, json_data, db_data in self._get_data_for(
+            tool_name, filter_dict, model
+        ):
+            model_field = model._meta.get_field(db_field)
+
+            with self.subTest(msg):
+                if isinstance(model_field, models.FloatField):
+                    self.assertKindaEqual(json_data, db_data)
+                else:
+                    self.assertEqual(json_data, db_data)
+
+    def test_parse_picard_insertsize(self):
+        """ Test that the picard data has been imported and imported correctly
+        """
+
+        tool_name = "picard_insertsize"
+        filter_dict = {
+            (
+                "picard__report_sample__sample__sample_id"
+            ): "{sample_id}"
+        }
+        model = Picard_insert_size_metrics
+
+        for msg, db_field, json_data, db_data in self._get_data_for(
+            tool_name, filter_dict, model
+        ):
+            model_field = model._meta.get_field(db_field)
+
+            with self.subTest(msg):
+                if isinstance(model_field, models.FloatField):
+                    self.assertKindaEqual(json_data, db_data)
+                else:
+                    self.assertEqual(json_data, db_data)
