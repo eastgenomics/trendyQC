@@ -441,10 +441,25 @@ class TestParsingAndImport(TestCase, CustomTests):
             # not all reports have picard data
             if field_in_json not in report.original_data["report_saved_raw_data"]:
                 continue
+
+            continue_flag = False
             # go through the raw data stored in the json that is saved in the
             # multiqc object
             for sample, data in report.original_data["report_saved_raw_data"][field_in_json].items():
                 if sample == "undetermined":
+                    continue
+
+                json_fields = tool_data[tool_name][1]
+
+                # in the case of custom coverage, its data is contained in the
+                # multiqc-general-stats and multiqc-general-stats is present in
+                # other assays so skipping cases where we don't find all the
+                # expected fields
+                for json_field in json_fields:
+                    if json_field not in data:
+                        continue_flag = True
+
+                if continue_flag:
                     continue
 
                 # remove some elements that are added in the sample name by
@@ -470,7 +485,6 @@ class TestParsingAndImport(TestCase, CustomTests):
                 db_data = model.objects.filter(**dynamic_filter_dict)
                 # in this dict, key = field name in json / value = field name
                 # in db model
-                json_fields = tool_data[tool_name][1]
 
                 msg = (
                     f"Couldn't find data or unique data for {sample_id} "
@@ -577,6 +591,30 @@ class TestParsingAndImport(TestCase, CustomTests):
             ): "{sample_id}"
         }
         model = Picard_insert_size_metrics
+
+        for msg, db_field, json_data, db_data in self._get_data_for(
+            tool_name, filter_dict, model
+        ):
+            model_field = model._meta.get_field(db_field)
+
+            with self.subTest(msg):
+                if isinstance(model_field, models.FloatField):
+                    self.assertKindaEqual(json_data, db_data)
+                else:
+                    self.assertEqual(json_data, db_data)
+
+    def test_parse_custom_coverage(self):
+        """ Test that the custom coverage data has been imported and imported
+        correctly
+        """
+
+        tool_name = "custom_coverage"
+        filter_dict = {
+            (
+                "report_sample__sample__sample_id"
+            ): "{sample_id}"
+        }
+        model = Custom_coverage
 
         for msg, db_field, json_data, db_data in self._get_data_for(
             tool_name, filter_dict, model
