@@ -14,8 +14,8 @@ class CustomTests:
             }
         }
 
-        A None will be imported in the database since the model has a
-        FloatField for this field and a blank value cannot be assigned.
+        In this case, None will be imported in the database since the model has
+        a FloatField for this field and a blank value cannot be assigned.
 
         Args:
             value1 (Any): First value to assess
@@ -28,6 +28,17 @@ class CustomTests:
 
         if value1 != value2:
             if value1 not in ["", None] and value2 not in ["", None]:
-                raise AssertionError(
-                    f"{value1} is not kinda equal to {value2}"
-                )
+                # happy stores data as strings, need conversion to be sure that
+                # the value are really not equal
+                try:
+                    float(value1)
+                    float(value2)
+                except Exception:
+                    raise AssertionError(
+                        f"{value1} is not kinda equal to {value2}"
+                    )
+                else:
+                    if float(value1) != float(value2):
+                        raise AssertionError(
+                            f"{value1} is not equal to {value2}"
+                        )

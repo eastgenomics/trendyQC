@@ -384,7 +384,7 @@ class TestParsingAndImport(TestCase, CustomTests):
         dynamic_filter_dict = {}
 
         for key, value in filter_dict.items():
-            # get the keys of the keys that are in need of formatting
+            # get the keys of the dict keys that are in need of formatting
             # replacement
             keys_to_replace_in_key = [
                 ele[1]
@@ -392,7 +392,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                 if ele[1] is not None and ele[1] in template_dict
             ]
 
-            # get the keys of the values that are in need of formatting
+            # get the keys of the dict values that are in need of formatting
             # replacement
             keys_to_replace_in_value = [
                 ele[1]
@@ -492,10 +492,22 @@ class TestParsingAndImport(TestCase, CustomTests):
                 )
                 self.assertEqual(len(db_data), 1, msg)
 
+                if "happy" in tool_name:
+                    model_name = model._meta.model_name
+
+                    if "indel" in tool_name:
+                        if data["Filter_indel"].lower() not in model_name:
+                            continue
+
+                    elif "snp" in tool_name:
+                        if data["Filter_snp"].lower() not in model_name:
+                            continue
+
                 for json_field, db_field in json_fields.items():
                     msg = (
                         f"Testing for {report.report_name}|"
-                        f"{report.multiqc_json_id} - {sample_id}: {json_field}"
+                        f"{report.multiqc_json_id} - {model._meta.model_name} - {sample_id}"
+                        f": {json_field}"
                     )
 
                     yield (
@@ -535,9 +547,7 @@ class TestParsingAndImport(TestCase, CustomTests):
         tool_name = "picard_alignment_summary_metrics"
         # build a filter dict to have dynamic search of the sample id
         filter_dict = {
-            (
-                "picard__report_sample__sample__sample_id"
-            ): "{sample_id}"
+            "picard__report_sample__sample__sample_id": "{sample_id}"
         }
         model = Picard_alignment_summary_metrics
 
@@ -563,9 +573,7 @@ class TestParsingAndImport(TestCase, CustomTests):
 
         tool_name = "picard_hsmetrics"
         filter_dict = {
-            (
-                "picard__report_sample__sample__sample_id"
-            ): "{sample_id}"
+            "picard__report_sample__sample__sample_id": "{sample_id}"
         }
         model = Picard_hs_metrics
 
@@ -586,9 +594,7 @@ class TestParsingAndImport(TestCase, CustomTests):
 
         tool_name = "picard_insertsize"
         filter_dict = {
-            (
-                "picard__report_sample__sample__sample_id"
-            ): "{sample_id}"
+            "picard__report_sample__sample__sample_id": "{sample_id}"
         }
         model = Picard_insert_size_metrics
 
@@ -610,9 +616,7 @@ class TestParsingAndImport(TestCase, CustomTests):
 
         tool_name = "custom_coverage"
         filter_dict = {
-            (
-                "report_sample__sample__sample_id"
-            ): "{sample_id}"
+            "report_sample__sample__sample_id": "{sample_id}"
         }
         model = Custom_coverage
 
@@ -626,3 +630,128 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertKindaEqual(json_data, db_data)
                 else:
                     self.assertEqual(json_data, db_data)
+
+    def test_parse_happy_indel_all(self):
+        """ Test that the Happy indel all data has been imported and imported
+        correctly
+        """
+
+        tool_name = "happy_indel"
+        filter_dict = {
+            "happy__report_sample__sample__sample_id": "{sample_id}",
+            "filter_indel": "ALL"
+        }
+        model = Happy_indel_all
+
+        for msg, db_field, json_data, db_data in self._get_data_for(
+            tool_name, filter_dict, model
+        ):
+            model_field = model._meta.get_field(db_field)
+
+            with self.subTest(msg):
+                if isinstance(model_field, models.FloatField):
+                    self.assertKindaEqual(json_data, db_data)
+                else:
+                    # happy stores data as strings, need to convert them into
+                    # integers before comparing
+                    try:
+                        int(json_data)
+                        int(db_data)
+                    except ValueError:
+                        self.assertEqual(json_data, db_data)
+                    else:
+                        self.assertEqual(int(json_data), int(db_data))
+
+    def test_parse_happy_indel_pass(self):
+        """ Test that the Happy indel pass data has been imported and imported
+        correctly
+        """
+
+        tool_name = "happy_indel"
+        filter_dict = {
+            "happy__report_sample__sample__sample_id": "{sample_id}",
+            "filter_indel": "PASS"
+        }
+        model = Happy_indel_pass
+
+        for msg, db_field, json_data, db_data in self._get_data_for(
+            tool_name, filter_dict, model
+        ):
+            model_field = model._meta.get_field(db_field)
+
+            with self.subTest(msg):
+                if isinstance(model_field, models.FloatField):
+                    self.assertKindaEqual(json_data, db_data)
+                else:
+                    # happy stores data as strings, need to convert them into
+                    # integers before comparing
+                    try:
+                        int(json_data)
+                        int(db_data)
+                    except ValueError:
+                        self.assertEqual(json_data, db_data)
+                    else:
+                        self.assertEqual(int(json_data), int(db_data))
+
+    def test_parse_happy_snp_all(self):
+        """ Test that the Happy snp all data has been imported and imported
+        correctly
+        """
+
+        tool_name = "happy_snp"
+        filter_dict = {
+            "happy__report_sample__sample__sample_id": "{sample_id}",
+            "filter_snp": "ALL"
+        }
+        model = Happy_snp_all
+
+        for msg, db_field, json_data, db_data in self._get_data_for(
+            tool_name, filter_dict, model
+        ):
+            model_field = model._meta.get_field(db_field)
+
+            with self.subTest(msg):
+                if isinstance(model_field, models.FloatField):
+                    self.assertKindaEqual(json_data, db_data)
+                else:
+                    # happy stores data as strings, need to convert them into
+                    # integers before comparing
+                    try:
+                        int(json_data)
+                        int(db_data)
+                    except ValueError:
+                        self.assertEqual(json_data, db_data)
+                    else:
+                        self.assertEqual(int(json_data), int(db_data))
+
+    def test_parse_happy_snp_pass(self):
+        """ Test that the Happy snp pass data has been imported and imported
+        correctly
+        """
+
+        tool_name = "happy_snp"
+        filter_dict = {
+            "happy__report_sample__sample__sample_id": "{sample_id}",
+            "filter_snp": "PASS"
+        }
+        model = Happy_snp_pass
+
+        for msg, db_field, json_data, db_data in self._get_data_for(
+            tool_name, filter_dict, model
+        ):
+            model_field = model._meta.get_field(db_field)
+
+            with self.subTest(msg):
+                if isinstance(model_field, models.FloatField):
+                    self.assertKindaEqual(json_data, db_data)
+                else:
+                    # happy stores data as strings, need to convert them into
+                    # integers before comparing
+                    try:
+                        int(json_data)
+                        int(db_data)
+                    except ValueError:
+                        self.assertEqual(json_data, db_data)
+                    else:
+                        self.assertEqual(int(json_data), int(db_data))
+
