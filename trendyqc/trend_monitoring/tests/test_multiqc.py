@@ -515,6 +515,29 @@ class TestParsingAndImport(TestCase, CustomTests):
                         data[json_field], db_data[0].__dict__[db_field]
                     )
 
+    def test_parse_bcl2fastq(self):
+        """ Test that the bcl2fastq data has been imported and imported correctly
+        """
+
+        # name of the tool in the config
+        tool_name = "bcl2fastq"
+        # build a filter dict to have dynamic search of the sample id
+        filter_dict = {
+            "report_sample__sample__sample_id": "{sample_id}"
+        }
+        model = Bcl2fastq_data
+
+        for msg, db_field, json_data, db_data in self._get_data_for(
+            tool_name, filter_dict, model
+        ):
+            model_field_type = model._meta.get_field(db_field)
+
+            with self.subTest(msg):
+                if isinstance(model_field_type, models.FloatField):
+                    self.assertKindaEqual(json_data, db_data)
+                else:
+                    self.assertEqual(json_data, db_data)
+
     def test_parse_fastqc_data(self):
         """ Test that the fastqc data has been imported and imported correctly
         """
