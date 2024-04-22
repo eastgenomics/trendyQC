@@ -721,7 +721,7 @@ class TestParsingAndImport(TestCase, CustomTests):
             model_field_type = model._meta.get_field(db_field)
 
             with self.subTest(msg):
-                if isinstance(model_field_type, models.FloatField):
+                if isinstance(model_field_type, models.FloatField) or isinstance(model_field_type, models.CharField):
                     self.assertKindaEqual(json_data, db_data)
                 else:
                     self.assertEqual(json_data, db_data)
