@@ -721,6 +721,9 @@ class TestParsingAndImport(TestCase, CustomTests):
             model_field_type = model._meta.get_field(db_field)
 
             with self.subTest(msg):
+                # need to check the paternal and maternal ids using the kinda
+                # equal as I expect a sample id type value but if not provided
+                # the field is equal to 0.0
                 if isinstance(model_field_type, models.FloatField) or isinstance(model_field_type, models.CharField):
                     self.assertKindaEqual(json_data, db_data)
                 else:
