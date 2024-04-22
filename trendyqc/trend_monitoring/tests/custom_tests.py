@@ -1,5 +1,6 @@
 from typing import Any
 
+
 class CustomTests:
     """ Class that will harbour custom tests to handle the horible things that
     can happen when ingesting MultiQC data
