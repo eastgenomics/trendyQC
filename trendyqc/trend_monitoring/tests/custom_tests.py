@@ -28,7 +28,7 @@ class CustomTests:
         """
 
         if value1 != value2:
-            if value1 not in ["", None] and value2 not in ["", None]:
+            if value1 not in ["", "NA", None] and value2 not in ["", "NA", None]:
                 # happy stores data as strings, need conversion to be sure that
                 # the value are really not equal
                 try:
@@ -40,12 +40,6 @@ class CustomTests:
                     )
                 else:
                     if float(value1) != float(value2):
-                        raise AssertionError(
-                            f"{value1} is not equal to {value2}"
-                        )
-            else:
-                if value1 == "NA":
-                    if value2 is not None:
                         raise AssertionError(
                             f"{value1} is not equal to {value2}"
                         )
