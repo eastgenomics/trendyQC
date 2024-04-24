@@ -43,3 +43,9 @@ class CustomTests:
                         raise AssertionError(
                             f"{value1} is not equal to {value2}"
                         )
+            else:
+                if value1 == "NA":
+                    if value2 is not None:
+                        raise AssertionError(
+                            f"{value1} is not equal to {value2}"
+                        )
