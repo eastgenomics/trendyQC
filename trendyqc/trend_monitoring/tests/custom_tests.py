@@ -28,7 +28,7 @@ class CustomTests:
         """
 
         if value1 != value2:
-            if value1 not in ["", None] and value2 not in ["", None]:
+            if value1 not in ["", "NA", None] and value2 not in ["", "NA", None]:
                 # happy stores data as strings, need conversion to be sure that
                 # the value are really not equal
                 try:
