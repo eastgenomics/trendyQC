@@ -564,7 +564,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_picard_alignment_summary_metrics_data(self):
-        """ Test that the picard data has been imported and imported correctly
+        """ Test that the picard_alignment_summary_metrics_data has been imported and imported correctly
         """
 
         tool_name = "picard_alignment_summary_metrics"
@@ -591,7 +591,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_picard_hs_metrics(self):
-        """ Test that the picard data has been imported and imported correctly
+        """ Test that the picard_hs_metrics data has been imported and imported correctly
         """
 
         tool_name = "picard_hsmetrics"
@@ -612,7 +612,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_picard_insertsize(self):
-        """ Test that the picard data has been imported and imported correctly
+        """ Test that the picard_insertsize data has been imported and imported correctly
         """
 
         tool_name = "picard_insertsize"
