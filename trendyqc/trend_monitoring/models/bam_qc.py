@@ -78,38 +78,47 @@ class Custom_coverage(models.Model):
 
 
 class Picard(models.Model):
-    sample = models.CharField(max_length=10)
-    library = models.CharField(max_length=10)
-    read_group = models.CharField(max_length=10)
-    picard_hs_metrics = models.ForeignKey(
-        "Picard_hs_metrics", on_delete=models.DO_NOTHING, blank=True, null=True
+    hs_metrics = models.ForeignKey(
+        "HS_metrics", on_delete=models.DO_NOTHING, blank=True, null=True
     )
-    picard_alignment_summary_metrics = models.ForeignKey(
-        "Picard_alignment_summary_metrics", on_delete=models.DO_NOTHING,
+    alignment_summary_metrics = models.ForeignKey(
+        "Alignment_summary_metrics", on_delete=models.DO_NOTHING,
         blank=True, null=True
     )
-    picard_base_distribution_by_cycle_metrics = models.ForeignKey(
-        "Picard_base_distribution_by_cycle_metrics",
+    base_distribution_by_cycle_metrics_L001_R1 = models.ForeignKey(
+        "Base_distribution_by_cycle_metrics", related_name="base_distribution_by_cycle_metrics_L001_R1",
         on_delete=models.DO_NOTHING, blank=True, null=True
     )
-    picard_gc_bias_metrics = models.ForeignKey(
-        "Picard_gc_bias_metrics", on_delete=models.DO_NOTHING, blank=True,
+    base_distribution_by_cycle_metrics_L001_R2 = models.ForeignKey(
+        "Base_distribution_by_cycle_metrics", related_name="base_distribution_by_cycle_metrics_L001_R2",
+        on_delete=models.DO_NOTHING, blank=True, null=True
+    )
+    base_distribution_by_cycle_metrics_L002_R1 = models.ForeignKey(
+        "Base_distribution_by_cycle_metrics", related_name="base_distribution_by_cycle_metrics_L002_R1",
+        on_delete=models.DO_NOTHING, blank=True, null=True
+    )
+    base_distribution_by_cycle_metrics_L002_R2 = models.ForeignKey(
+        "Base_distribution_by_cycle_metrics", related_name="base_distribution_by_cycle_metrics_L002_R2",
+        on_delete=models.DO_NOTHING, blank=True, null=True
+    )
+    gc_bias_metrics = models.ForeignKey(
+        "GC_bias_metrics", on_delete=models.DO_NOTHING, blank=True,
         null=True
     )
-    picard_insert_size_metrics = models.ForeignKey(
-        "Picard_insert_size_metrics", on_delete=models.DO_NOTHING, blank=True,
+    insert_size_metrics = models.ForeignKey(
+        "Insert_size_metrics", on_delete=models.DO_NOTHING, blank=True,
         null=True
     )
-    picard_quality_yield_metrics = models.ForeignKey(
-        "Picard_quality_yield_metrics", on_delete=models.DO_NOTHING,
+    quality_yield_metrics = models.ForeignKey(
+        "Quality_yield_metrics", on_delete=models.DO_NOTHING,
         blank=True, null=True
     )
-    picard_pcr_metrics = models.ForeignKey(
-        "Picard_pcr_metrics", on_delete=models.DO_NOTHING, blank=True,
+    pcr_metrics = models.ForeignKey(
+        "PCR_metrics", on_delete=models.DO_NOTHING, blank=True,
         null=True
     )
-    picard_duplication_metrics = models.ForeignKey(
-        "Picard_duplication_metrics", on_delete=models.DO_NOTHING, blank=True,
+    duplication_metrics = models.ForeignKey(
+        "Duplication_metrics", on_delete=models.DO_NOTHING, blank=True,
         null=True
     )
 
@@ -118,7 +127,7 @@ class Picard(models.Model):
         db_table = "picard"
 
 
-class Picard_hs_metrics(models.Model):
+class HS_metrics(models.Model):
     bait_set = models.CharField(max_length=10)
     bait_territory = models.FloatField()
     bait_design_efficiency = models.FloatField()
@@ -179,10 +188,10 @@ class Picard_hs_metrics(models.Model):
 
     class Meta:
         app_label = "trend_monitoring"
-        db_table = "picard_hs_metrics"
+        db_table = "hs_metrics"
 
 
-class Picard_alignment_summary_metrics(models.Model):
+class Alignment_summary_metrics(models.Model):
     category = models.CharField(max_length=10)
     total_reads = models.FloatField()
     pf_reads = models.FloatField()
@@ -210,10 +219,12 @@ class Picard_alignment_summary_metrics(models.Model):
 
     class Meta:
         app_label = "trend_monitoring"
-        db_table = "picard_alignment_summary_metrics"
+        db_table = "alignment_summary_metrics"
 
 
-class Picard_base_distribution_by_cycle_metrics(models.Model):
+class Base_distribution_by_cycle_metrics(models.Model):
+    lane = models.CharField(max_length=20)
+    sample_read = models.CharField(max_length=20)
     sum_pct_a = models.FloatField()
     sum_pct_c = models.FloatField()
     sum_pct_g = models.FloatField()
@@ -227,10 +238,10 @@ class Picard_base_distribution_by_cycle_metrics(models.Model):
 
     class Meta:
         app_label = "trend_monitoring"
-        db_table = "picard_base_distribution_by_cycle_metrics"
+        db_table = "base_distribution_by_cycle_metrics"
 
 
-class Picard_gc_bias_metrics(models.Model):
+class GC_bias_metrics(models.Model):
     accumulation_level = models.CharField(max_length=20)
     reads_used = models.CharField(max_length=10)
     window_size = models.IntegerField()
@@ -246,10 +257,10 @@ class Picard_gc_bias_metrics(models.Model):
 
     class Meta:
         app_label = "trend_monitoring"
-        db_table = "picard_gc_bias_metrics"
+        db_table = "gc_bias_metrics"
 
 
-class Picard_insert_size_metrics(models.Model):
+class Insert_size_metrics(models.Model):
     median_insert_size = models.FloatField()
     mode_insert_size = models.FloatField(null=True)
     median_absolute_deviation = models.FloatField()
@@ -272,10 +283,10 @@ class Picard_insert_size_metrics(models.Model):
 
     class Meta:
         app_label = "trend_monitoring"
-        db_table = "picard_insert_size_metrics"
+        db_table = "insert_size_metrics"
 
 
-class Picard_quality_yield_metrics(models.Model):
+class Quality_yield_metrics(models.Model):
     total_reads = models.IntegerField()
     pf_reads = models.IntegerField()
     read_length = models.IntegerField()
@@ -290,10 +301,10 @@ class Picard_quality_yield_metrics(models.Model):
 
     class Meta:
         app_label = "trend_monitoring"
-        db_table = "picard_quality_yield_metrics"
+        db_table = "quality_yield_metrics"
 
 
-class Picard_pcr_metrics(models.Model):
+class PCR_metrics(models.Model):
     custom_amplicon_set = models.CharField(max_length=20)
     amplicon_territory = models.FloatField()
     on_amplicon_bases = models.FloatField()
@@ -347,10 +358,10 @@ class Picard_pcr_metrics(models.Model):
 
     class Meta:
         app_label = "trend_monitoring"
-        db_table = "picard_pcr_metrics"
+        db_table = "pcr_metrics"
 
 
-class Picard_duplication_metrics(models.Model):
+class Duplication_metrics(models.Model):
     unpaired_reads_examined = models.FloatField()
     read_pairs_examined = models.FloatField()
     secondary_or_suplementary_rds = models.FloatField()
@@ -370,4 +381,4 @@ class Picard_duplication_metrics(models.Model):
 
     class Meta:
         app_label = "trend_monitoring"
-        db_table = "picard_duplication_metrics"
+        db_table = "duplication_metrics"

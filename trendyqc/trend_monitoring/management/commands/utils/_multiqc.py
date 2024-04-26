@@ -163,8 +163,8 @@ class MultiQC_report():
                 # SNP genotyping adds a "sorted" in the sample name
                 sample = sample.replace("_sorted", "")
 
-                # fastqc contains data at the lane and read level
-                if tool_name == "fastqc":
+                # some tools contain data at the lane and read level
+                if tool_obj.divided_by_lane_read:
                     # look for the order, lane and read using regex
                     match = regex.search(
                         r"_(?P<order>S[0-9]+)_(?P<lane>L[0-9]+)_(?P<read>R[12])",
@@ -222,9 +222,9 @@ class MultiQC_report():
                 # convert data in appropriate types for future import
                 cleaned_data = self.clean_data(converted_fields)
 
-                # fastqc needs a new level to take into account the lane and
+                # some tools need a new level to take into account the lane and
                 # the read
-                if tool_name == "fastqc":
+                if tool_obj.divided_by_lane_read:
                     self.data[sample_id][tool_obj].setdefault(lane_read, {})
                     self.data[sample_id][tool_obj][lane_read] = {
                         **self.data[sample_id][tool_obj][lane_read],
@@ -386,16 +386,18 @@ class MultiQC_report():
 
         # check if the tool data has a level for the reads i.e.
         # {read: {field: data, field: data}} vs {field: data, field: data}
-        if all(isinstance(i, dict) for i in tool_data.values()):
+        # if all(isinstance(i, dict) for i in tool_data.values()):
+        if tool_obj.divided_by_lane_read:
             for read, data in tool_data.items():
+                sample_lane, sample_read = read.split("_")
                 # this info is not available in the FastQC data so I create it
                 # myself
-                data["lane"] = read.split("_")[0]
-                data["sample_read"] = read.split("_")[1]
+                data["lane"] = sample_lane
+                data["sample_read"] = sample_read
                 model_instance = model(**data)
                 # store the fastqc instances using their parent table i.e.
                 # fastqc as key
-                self.instances_per_sample["fastqc"].append(model_instance)
+                self.instances_per_sample[tool_obj.parent].append(model_instance)
                 instances_to_return.append(model_instance)
         else:
             model_instance = model(**tool_data)
@@ -491,15 +493,31 @@ class MultiQC_report():
                 # if the instances are the type "link_table"
                 if link_table == type_table:
                     model_name = instance._meta.model.__name__.lower()
+                    # check if the tool linked to the model has a subtool i.e.
+                    # a requirement for models that have data divided by lane
+                    # and read
+                    tool_with_subtool = [
+                        tool for tool in self.tools
+                        if model_name == tool.subtool
+                    ]
 
-                    # the model for linking fastqc data to the sample requires
-                    # 4 instances of the fastqc_read_data model
-                    if type_table == "fastqc":
-                        read = instance.sample_read
-                        lane = instance.lane
-                        instance_type_tables[f"fastqc_{lane}_{read}"] = instance
+                    if tool_with_subtool:
+                        tool = tool_with_subtool[0]
+
+                        # if the data requires the data to be separated by lane
+                        # and read the tool contains this information and
+                        # requires the creation of 4 distinct instances
+                        if tool.divided_by_lane_read:
+                            read = instance.sample_read
+                            lane = instance.lane
+                            instance_type_tables[f"{tool.subtool}_{lane}_{read}"] = instance
+
+                        else:
+                            # i.e. picard_hs_metrics has a picard parent but is
+                            # not separated by lane and read
+                            instance_type_tables[model_name] = instance
                     else:
-                        # i.e. "picard_hs_metrics": picard_hs_metrics instance
+                        # i.e. somalier doesn't have a parent
                         instance_type_tables[model_name] = instance
 
         return instance_type_tables

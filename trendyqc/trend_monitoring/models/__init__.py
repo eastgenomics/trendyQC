@@ -3,17 +3,17 @@ from .bam_qc import (
     Samtools_data,
     Custom_coverage,
     Picard,
-    Picard_hs_metrics,
-    Picard_alignment_summary_metrics,
-    Picard_base_distribution_by_cycle_metrics,
-    Picard_gc_bias_metrics,
-    Picard_insert_size_metrics,
-    Picard_quality_yield_metrics,
-    Picard_pcr_metrics
+    HS_metrics,
+    Alignment_summary_metrics,
+    Base_distribution_by_cycle_metrics,
+    GC_bias_metrics,
+    Insert_size_metrics,
+    Quality_yield_metrics,
+    PCR_metrics
 )
 from .fastq_qc import (
     Fastqc,
-    Fastqc_read_data,
+    Read_data,
     Bcl2fastq_data
 )
 from .metadata import (

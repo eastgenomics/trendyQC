@@ -2,13 +2,13 @@ from django.db import models
 
 
 class Fastqc(models.Model):
-    fastqc_L001_R1 = models.ForeignKey("Fastqc_read_data", on_delete=models.DO_NOTHING, related_name="fastqc_L001_R1")
-    fastqc_L001_R2 = models.ForeignKey("Fastqc_read_data", on_delete=models.DO_NOTHING, related_name="fastqc_L001_R2")
-    fastqc_L002_R1 = models.ForeignKey("Fastqc_read_data", on_delete=models.DO_NOTHING, related_name="fastqc_L002_R1", blank=True, null=True)
-    fastqc_L002_R2 = models.ForeignKey("Fastqc_read_data", on_delete=models.DO_NOTHING, related_name="fastqc_L002_R2", blank=True, null=True)
+    read_data_L001_R1 = models.ForeignKey("Read_data", on_delete=models.DO_NOTHING, related_name="read_data_L001_R1")
+    read_data_L001_R2 = models.ForeignKey("Read_data", on_delete=models.DO_NOTHING, related_name="read_data_L001_R2")
+    read_data_L002_R1 = models.ForeignKey("Read_data", on_delete=models.DO_NOTHING, related_name="read_data_L002_R1", blank=True, null=True)
+    read_data_L002_R2 = models.ForeignKey("Read_data", on_delete=models.DO_NOTHING, related_name="read_data_L002_R2", blank=True, null=True)
 
 
-class Fastqc_read_data(models.Model):
+class Read_data(models.Model):
     sample_read = models.CharField(max_length=50, blank=True)
     lane = models.CharField(max_length=20, blank=True)
     file_type = models.CharField(max_length=50)

@@ -1,0 +1,3 @@
+{
+    "tools": ["fastqc", "base_distribution_by_cycle_metrics"]
+}

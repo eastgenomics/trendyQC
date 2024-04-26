@@ -1,7 +1,7 @@
 {
     "Myeloid": {
         "multiqc_bcl2fastq_bysample": ["bcl2fastq", null],
-        "multiqc_fastqc": ["fastqc", "read"],
+        "multiqc_fastqc": ["fastqc", "read_data"],
         "multiqc_general_stats": ["custom_coverage", null],
         "multiqc_picard_AlignmentSummaryMetrics": ["picard", "alignment_summary_metrics"],
         "multiqc_picard_HsMetrics": ["picard", "hs_metrics"],
@@ -13,7 +13,7 @@
     },
     "Cancer Endocrine Neurology": {
         "multiqc_bcl2fastq_bysample": ["bcl2fastq", null],
-        "multiqc_fastqc": ["fastqc", "read"],
+        "multiqc_fastqc": ["fastqc", "read_data"],
         "multiqc_happy_indel_data": ["happy", "indel"],
         "multiqc_happy_snp_data": ["happy", "snp"],
         "multiqc_het-hom_analysis": ["vcfqc", null],
@@ -26,7 +26,7 @@
     },
     "Twist WES": {
         "multiqc_bcl2fastq_bysample": ["bcl2fastq", null],
-        "multiqc_fastqc": ["fastqc", "read"],
+        "multiqc_fastqc": ["fastqc", "read_data"],
         "multiqc_happy_indel_data": ["happy", "indel"],
         "multiqc_happy_snp_data": ["happy", "snp"],
         "multiqc_het-hom_analysis": ["vcfqc", null],
@@ -38,10 +38,10 @@
         "multiqc_verifybamid": ["verifybamid", null]
     },
     "TruSight Oncology 500": {
-        "multiqc_fastqc": ["fastqc", "read"]
+        "multiqc_fastqc": ["fastqc", "read_data"]
     },
     "SNP genotyping": {
-        "multiqc_fastqc": ["fastqc", "read"],
+        "multiqc_fastqc": ["fastqc", "read_data"],
         "multiqc_het-hom_analysis": ["vcfqc", null],
         "multiqc_picard_AlignmentSummaryMetrics": ["picard", "alignment_summary_metrics"],
         "multiqc_picard_HsMetrics": ["picard", "hs_metrics"],
@@ -54,7 +54,7 @@
     },
     "TruSight One Expanded": {
         "multiqc_bcl2fastq_bysample": ["bcl2fastq", null],
-        "multiqc_fastqc": ["fastqc", "read"],
+        "multiqc_fastqc": ["fastqc", "read_data"],
         "multiqc_het-hom_analysis": ["vcfqc", null],
         "multiqc_picard_HsMetrics": ["picard", "hs_metrics"],
         "multiqc_picard_dups": ["picard", "duplication_metrics"],
@@ -64,7 +64,7 @@
         "multiqc_verifybamid": ["verifybamid", null]
     },
     "Capture: Familial Hypercholesterolemia (FH)": {
-        "multiqc_fastqc": ["fastqc", "read"],
+        "multiqc_fastqc": ["fastqc", "read_data"],
         "multiqc_happy_indel_data": ["happy", "indel"],
         "multiqc_happy_snp_data": ["happy", "snp"],
         "multiqc_het-hom_analysis": ["vcfqc", null],
