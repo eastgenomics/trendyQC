@@ -493,20 +493,31 @@ class MultiQC_report():
                 # if the instances are the type "link_table"
                 if link_table == type_table:
                     model_name = instance._meta.model.__name__.lower()
-                    tool = [tool for tool in self.tools if model_name == tool.subtool]
+                    # check if the tool linked to the model has a subtool i.e.
+                    # a requirement for models that have data divided by lane
+                    # and read
+                    tool_with_subtool = [
+                        tool for tool in self.tools
+                        if model_name == tool.subtool
+                    ]
 
-                    if tool:
-                        tool = tool[0]
+                    if tool_with_subtool:
+                        tool = tool_with_subtool[0]
 
+                        # if the data requires the data to be separated by lane
+                        # and read the tool contains this information and
+                        # requires the creation of 4 distinct instances
                         if tool.divided_by_lane_read:
-                            # the model for linking fastqc data to the sample requires
-                            # 4 instances of the fastqc_read_data model
                             read = instance.sample_read
                             lane = instance.lane
-                            instance_type_tables[f"{tool.parent}_{lane}_{read}"] = instance
+                            instance_type_tables[f"{tool.subtool}_{lane}_{read}"] = instance
 
+                        else:
+                            # i.e. picard_hs_metrics has a picard parent but is
+                            # not separated by lane and read
+                            instance_type_tables[model_name] = instance
                     else:
-                        # i.e. "picard_hs_metrics": picard_hs_metrics instance
+                        # i.e. somalier doesn't have a parent
                         instance_type_tables[model_name] = instance
 
         return instance_type_tables
