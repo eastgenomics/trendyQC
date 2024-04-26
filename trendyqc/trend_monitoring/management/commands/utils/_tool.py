@@ -30,18 +30,28 @@ class Tool:
         if subtool:
             self.parent = tool_name
 
-        self.config_path = config_dir / "tool_configs" / f"{tool_name}.json"
+        self.config_field_path = config_dir / "tool_configs" / f"{tool_name}.json"
+        self.config_lane_read_path = config_dir / "sample_read_tools.json"
+        self.divided_by_lane_read = False
         self.read_config_data()
 
     def read_config_data(self):
         """ Read in the data in the tool config file """
 
-        fields = json.loads(self.config_path.read_text())
+        fields_config = json.loads(self.config_field_path.read_text())
+        lane_read_config = json.loads(self.config_lane_read_path.read_text())
 
         if self.subtool:
-            self.fields = fields[self.subtool]
+            self.fields = fields_config[self.subtool]
         else:
-            self.fields = fields
+            self.fields = fields_config
+
+        if (
+            self.name in lane_read_config["tools"]
+        ) or (
+            self.subtool in lane_read_config["tools"]
+        ):
+            self.divided_by_lane_read = True
 
     def convert_tool_fields(self, multiqc_data):
         """ Convert the field names from MultiQC to ones that are written in
