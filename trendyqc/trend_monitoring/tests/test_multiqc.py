@@ -11,21 +11,21 @@ from trend_monitoring.models.metadata import (
     Report, Patient, Report_Sample, Sample
 )
 from trend_monitoring.models.fastq_qc import (
-    Fastqc_read_data, Fastqc, Bcl2fastq_data
+    Read_data, Fastqc, Bcl2fastq_data
 )
 from trend_monitoring.models.bam_qc import (
     VerifyBAMid_data,
     Samtools_data,
     Custom_coverage,
     Picard,
-    Picard_alignment_summary_metrics,
-    Picard_base_distribution_by_cycle_metrics,
-    Picard_duplication_metrics,
-    Picard_gc_bias_metrics,
-    Picard_hs_metrics,
-    Picard_insert_size_metrics,
-    Picard_pcr_metrics,
-    Picard_quality_yield_metrics,
+    Alignment_summary_metrics,
+    Base_distribution_by_cycle_metrics,
+    Duplication_metrics,
+    GC_bias_metrics,
+    HS_metrics,
+    Insert_size_metrics,
+    PCR_metrics,
+    Quality_yield_metrics,
 )
 from trend_monitoring.models.vcf_qc import (
     Somalier_data,
@@ -317,8 +317,8 @@ class TestParsingAndImport(TestCase, CustomTests):
         # SNP genotyping adds a "sorted" in the sample name
         sample = sample.replace("_sorted", "")
 
-        # fastqc contains data at the lane and read level
-        if tool_name == "fastqc":
+        # some tools contains data at the lane and read level
+        if tool_name == "fastqc" or tool_name == "picard_base_content":
             # look for the order, lane and read using regex
             match = re.search(
                 r"_(?P<order>S[0-9]+)_(?P<lane>L[0-9]+)_(?P<read>R[12])",
@@ -483,10 +483,8 @@ class TestParsingAndImport(TestCase, CustomTests):
                     filter_dict, template_dict
                 )
 
-                # look for the fastqc read data object (should be unique)
+                # look for the data with the built filter dict
                 db_data = model.objects.filter(**dynamic_filter_dict)
-                # in this dict, key = field name in json / value = field name
-                # in db model
 
                 msg = (
                     f"Couldn't find data or unique data for {sample_id} "
@@ -550,9 +548,9 @@ class TestParsingAndImport(TestCase, CustomTests):
         filter_dict = {
             "sample_read": "{read}",
             "lane": "{lane}",
-            "fastqc_{lane}_{read}__report_sample__sample__sample_id": "{sample_id}"
+            "read_data_{lane}_{read}__report_sample__sample__sample_id": "{sample_id}"
         }
-        model = Fastqc_read_data
+        model = Read_data
 
         for msg, db_field, json_data, db_data in self._get_data_for(
             tool_name, filter_dict, model
@@ -574,7 +572,7 @@ class TestParsingAndImport(TestCase, CustomTests):
         filter_dict = {
             "picard__report_sample__sample__sample_id": "{sample_id}"
         }
-        model = Picard_alignment_summary_metrics
+        model = Alignment_summary_metrics
 
         for msg, db_field, json_data, db_data in self._get_data_for(
             tool_name, filter_dict, model
@@ -600,7 +598,7 @@ class TestParsingAndImport(TestCase, CustomTests):
         filter_dict = {
             "picard__report_sample__sample__sample_id": "{sample_id}"
         }
-        model = Picard_hs_metrics
+        model = HS_metrics
 
         for msg, db_field, json_data, db_data in self._get_data_for(
             tool_name, filter_dict, model
@@ -621,7 +619,7 @@ class TestParsingAndImport(TestCase, CustomTests):
         filter_dict = {
             "picard__report_sample__sample__sample_id": "{sample_id}"
         }
-        model = Picard_insert_size_metrics
+        model = Insert_size_metrics
 
         for msg, db_field, json_data, db_data in self._get_data_for(
             tool_name, filter_dict, model
@@ -914,7 +912,7 @@ class TestParsingAndImport(TestCase, CustomTests):
         filter_dict = {
             "picard__report_sample__sample__sample_id": "{sample_id}",
         }
-        model = Picard_alignment_summary_metrics
+        model = Alignment_summary_metrics
 
         for msg, db_field, json_data, db_data in self._get_data_for(
             tool_name, filter_dict, model
@@ -936,7 +934,7 @@ class TestParsingAndImport(TestCase, CustomTests):
         filter_dict = {
             "picard__report_sample__sample__sample_id": "{sample_id}",
         }
-        model = Picard_insert_size_metrics
+        model = Insert_size_metrics
 
         for msg, db_field, json_data, db_data in self._get_data_for(
             tool_name, filter_dict, model
