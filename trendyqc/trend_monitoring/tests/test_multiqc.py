@@ -564,7 +564,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_picard_alignment_summary_metrics_data(self):
-        """ Test that the picard data has been imported and imported correctly
+        """ Test that the picard_alignment_summary_metrics_data has been imported and imported correctly
         """
 
         tool_name = "picard_alignment_summary_metrics"
@@ -591,7 +591,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_picard_hs_metrics(self):
-        """ Test that the picard data has been imported and imported correctly
+        """ Test that the picard_hs_metrics data has been imported and imported correctly
         """
 
         tool_name = "picard_hsmetrics"
@@ -612,7 +612,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_picard_insertsize(self):
-        """ Test that the picard data has been imported and imported correctly
+        """ Test that the picard_insertsize data has been imported and imported correctly
         """
 
         tool_name = "picard_insertsize"
@@ -628,6 +628,32 @@ class TestParsingAndImport(TestCase, CustomTests):
 
             with self.subTest(msg):
                 if isinstance(model_field, models.FloatField):
+                    self.assertKindaEqual(json_data, db_data)
+                else:
+                    self.assertEqual(json_data, db_data)
+
+    def test_parse_picard_base_content(self):
+        """ Test that the picard_base_content data has been imported and
+        imported correctly
+        """
+
+        # name of the tool in the config
+        tool_name = "picard_base_content"
+        # build a filter dict to have dynamic search of the sample id
+        filter_dict = {
+            "sample_read": "{read}",
+            "lane": "{lane}",
+            "base_distribution_by_cycle_metrics_{lane}_{read}__report_sample__sample__sample_id": "{sample_id}"
+        }
+        model = Base_distribution_by_cycle_metrics
+
+        for msg, db_field, json_data, db_data in self._get_data_for(
+            tool_name, filter_dict, model
+        ):
+            model_field_type = model._meta.get_field(db_field)
+
+            with self.subTest(msg):
+                if isinstance(model_field_type, models.FloatField):
                     self.assertKindaEqual(json_data, db_data)
                 else:
                     self.assertEqual(json_data, db_data)

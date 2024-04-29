@@ -5,7 +5,7 @@ class CustomTests:
     """ Class that will harbour custom tests to handle the horible things that
     can happen when ingesting MultiQC data
     """
-    
+
     def assertKindaEqual(self, value1: Any, value2: Any):
         """ Assertion test to handle cases where a string was converted into a
         None and imported as such:
