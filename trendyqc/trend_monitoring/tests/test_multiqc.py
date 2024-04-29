@@ -11,13 +11,12 @@ from trend_monitoring.models.metadata import (
     Report, Patient, Report_Sample, Sample
 )
 from trend_monitoring.models.fastq_qc import (
-    Read_data, Fastqc, Bcl2fastq_data
+    Read_data, Bcl2fastq_data
 )
 from trend_monitoring.models.bam_qc import (
     VerifyBAMid_data,
     Samtools_data,
     Custom_coverage,
-    Picard,
     Alignment_summary_metrics,
     Base_distribution_by_cycle_metrics,
     Duplication_metrics,
@@ -31,7 +30,6 @@ from trend_monitoring.models.vcf_qc import (
     Somalier_data,
     Sompy_data,
     Vcfqc_data,
-    Happy,
     Happy_indel_all,
     Happy_indel_pass,
     Happy_snp_all,
@@ -176,7 +174,6 @@ class TestMultiqc(TestCase):
             doc = [ele.strip() for ele in self._testMethodDoc.strip().split("\n")]
             return "\n".join(doc) or None
 
-
     def test_multiqc_assay(self):
         """ Test if the assay data i.e. the multiqc fields + tool/subtool name
         associated match the appropriate content of the assay file
@@ -206,7 +203,7 @@ class TestMultiqc(TestCase):
             "multiqc_report_id": subkey["file_id"],
             "multiqc_project_id": subkey["project_id"],
             "multiqc_job_id": subkey["job_id"],
-            "data": subkey["data"] 
+            "data": subkey["data"]
         }
 
         test_report = MultiQC_report(**test_dict)
@@ -516,7 +513,8 @@ class TestParsingAndImport(TestCase, CustomTests):
                     )
 
     def test_parse_bcl2fastq(self):
-        """ Test that the bcl2fastq data has been imported and imported correctly
+        """ Test that the bcl2fastq data has been imported and imported
+        correctly
         """
 
         # name of the tool in the config
@@ -564,7 +562,8 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_picard_alignment_summary_metrics_data(self):
-        """ Test that the picard_alignment_summary_metrics_data has been imported and imported correctly
+        """ Test that the picard_alignment_summary_metrics_data has been
+        imported and imported correctly
         """
 
         tool_name = "picard_alignment_summary_metrics"
@@ -591,7 +590,8 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_picard_hs_metrics(self):
-        """ Test that the picard_hs_metrics data has been imported and imported correctly
+        """ Test that the picard_hs_metrics data has been imported and
+        imported correctly
         """
 
         tool_name = "picard_hsmetrics"
@@ -612,7 +612,8 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_picard_insertsize(self):
-        """ Test that the picard_insertsize data has been imported and imported correctly
+        """ Test that the picard_insertsize data has been imported and
+        imported correctly
         """
 
         tool_name = "picard_insertsize"
@@ -668,6 +669,28 @@ class TestParsingAndImport(TestCase, CustomTests):
             "picard__report_sample__sample__sample_id": "{sample_id}"
         }
         model = Duplication_metrics
+
+        for msg, db_field, json_data, db_data in self._get_data_for(
+            tool_name, filter_dict, model
+        ):
+            model_field = model._meta.get_field(db_field)
+
+            with self.subTest(msg):
+                if isinstance(model_field, models.FloatField):
+                    self.assertKindaEqual(json_data, db_data)
+                else:
+                    self.assertEqual(json_data, db_data)
+
+    def test_parse_picard_gcbias(self):
+        """ Test that the picard_gcbias data has been imported and
+        imported correctly
+        """
+
+        tool_name = "picard_gcbias"
+        filter_dict = {
+            "picard__report_sample__sample__sample_id": "{sample_id}"
+        }
+        model = GC_bias_metrics
 
         for msg, db_field, json_data, db_data in self._get_data_for(
             tool_name, filter_dict, model
@@ -974,7 +997,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_sentieon_insertsize(self):
-        """ Test that the Sentieon insert size data has been imported and 
+        """ Test that the Sentieon insert size data has been imported and
         imported correctly
         """
 
