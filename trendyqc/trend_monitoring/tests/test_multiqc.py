@@ -658,6 +658,28 @@ class TestParsingAndImport(TestCase, CustomTests):
                 else:
                     self.assertEqual(json_data, db_data)
 
+    def test_parse_picard_duplication(self):
+        """ Test that the picard_duplication data has been imported and
+        imported correctly
+        """
+
+        tool_name = "picard_dups"
+        filter_dict = {
+            "picard__report_sample__sample__sample_id": "{sample_id}"
+        }
+        model = Duplication_metrics
+
+        for msg, db_field, json_data, db_data in self._get_data_for(
+            tool_name, filter_dict, model
+        ):
+            model_field = model._meta.get_field(db_field)
+
+            with self.subTest(msg):
+                if isinstance(model_field, models.FloatField):
+                    self.assertKindaEqual(json_data, db_data)
+                else:
+                    self.assertEqual(json_data, db_data)
+
     def test_parse_custom_coverage(self):
         """ Test that the custom coverage data has been imported and imported
         correctly
