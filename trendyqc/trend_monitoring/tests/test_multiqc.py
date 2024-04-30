@@ -11,12 +11,13 @@ from trend_monitoring.models.metadata import (
     Report, Patient, Report_Sample, Sample
 )
 from trend_monitoring.models.fastq_qc import (
-    Read_data, Bcl2fastq_data
+    Read_data, Bcl2fastq_data, Fastqc
 )
 from trend_monitoring.models.bam_qc import (
     VerifyBAMid_data,
     Samtools_data,
     Custom_coverage,
+    Picard,
     Alignment_summary_metrics,
     Base_distribution_by_cycle_metrics,
     Duplication_metrics,
@@ -37,7 +38,9 @@ from trend_monitoring.models.vcf_qc import (
 )
 
 from trend_monitoring.management.commands.utils._multiqc import MultiQC_report
-from trend_monitoring.management.commands.utils._dnanexus_utils import login_to_dnanexus
+from trend_monitoring.management.commands.utils._dnanexus_utils import (
+    login_to_dnanexus
+)
 from trendyqc.settings import BASE_DIR
 from .custom_tests import CustomTests
 
@@ -171,7 +174,9 @@ class TestMultiqc(TestCase):
 
     def shortDescription(self):
         if self._testMethodDoc:
-            doc = [ele.strip() for ele in self._testMethodDoc.strip().split("\n")]
+            doc = [
+                ele.strip() for ele in self._testMethodDoc.strip().split("\n")
+            ]
             return "\n".join(doc) or None
 
     def test_multiqc_assay(self):
@@ -297,7 +302,9 @@ class TestParsingAndImport(TestCase, CustomTests):
     Contains all the tests for parsing and import the data
     """
 
-    def _parsing_like_multiqc_report(self, tool_name: str, sample: str) -> list:
+    def _parsing_like_multiqc_report(
+        self, tool_name: str, sample: str
+    ) -> list:
         """ Parse the sample name
 
         Args:
@@ -315,7 +322,7 @@ class TestParsingAndImport(TestCase, CustomTests):
         sample = sample.replace("_sorted", "")
 
         # some tools contains data at the lane and read level
-        if tool_name == "fastqc" or tool_name == "picard_base_content":
+        if tool_name in ["fastqc", "picard_base_content"]:
             # look for the order, lane and read using regex
             match = re.search(
                 r"_(?P<order>S[0-9]+)_(?P<lane>L[0-9]+)_(?P<read>R[12])",
@@ -365,7 +372,9 @@ class TestParsingAndImport(TestCase, CustomTests):
 
         return sample_id, lane, read
 
-    def _build_filter_dict(self, filter_dict: dict, template_dict: dict) -> dict:
+    def _build_filter_dict(
+        self, filter_dict: dict, template_dict: dict
+    ) -> dict:
         """ Build a filter dictionary to replpace the string formatting keys
         with the actual values
 
@@ -416,13 +425,16 @@ class TestParsingAndImport(TestCase, CustomTests):
 
         return dynamic_filter_dict
 
-    def _get_data_for(self, tool_name: str, filter_dict: dict, model: models.Model):
+    def _get_data_for(
+        self, tool_name: str, filter_dict: dict, model: models.Model
+    ):
         """ Generator function that yields the subtest info message and the
         values to compare for a given tool
 
         Args:
             tool_name (str): Tool name
-            filter_dict (dict): Filter dictionary containing the keys/values to filter the model instances with
+            filter_dict (dict): Filter dictionary containing the keys/values
+            to filter the model instances with
             model (Model): Model object to use for finding model instances
 
         Yields:
@@ -437,14 +449,16 @@ class TestParsingAndImport(TestCase, CustomTests):
 
         # go over the imported multiqc objects
         for report in multiqc_objects:
+            original_data = report.original_data["report_saved_raw_data"]
+
             # not all reports have picard data
-            if field_in_json not in report.original_data["report_saved_raw_data"]:
+            if field_in_json not in original_data:
                 continue
 
             continue_flag = False
             # go through the raw data stored in the json that is saved in the
             # multiqc object
-            for sample, data in report.original_data["report_saved_raw_data"][field_in_json].items():
+            for sample, data in original_data[field_in_json].items():
                 if sample == "undetermined":
                     continue
 
@@ -463,8 +477,8 @@ class TestParsingAndImport(TestCase, CustomTests):
 
                 # remove some elements that are added in the sample name by
                 # tools (these are handled by the clean_sample_naming function
-                # in the _utils.py script) 
-                sample = sample.replace("_FR", "").replace("_sorted", "")
+                # in the _utils.py script)
+                sample = re.sub(r"_FR|_sorted", "", sample)
 
                 sample_id, lane, read = self._parsing_like_multiqc_report(
                     tool_name, sample
@@ -511,6 +525,97 @@ class TestParsingAndImport(TestCase, CustomTests):
                         msg, db_field,
                         data[json_field], db_data[0].__dict__[db_field]
                     )
+
+    def test_import_sample_ids(self):
+        """ Test whether the sample ids from the multiqc reports have been
+        imported correctly.
+        """
+
+        for report in multiqc_objects:
+            original_data = report.original_data["report_saved_raw_data"]
+            # go through the raw data stored in the json that is saved in the
+            # multiqc object
+            for multiqc_tool in original_data:
+                tool_name = None
+
+                # get the tool name in order to be able to reuse the
+                # _parsing_like_multiqc_report function
+                for tool, data in tool_data.items():
+                    if multiqc_tool == data[0]["multiqc_field"]:
+                        tool_name = tool
+
+                # this will skip tools that we do not handle, example =
+                # bcl2fastq_bylane
+                if not tool_name:
+                    continue
+
+                for sample in original_data[multiqc_tool]:
+                    if sample == "undetermined":
+                        continue
+
+                    # remove some elements that are added in the sample name by
+                    # tools (these are handled by the clean_sample_naming
+                    # function in the _utils.py script)
+                    sample_replaced = re.sub(
+                        r"_FR|_sorted|_TANDEM", "", sample
+                    )
+
+                    sample_id, lane, read = self._parsing_like_multiqc_report(
+                        tool_name, sample_replaced
+                    )
+
+                    db_data = Sample.objects.filter(sample_id=sample_id)
+
+                    # additional testing required to see if the instances
+                    # for each lane/read combo as been created
+                    if tool_name == "fastqc":
+                        fastqc_obj = Fastqc.objects.filter(
+                            report_sample__sample__sample_id=sample_id
+                        )
+                        value_for_sample = fastqc_obj.values_list(
+                            f"read_data_{lane}_{read}"
+                        )
+
+                        with self.subTest(
+                            "Assert we can find an instance of Fastqc with "
+                            f"{sample_id}"
+                        ):
+                            self.assertEqual(len(value_for_sample), 1)
+
+                        with self.subTest(
+                            "Assert that an instance for that lane/read combo "
+                            f"has been created: read_data_{lane}_{read}"
+                        ):
+                            self.assertNotEqual(value_for_sample[0][0], None)
+
+                    if tool_name == "picard_base_content":
+                        picard_obj = Picard.objects.filter(
+                            report_sample__sample__sample_id=sample_id
+                        )
+                        value_for_sample = picard_obj.values_list(
+                            f"base_distribution_by_cycle_metrics_{lane}_{read}"
+                        )
+
+                        with self.subTest(
+                            "Assert we can find an instance of Picard with "
+                            f"{sample_id}"
+                        ):
+                            self.assertEqual(len(value_for_sample), 1)
+
+                        with self.subTest(
+                            "Assert that an instance for that lane/read combo "
+                            "has been created: "
+                            f"base_distribution_by_cycle_metrics_{lane}_{read}"
+                        ):
+                            self.assertNotEqual(value_for_sample[0][0], None)
+
+                    msg = (
+                        f"{tool_name} - Couldn't find {sample} in database. "
+                        f"Parsed sample id: {sample_id}"
+                    )
+
+                    with self.subTest(msg):
+                        self.assertEqual(len(db_data), 1)
 
     def test_parse_bcl2fastq(self):
         """ Test that the bcl2fastq data has been imported and imported
@@ -838,7 +943,11 @@ class TestParsingAndImport(TestCase, CustomTests):
                 # need to check the paternal and maternal ids using the kinda
                 # equal as I expect a sample id type value but if not provided
                 # the field is equal to 0.0
-                if isinstance(model_field_type, models.FloatField) or isinstance(model_field_type, models.CharField):
+                if (
+                    isinstance(model_field_type, models.FloatField)
+                ) or (
+                    isinstance(model_field_type, models.CharField)
+                ):
                     self.assertKindaEqual(json_data, db_data)
                 else:
                     self.assertEqual(json_data, db_data)
@@ -889,7 +998,11 @@ class TestParsingAndImport(TestCase, CustomTests):
                 # NA values are present which get converted in None if the
                 # model field is CharField. Using the kindaEqual function to
                 # assert their value
-                if isinstance(model_field_type, models.FloatField) or isinstance(model_field_type, models.CharField):
+                if (
+                    isinstance(model_field_type, models.FloatField)
+                ) or (
+                    isinstance(model_field_type, models.CharField)
+                ):
                     self.assertKindaEqual(json_data, db_data)
                 else:
                     self.assertEqual(json_data, db_data)
