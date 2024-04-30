@@ -8,7 +8,7 @@ from django.test import TestCase
 from django.db import models
 
 from trend_monitoring.models.metadata import (
-    Report, Patient, Report_Sample, Sample
+    Report, Sample
 )
 from trend_monitoring.models.fastq_qc import (
     Read_data, Bcl2fastq_data, Fastqc
@@ -137,7 +137,7 @@ def import_test_reports(reports):
             "multiqc_report_id": subkey["file_id"],
             "multiqc_project_id": subkey["project_id"],
             "multiqc_job_id": subkey["job_id"],
-            "data": subkey["data"] 
+            "data": subkey["data"]
         }
 
         multiqc_report = MultiQC_report(**test_dict)
@@ -525,6 +525,39 @@ class TestParsingAndImport(TestCase, CustomTests):
                         msg, db_field,
                         data[json_field], db_data[0].__dict__[db_field]
                     )
+
+    def test_import_reports(self):
+        """ Test whether the reports have been imported correctly.
+        Setup the Multiqc object as before and use its metadata to find the
+        database row for that report.
+        """
+
+        for assay, subkey in reports.items():
+            setup_dict = {
+                "multiqc_report_id": subkey["file_id"],
+                "multiqc_project_id": subkey["project_id"],
+                "multiqc_job_id": subkey["job_id"],
+                "data": subkey["data"]
+            }
+
+            multiqc_obj = MultiQC_report(**setup_dict)
+
+            filter_dict = {
+                "name": multiqc_obj.report_name,
+                "project_name": multiqc_obj.project_name,
+                "project_id": multiqc_obj.project_id,
+                "date": multiqc_obj.date,
+                "sequencer_id": multiqc_obj.sequencer_id,
+                "job_date": multiqc_obj.datetime_job,
+                "dnanexus_file_id": multiqc_obj.multiqc_json_id
+            }
+
+            report_obj = Report.objects.filter(**filter_dict)
+
+            with self.subTest(
+                f"Test found Report object given: {filter_dict}"
+            ):
+                self.assertEqual(len(report_obj), 1)
 
     def test_import_sample_ids(self):
         """ Test whether the sample ids from the multiqc reports have been
