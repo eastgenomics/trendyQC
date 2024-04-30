@@ -529,6 +529,9 @@ class TestParsingAndImport(TestCase, CustomTests):
     def test_import_sample_ids(self):
         """ Test whether the sample ids from the multiqc reports have been
         imported correctly.
+
+        The test goes through the test multiqc reports, parse the sample ids
+        encountered like the production code would and find it in the database.
         """
 
         for report in multiqc_objects:
