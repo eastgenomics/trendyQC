@@ -527,6 +527,11 @@ class TestParsingAndImport(TestCase, CustomTests):
                     )
 
     def test_import_reports(self):
+        """ Test whether the reports have been imported correctly.
+        Setup the Multiqc object as before and use its metadata to find the
+        database row for that report.
+        """
+
         for assay, subkey in reports.items():
             setup_dict = {
                 "multiqc_report_id": subkey["file_id"],
