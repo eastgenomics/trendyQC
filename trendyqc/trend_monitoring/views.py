@@ -138,7 +138,7 @@ class Dashboard(MultiTableMixin, TemplateView):
         # i have no idea what this code does tbh
         table_counter = count()
         filter_table.prefix = (
-            filter_table.prefix or 
+            filter_table.prefix or
             self.table_prefix.format(next(table_counter))
         )
         RequestConfig(
@@ -181,7 +181,7 @@ class Dashboard(MultiTableMixin, TemplateView):
             # get the filter obj in the database
             filter_obj = Filter.objects.get(id=filter_id)
             filter_name = filter_obj.name
-            
+
             try:
                 # delete the filter
                 filter_obj.delete()
