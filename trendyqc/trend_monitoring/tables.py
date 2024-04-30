@@ -66,16 +66,16 @@ class FilterContentColumn(tables.Column):
 
 
 # custom column to display a button in the filter table
-class FilterButton(tables.Column): 
+class FilterButton(tables.Column):
     empty_values = list()
 
-    def render(self, value, record): 
+    def render(self, value, record):
         return mark_safe(
             f'<button value="{record.id}" name="filter_use" class="btn btn-primary" onclick="submitFilterUse()">Use filter</button>'
         )
 
 
-class DeleteFilterButton(tables.Column): 
+class DeleteFilterButton(tables.Column):
     empty_values = list()
 
     def render(self, value, record): 
