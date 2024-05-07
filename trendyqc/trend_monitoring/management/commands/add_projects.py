@@ -56,7 +56,7 @@ class Command(BaseCommand):
         logger.info(f"Command line: {' '.join(sys.argv)}")
 
         is_automated_update = options["automated_update"]
-        
+
         if is_automated_update:
             now = datetime.datetime.now().strftime("%y%m%d|%I:%M")
             print(f"Starting update at {now}: {' '.join(sys.argv)}")
