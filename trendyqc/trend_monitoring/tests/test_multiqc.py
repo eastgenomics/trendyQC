@@ -4,6 +4,7 @@ import random
 import re
 from string import Formatter
 
+from django.core.exceptions import FieldError as Django_FieldError
 from django.test import TestCase
 from django.db import models
 
@@ -484,18 +485,32 @@ class TestParsingAndImport(TestCase, CustomTests):
                     tool_name, sample
                 )
 
-                template_dict = {
+                template_dict_1st_lane = {
                     "read": read,
                     "lane": lane,
+                    "nb_lane": "1st_lane",
+                    "sample_id": sample_id
+                }
+
+                template_dict_2nd_lane = {
+                    "read": read,
+                    "lane": lane,
+                    "nb_lane": "2nd_lane",
                     "sample_id": sample_id
                 }
 
                 dynamic_filter_dict = self._build_filter_dict(
-                    filter_dict, template_dict
+                    filter_dict, template_dict_1st_lane
                 )
 
-                # look for the data with the built filter dict
-                db_data = model.objects.filter(**dynamic_filter_dict)
+                try:
+                    # look for the data with the built filter dict
+                    db_data = model.objects.filter(**dynamic_filter_dict)
+                except Django_FieldError:
+                    dynamic_filter_dict = self._build_filter_dict(
+                        filter_dict, template_dict_2nd_lane
+                    )
+                    db_data = model.objects.filter(**dynamic_filter_dict)
 
                 msg = (
                     f"Couldn't find data or unique data for {sample_id} "
@@ -608,9 +623,15 @@ class TestParsingAndImport(TestCase, CustomTests):
                         fastqc_obj = Fastqc.objects.filter(
                             report_sample__sample__sample_id=sample_id
                         )
-                        value_for_sample = fastqc_obj.values_list(
-                            f"read_data_{lane}_{read}"
-                        )
+
+                        try:
+                            value_for_sample = fastqc_obj.values_list(
+                                f"read_data_1st_lane_{read}"
+                            )
+                        except Django_FieldError:
+                            value_for_sample = fastqc_obj.values_list(
+                                f"read_data_2nd_lane_{read}"
+                            )
 
                         with self.subTest(
                             "Assert we can find an instance of Fastqc with "
@@ -628,9 +649,15 @@ class TestParsingAndImport(TestCase, CustomTests):
                         picard_obj = Picard.objects.filter(
                             report_sample__sample__sample_id=sample_id
                         )
-                        value_for_sample = picard_obj.values_list(
-                            f"base_distribution_by_cycle_metrics_{lane}_{read}"
-                        )
+
+                        try:
+                            value_for_sample = picard_obj.values_list(
+                                f"base_distribution_by_cycle_metrics_1st_lane_{read}"
+                            )
+                        except Django_FieldError:
+                            value_for_sample = picard_obj.values_list(
+                                f"base_distribution_by_cycle_metrics_2nd_lane_{read}"
+                            )
 
                         with self.subTest(
                             "Assert we can find an instance of Picard with "
@@ -687,7 +714,7 @@ class TestParsingAndImport(TestCase, CustomTests):
         filter_dict = {
             "sample_read": "{read}",
             "lane": "{lane}",
-            "read_data_{lane}_{read}__report_sample__sample__sample_id": "{sample_id}"
+            "read_data_{nb_lane}_{read}__report_sample__sample__sample_id": "{sample_id}"
         }
         model = Read_data
 
@@ -785,7 +812,7 @@ class TestParsingAndImport(TestCase, CustomTests):
         filter_dict = {
             "sample_read": "{read}",
             "lane": "{lane}",
-            "base_distribution_by_cycle_metrics_{lane}_{read}__report_sample__sample__sample_id": "{sample_id}"
+            "base_distribution_by_cycle_metrics_{nb_lane}_{read}__report_sample__sample__sample_id": "{sample_id}"
         }
         model = Base_distribution_by_cycle_metrics
 
