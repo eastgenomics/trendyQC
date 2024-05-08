@@ -40,7 +40,7 @@ class MultiQC_report():
             multiqc_project_id (str): DNAnexus project id for MultiQC report
             data
             multiqc_job_id (str): DNAnexus job id for MultiQC report data
-            data (str): Content of MultiQC report data 
+            data (str): Content of MultiQC report data
         """
 
         self.project_id = multiqc_project_id
@@ -465,8 +465,8 @@ class MultiQC_report():
             # instantiate the link table by gathering the data from the
             # self.instances_per_sample dict
             link_table_instance = model(**instances)
-            # all those tables are linked to the report sample table to store them
-            # accordingly
+            # all those tables are linked to the report sample table to store
+            # them accordingly
             self.instances_per_sample["report_sample"].append(link_table_instance)
 
             return link_table_instance
@@ -486,12 +486,15 @@ class MultiQC_report():
         """
 
         instance_type_tables = {}
+        lane_dict = {0: "1st_lane", 1: "2nd_lane"}
 
         # go through the instances stored for one sample
         for link_table, instances in self.instances_per_sample.items():
-            for instance in instances:
-                # if the instances are the type "link_table"
-                if link_table == type_table:
+            lane_instances = {}
+
+            # if the instances are the type "link_table"
+            if link_table == type_table:
+                for instance in instances:
                     model_name = instance._meta.model.__name__.lower()
                     # check if the tool linked to the model has a subtool i.e.
                     # a requirement for models that have data divided by lane
@@ -508,9 +511,8 @@ class MultiQC_report():
                         # and read the tool contains this information and
                         # requires the creation of 4 distinct instances
                         if tool.divided_by_lane_read:
-                            read = instance.sample_read
                             lane = instance.lane
-                            instance_type_tables[f"{tool.subtool}_{lane}_{read}"] = instance
+                            lane_instances.setdefault(lane, []).append([tool.subtool, instance])
 
                         else:
                             # i.e. picard_hs_metrics has a picard parent but is
@@ -519,6 +521,20 @@ class MultiQC_report():
                     else:
                         # i.e. somalier doesn't have a parent
                         instance_type_tables[model_name] = instance
+
+            # check if lane and read info has been detected and added
+            if lane_instances:
+                # print(lane_instances)
+                # order the lanes for addition
+                ordered_lanes = sorted(lane_instances)
+
+                for i, lane in enumerate(ordered_lanes):
+                    # find out if the lane is the 1st or 2nd one
+                    lane_in_model = lane_dict[i]
+
+                    for subtool, instance in lane_instances[lane]:
+                        read = instance.sample_read
+                        instance_type_tables[f"{subtool}_{lane_in_model}_{read}"] = instance
 
         return instance_type_tables
 
