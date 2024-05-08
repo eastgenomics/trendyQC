@@ -8,7 +8,7 @@ from django.conf import settings
 from ._notifications import slack_notify
 
 
-def login_to_dnanexus():
+def login_to_dnanexus(verbose=False):
     """ Login to DNAnexus using a auth token present in the environment """
 
     DX_SECURITY_CONTEXT = {
@@ -20,7 +20,10 @@ def login_to_dnanexus():
 
     try:
         dxpy.whoami()
-        print("DNAnexus login successful")
+
+        if verbose:
+            print("DNAnexus login successful")
+
     except Exception:
         traceback.print_exc()
         msg = (
