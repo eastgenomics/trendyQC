@@ -7,6 +7,7 @@ from typing import Any
 
 error_logger = logging.getLogger("error")
 
+
 def clean_value(value: str) -> Any:
     """ Determine if the value needs its type changed because for example,
     Happy returns strings for this numbers. Additionally, return None if an
