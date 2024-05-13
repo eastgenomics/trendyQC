@@ -67,10 +67,12 @@ class Samtools_data(models.Model):
 
 
 class Custom_coverage(models.Model):
-    cov_250x = models.FloatField()
-    cov_500x = models.FloatField()
-    cov_1000x = models.FloatField()
-    usable_unique_bases_on_target = models.FloatField()
+    cov_200x = models.FloatField(null=True)
+    cov_250x = models.FloatField(null=True)
+    cov_300x = models.FloatField(null=True)
+    cov_500x = models.FloatField(null=True)
+    cov_1000x = models.FloatField(null=True)
+    usable_unique_bases_on_target = models.FloatField(null=True)
 
     class Meta:
         app_label = "trend_monitoring"
