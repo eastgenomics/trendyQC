@@ -525,7 +525,6 @@ class MultiQC_report():
 
             # check if lane and read info has been detected and added
             if lane_instances:
-                # print(lane_instances)
                 # order the lanes for addition
                 ordered_lanes = sorted(lane_instances)
 
