@@ -99,7 +99,7 @@ class Command(BaseCommand):
             for report in setup_report_object(project_id):
                 if not options["dry_run"]:
                     import_multiqc_report(report)
-                    imported_reports.append(report)
+                    imported_reports.append(report.multiqc_json_id)
 
         if is_automated_update:
             now = datetime.datetime.now().strftime("%y%m%d|%I:%M")
