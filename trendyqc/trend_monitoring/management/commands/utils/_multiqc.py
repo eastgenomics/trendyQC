@@ -11,6 +11,7 @@ import regex
 from django.apps import apps
 from django.db import transaction
 from django.db.models import Model
+from django.db.utils import IntegrityError
 from django.utils import timezone
 
 from ._check import already_in_db
@@ -26,65 +27,65 @@ logger = logging.getLogger("basic")
 
 
 class MultiQC_report():
-    def __init__(
-        self,
-        multiqc_report_id: str,
-        multiqc_project_id: str,
-        multiqc_job_id: str,
-        data: str
-    ) -> None:
+    def __init__(self, **kwargs) -> None:
         """ Initialize MultiQC report
 
         Args:
-            multiqc_report_id (str): DNAnexus file id for MultiQC report data
-            multiqc_project_id (str): DNAnexus project id for MultiQC report
-            data
-            multiqc_job_id (str): DNAnexus job id for MultiQC report data
-            data (str): Content of MultiQC report data
+            Expected kwargs are:
+            - multiqc_report_id: DNAnexus multiqc report id
+            - multiqc_project_id: DNAnexus project id of report
+            - multiqc_job_id: DNAnexus multiqc job id
+            - data: Data contained in the MultiQC json file
         """
 
-        self.project_id = multiqc_project_id
-        self.multiqc_json_id = multiqc_report_id
-        self.job_id = multiqc_job_id
+        self.multiqc_json_id = kwargs.get("multiqc_report_id", None)
+        self.project_id = kwargs.get("multiqc_project_id", None)
+        self.job_id = kwargs.get("multiqc_job_id", None)
+        data = kwargs.get("data", None)
 
-        self.original_data = json.loads(data)
-        self.assay = self.original_data.get("config_subtitle", None)
-        self.is_importable = True
-        # Store the Django models as a dict of model names to model objects
-        self.models = {
-            model.__name__.lower(): model for model in apps.get_models()
-        }
+        if not all([self.multiqc_json_id, self.project_id, self.job_id, data]):
+            self.is_importable = False
+        else:
+            self.original_data = json.loads(data)
+            self.assay = self.original_data.get("config_subtitle", None)
+            self.is_importable = True
+            # Store the Django models as a dict of model names to model objects
+            self.models = {
+                model.__name__.lower(): model for model in apps.get_models()
+            }
 
-        # skip projects for which we don't have a config subtitle
-        if self.assay:
-            # load the report's assay tools and the fields they are associated
-            # with
-            self.assay_data = load_assay_config(self.assay, CONFIG_DIR)
-            self.get_metadata()
-
-            if already_in_db(
-                self.models["report"], dnanexus_file_id=self.multiqc_json_id,
-                name=self.report_name
-            ):
+            # skip projects for which we don't have a config subtitle
+            if not self.assay:
                 self.is_importable = False
                 logger.warning((
-                    f"{self.multiqc_json_id} has already been imported in the "
-                    "database. Skipping.."
+                    f"{self.multiqc_json_id}: the gathered assay name in "
+                    "the MultiQC JSON ('config_subtitle') is not present in "
+                    "the trendyqc/trend_monitoring/management/configs/assays.json. "
+                    "Skipping.."
                 ))
             else:
-                self.setup_tools()
-                self.map_models_to_tools()
-                self.parse_multiqc_report()
-                self.data = clean_sample_naming(self.data)
-                self.create_all_instances()
-        else:
-            self.is_importable = False
-            logger.warning((
-                f"{self.multiqc_json_id}: the gathered assay name in "
-                "the MultiQC JSON ('config_subtitle') is not present in the "
-                "trendyqc/trend_monitoring/management/configs/assays.json. "
-                "Skipping.."
-            ))
+                # load the report's assay tools and the fields they are
+                # associated with
+                self.assay_data = load_assay_config(self.assay, CONFIG_DIR)
+                self.get_metadata()
+
+                # check if the report is already in the database
+                if already_in_db(
+                    self.models["report"], name=self.report_name,
+                    dnanexus_file_id=self.multiqc_json_id
+                ):
+                    self.is_importable = False
+                    logger.warning((
+                        f"{self.multiqc_json_id} has already been imported in "
+                        "the database. Skipping.."
+                    ))
+
+        if self.is_importable:
+            self.setup_tools()
+            self.map_models_to_tools()
+            self.parse_multiqc_report()
+            self.data = clean_sample_naming(self.data)
+            self.create_all_instances()
 
     def setup_tools(self):
         """ Create tools for use when parsing the MultiQC data and store them
@@ -544,4 +545,11 @@ class MultiQC_report():
 
         for sample, instances in self.all_instances.items():
             for instance in instances:
-                instance.save()
+                try:
+                    instance.save()
+                except IntegrityError as e:
+                    instance_model_name = type(instance).__name__
+                    logger.error(
+                        f"{self.multiqc_json_id} could not be imported "
+                        f"because of {instance_model_name}:\n{e}"
+                    )
