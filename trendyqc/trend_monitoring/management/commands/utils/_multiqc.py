@@ -525,6 +525,11 @@ class MultiQC_report():
 
             # check if lane and read info has been detected and added
             if lane_instances:
+                if len(lane_instances) > 2:
+                    logger.warning(
+                        f"{self.multiqc_json_id} contains more than 2 lanes"
+                    )
+
                 # order the lanes for addition
                 ordered_lanes = sorted(lane_instances)
 
