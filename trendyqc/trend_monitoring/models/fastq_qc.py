@@ -2,10 +2,22 @@ from django.db import models
 
 
 class Fastqc(models.Model):
-    read_data_L001_R1 = models.ForeignKey("Read_data", on_delete=models.DO_NOTHING, related_name="read_data_L001_R1")
-    read_data_L001_R2 = models.ForeignKey("Read_data", on_delete=models.DO_NOTHING, related_name="read_data_L001_R2")
-    read_data_L002_R1 = models.ForeignKey("Read_data", on_delete=models.DO_NOTHING, related_name="read_data_L002_R1", blank=True, null=True)
-    read_data_L002_R2 = models.ForeignKey("Read_data", on_delete=models.DO_NOTHING, related_name="read_data_L002_R2", blank=True, null=True)
+    read_data_1st_lane_R1 = models.ForeignKey(
+        "Read_data", on_delete=models.DO_NOTHING,
+        related_name="read_data_1st_lane_R1"
+    )
+    read_data_1st_lane_R2 = models.ForeignKey(
+        "Read_data", on_delete=models.DO_NOTHING,
+        related_name="read_data_1st_lane_R2"
+    )
+    read_data_2nd_lane_R1 = models.ForeignKey(
+        "Read_data", on_delete=models.DO_NOTHING,
+        related_name="read_data_2nd_lane_R1", blank=True, null=True
+    )
+    read_data_2nd_lane_R2 = models.ForeignKey(
+        "Read_data", on_delete=models.DO_NOTHING,
+        related_name="read_data_2nd_lane_R2", blank=True, null=True
+    )
 
 
 class Read_data(models.Model):

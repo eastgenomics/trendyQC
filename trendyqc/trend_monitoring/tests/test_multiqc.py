@@ -4,6 +4,7 @@ import random
 import re
 from string import Formatter
 
+from django.core.exceptions import FieldError as Django_FieldError
 from django.test import TestCase
 from django.db import models
 
@@ -484,18 +485,33 @@ class TestParsingAndImport(TestCase, CustomTests):
                     tool_name, sample
                 )
 
-                template_dict = {
-                    "read": read,
-                    "lane": lane,
-                    "sample_id": sample_id
-                }
+                # loop to generate a filter dict depending on the lane number
+                for nb_lane in ["1st_lane", "2nd_lane"]:
+                    template_dict = {
+                        "read": read,
+                        "lane": lane,
+                        "nb_lane": nb_lane,
+                        "sample_id": sample_id
+                    }
 
-                dynamic_filter_dict = self._build_filter_dict(
-                    filter_dict, template_dict
-                )
+                    dynamic_filter_dict = self._build_filter_dict(
+                        filter_dict, template_dict
+                    )
 
-                # look for the data with the built filter dict
-                db_data = model.objects.filter(**dynamic_filter_dict)
+                    try:
+                        db_data = model.objects.filter(**dynamic_filter_dict)
+                    except Django_FieldError:
+                        # presumably a model without lane and read requirement
+                        # i.e. not fastqc or picard base content
+                        continue
+                    else:
+                        # presumably wrong lane filter i.e. fastqc or picard
+                        # base content but not the right lane
+                        if not db_data:
+                            continue
+                        # found the right data, break the loop
+                        else:
+                            break
 
                 msg = (
                     f"Couldn't find data or unique data for {sample_id} "
@@ -517,8 +533,8 @@ class TestParsingAndImport(TestCase, CustomTests):
                 for json_field, db_field in json_fields.items():
                     msg = (
                         f"Testing for {report.report_name}|"
-                        f"{report.multiqc_json_id} - {model._meta.model_name} - {sample_id}"
-                        f": {json_field}"
+                        f"{report.multiqc_json_id} - {model._meta.model_name} "
+                        f"- {sample_id}: {json_field}"
                     )
 
                     yield (
@@ -608,9 +624,15 @@ class TestParsingAndImport(TestCase, CustomTests):
                         fastqc_obj = Fastqc.objects.filter(
                             report_sample__sample__sample_id=sample_id
                         )
-                        value_for_sample = fastqc_obj.values_list(
-                            f"read_data_{lane}_{read}"
-                        )
+
+                        try:
+                            value_for_sample = fastqc_obj.values_list(
+                                f"read_data_1st_lane_{read}"
+                            )
+                        except Django_FieldError:
+                            value_for_sample = fastqc_obj.values_list(
+                                f"read_data_2nd_lane_{read}"
+                            )
 
                         with self.subTest(
                             "Assert we can find an instance of Fastqc with "
@@ -628,9 +650,15 @@ class TestParsingAndImport(TestCase, CustomTests):
                         picard_obj = Picard.objects.filter(
                             report_sample__sample__sample_id=sample_id
                         )
-                        value_for_sample = picard_obj.values_list(
-                            f"base_distribution_by_cycle_metrics_{lane}_{read}"
-                        )
+
+                        try:
+                            value_for_sample = picard_obj.values_list(
+                                f"base_distribution_by_cycle_metrics_1st_lane_{read}"
+                            )
+                        except Django_FieldError:
+                            value_for_sample = picard_obj.values_list(
+                                f"base_distribution_by_cycle_metrics_2nd_lane_{read}"
+                            )
 
                         with self.subTest(
                             "Assert we can find an instance of Picard with "
@@ -687,7 +715,7 @@ class TestParsingAndImport(TestCase, CustomTests):
         filter_dict = {
             "sample_read": "{read}",
             "lane": "{lane}",
-            "read_data_{lane}_{read}__report_sample__sample__sample_id": "{sample_id}"
+            "read_data_{nb_lane}_{read}__report_sample__sample__sample_id": "{sample_id}"
         }
         model = Read_data
 
@@ -785,7 +813,7 @@ class TestParsingAndImport(TestCase, CustomTests):
         filter_dict = {
             "sample_read": "{read}",
             "lane": "{lane}",
-            "base_distribution_by_cycle_metrics_{lane}_{read}__report_sample__sample__sample_id": "{sample_id}"
+            "base_distribution_by_cycle_metrics_{nb_lane}_{read}__report_sample__sample__sample_id": "{sample_id}"
         }
         model = Base_distribution_by_cycle_metrics
 

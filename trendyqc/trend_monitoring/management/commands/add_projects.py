@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 import regex
 
 from .utils._dnanexus_utils import login_to_dnanexus, get_002_projects
-from .utils._report import setup_report_objects, import_multiqc_reports
+from .utils._report import setup_report_object, import_multiqc_report
 
 logger = logging.getLogger("basic")
 storing_logger = logging.getLogger("storing")
@@ -37,8 +37,8 @@ class Command(BaseCommand):
             help="Scan all 002 projects to import all MultiQC reports"
         )
         parser.add_argument(
-            "-update", "--automated_update", action="store_true", default=False,
-            help=(
+            "-update", "--automated_update", action="store_true",
+            default=False, help=(
                 "Flag to indicate whether this was launched by an automated "
                 "job"
             )
@@ -56,7 +56,7 @@ class Command(BaseCommand):
         logger.info(f"Command line: {' '.join(sys.argv)}")
 
         is_automated_update = options["automated_update"]
-        
+
         if is_automated_update:
             now = datetime.datetime.now().strftime("%y%m%d|%I:%M")
             print(f"Starting update at {now}: {' '.join(sys.argv)}")
@@ -93,10 +93,13 @@ class Command(BaseCommand):
             logger.error(msg)
             raise AssertionError(msg)
 
-        reports = setup_report_objects(project_ids)
+        imported_reports = []
 
-        if not options["dry_run"]:
-            imported_reports = import_multiqc_reports(reports)
+        for project_id in project_ids:
+            for report in setup_report_object(project_id):
+                if not options["dry_run"]:
+                    import_multiqc_report(report)
+                    imported_reports.append(report.multiqc_json_id)
 
         if is_automated_update:
             now = datetime.datetime.now().strftime("%y%m%d|%I:%M")
