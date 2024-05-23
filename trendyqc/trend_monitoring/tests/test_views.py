@@ -23,10 +23,6 @@ class TestViews(TestCase):
         )
         filter_obj.save()
 
-    # def tearDown(self):
-    #     for filter_obj in Filter.objects.all():
-    #         filter_obj.delete()
-
     @patch("trend_monitoring.views.Dashboard._get_context_data")
     def test_dashboard_get(self, mock_context_data):
         """ Test dashboard get request.
@@ -157,7 +153,67 @@ class TestViews(TestCase):
             with self.assertRaises(Filter.DoesNotExist):
                 Filter.objects.get(id=filter_id_to_delete)
 
+    @patch("trend_monitoring.views.format_data_for_plotly_js")
+    @patch("trend_monitoring.views.get_data_for_plotting")
+    @patch("trend_monitoring.views.get_subset_queryset")
+    @patch("trend_monitoring.views.prepare_filter_data")
+    def test_plot_get_with_filled_form_end_to_end(
+        self,
+        mock_filter_data,
+        mock_queryset,
+        mock_plotting_data,
+        mock_plotly_js
+    ):
+
+        self.client.session["form"] = "not None"
+        mock_filter_data.return_value = None
+        mock_queryset.return_value = "not None"
+        mock_plotting_data.return_value = (
+            ["mock dataframe"],
+            {},
+            {}
+        )
+        mock_plotly_js.return_value = (
+            [
+                {
+                    "x0": "project1",
+                    "y": ["value1", "value2"],
+                    "name": "230523",
+                    "type": "box",
+                    "text": ["sample1", "sample2"],
+                    "boxpoints": "suspectedoutliers",
+                    "marker": {
+                        "color": "ff1c4d",
+                    }
+                },
+                {
+                    "x0": "project2",
+                    "y": ["value1", "value2"],
+                    "name": "220523",
+                    "type": "box",
+                    "text": ["sample3", "sample4"],
+                    "boxpoints": "suspectedoutliers",
+                    "marker": {
+                        "color": "ff1c4d",
+                    }
+                }
+            ],
+            {
+                "mode": "lines",
+                "name": "trend",
+                "line": {
+                    "dash": "dashdot",
+                    "width": 2
+                },
+                "x": ["project1", "project2"],
+                "y": ["value1", "value1"]
+            }
+        )
+
+        response = self.client.get("/trendyqc/plot")
+        self.assertRedirects(response, "/trendyqc/plot/", status_code=301)
+
     def test_plot_get_with_empty_form(self):
         self.client.session["form"] = None
-        response = self.client.get("/trendyqc/plot/")
-        self.assertRedirects(response, "/trendyqc/plot/", status_code=200)
+        response = self.client.get("/trendyqc/plot")
+        self.assertRedirects(response, "/trendyqc/plot/", status_code=301)
