@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 
 username_validator = UnicodeUsernameValidator()
 
+
 class FilterForm(forms.Form):
     assay_select = forms.CharField(required=False)
     run_select = forms.CharField(required=False)
