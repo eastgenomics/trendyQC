@@ -6,7 +6,7 @@ from unittest.mock import patch
 from trend_monitoring.models.filters import Filter
 
 
-class TestViews(TestCase):
+class TestDashboard(TestCase):
     """ Suite of tests to test the backend functionality """
 
     def setUp(self):
@@ -78,7 +78,7 @@ class TestViews(TestCase):
             'plot': ['Plot']
         }
         response = self.client.post("/trendyqc/", post_data)
-        self.assertRedirects(response, "/trendyqc/plot/", status_code=302)
+        self.assertRedirects(response, "/trendyqc/plot/")
 
     def test_dashboard_post_plot_filter(self):
         """ Test dashboard post request for plotting using filter.
@@ -94,7 +94,7 @@ class TestViews(TestCase):
             'filter_use': Filter.objects.all()[0].id
         }
         response = self.client.post("/trendyqc/", post_data)
-        self.assertRedirects(response, "/trendyqc/plot/", status_code=302)
+        self.assertRedirects(response, "/trendyqc/plot/")
 
     def test_dashboard_post_save_filter(self):
         """ Test dashboard post request for saving filter.
@@ -116,7 +116,7 @@ class TestViews(TestCase):
 
         # assert the redirection
         with self.subTest("Failed redirection"):
-            self.assertRedirects(response, "/trendyqc/", status_code=302)
+            self.assertRedirects(response, "/trendyqc/")
 
         # assert the saving of the filter
         with self.subTest("Failed saving of filter"):
@@ -146,12 +146,26 @@ class TestViews(TestCase):
 
         # assert the redirection
         with self.subTest("Failed redirection"):
-            self.assertRedirects(response, "/trendyqc/", status_code=302)
+            self.assertRedirects(response, "/trendyqc/")
 
         # assert the deletion of the filter worked
         with self.subTest("Failed deletion of filter"):
             with self.assertRaises(Filter.DoesNotExist):
                 Filter.objects.get(id=filter_id_to_delete)
+
+
+class TestPlot(TestCase):
+    """ Suite of tests for the Plot view """
+
+    def setUp(self):
+        self.expected_keys = [
+            "form",
+            "plot",
+            "trend",
+            "y_axis",
+            "skipped_projects",
+            "skipped_samples"
+        ]
 
     @patch("trend_monitoring.views.format_data_for_plotly_js")
     @patch("trend_monitoring.views.get_data_for_plotting")
@@ -164,9 +178,25 @@ class TestViews(TestCase):
         mock_plotting_data,
         mock_plotly_js
     ):
+        """ Test for GET request in Plot class view.
+        This test contains a correct filled form to reach the final render
+        return.
+        The context data contains 2 identical elements for some reason and
+        inside those elements the context data I'm interested in is a
+        dictionary with the expected keys.
 
-        self.client.session["form"] = "not None"
-        mock_filter_data.return_value = None
+        Args:
+            mock_filter_data (Mock): Mock for the prepare_filter_data
+            mock_queryset (Mock): Mock for the get_subset_queryset
+            mock_plotting_data (Mock): Mock for the get_data_for_plotting
+            mock_plotly_js (Mock): Mock for the format_data_for_plotly_js
+        """
+
+        session = self.client.session
+        session["form"] = {"k1": "v1", "k2": "v2"}
+        session.save()
+
+        mock_filter_data.return_value = {"subset": "", "y_axis": ""}
         mock_queryset.return_value = "not None"
         mock_plotting_data.return_value = (
             ["mock dataframe"],
@@ -210,10 +240,89 @@ class TestViews(TestCase):
             }
         )
 
-        response = self.client.get("/trendyqc/plot")
-        self.assertRedirects(response, "/trendyqc/plot/", status_code=301)
+        expected_context = {
+            'form': {'k1': ['v1'], 'k2': ['v2']},
+            'plot': [
+                {
+                    'x0': 'project1',
+                    'y': ['value1', 'value2'],
+                    'name': '230523',
+                    'type': 'box',
+                    'text': ['sample1', 'sample2'],
+                    'boxpoints': 'suspectedoutliers',
+                    'marker': {'color': 'ff1c4d'}
+                },
+                {
+                    'x0': 'project2',
+                    'y': ['value1', 'value2'],
+                    'name': '220523',
+                    'type': 'box',
+                    'text': ['sample3', 'sample4'],
+                    'boxpoints': 'suspectedoutliers',
+                    'marker': {'color': 'ff1c4d'}
+                }
+            ],
+            'trend': {
+                'mode': 'lines',
+                'name': 'trend',
+                'line': {'dash': 'dashdot', 'width': 2},
+                'x': ['project1', 'project2'],
+                'y': ['value1', 'value1']
+            },
+            'y_axis': '',
+            'skipped_projects': {},
+            'skipped_samples': {}
+        }
+
+        response = self.client.get("/trendyqc/plot/", follow=True)
+
+        with self.subTest("Status code test"):
+            self.assertEqual(response.status_code, 200)
+
+        with self.subTest("Context data content test"):
+            # for some reason i get 2 identical elements in the context data so
+            # I need to loop to check one if the context data content
+            for context_data in response.context:
+                for info in context_data:
+                    if isinstance(info, dict):
+                        # check if all the expected keys are present in the
+                        # element
+                        if all([
+                            info.get(key, None) for key in self.expected_keys
+                        ]):
+                            for key in self.expected_keys:
+                                self.assertEqual(
+                                    info[key], expected_context[key]
+                                )
 
     def test_plot_get_with_empty_form(self):
+        """ Test for GET request in Plot class view.
+        This test contains a empty form to reach the render return without
+        context data.
+        """
+
+        session = self.client.session
         self.client.session["form"] = None
-        response = self.client.get("/trendyqc/plot")
-        self.assertRedirects(response, "/trendyqc/plot/", status_code=301)
+        session.save()
+
+        response = self.client.get("/trendyqc/plot/")
+
+        with self.subTest("Status code test"):
+            self.assertEqual(response.status_code, 200)
+
+        with self.subTest("Context data content test"):
+            flag_to_test_presence = False
+
+            # for some reason i get 2 identical elements in the context data so
+            # I need to loop to check one if the context data content
+            for context_data in response.context:
+                for info in context_data:
+                    if isinstance(info, dict):
+                        # check if all the expected keys are present in the
+                        # element
+                        if all([
+                            info.get(key, None) for key in self.expected_keys
+                        ]):
+                            flag_to_test_presence = True
+
+            self.assertEqual(flag_to_test_presence, False)
