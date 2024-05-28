@@ -106,7 +106,7 @@ class TestDashboard(TestCase):
             'assay_select': ['Cancer Endocrine Neurology'],
             'date_start': [''],
             'date_end': [''],
-            'metrics_y': ['avg_length'],
+            'metrics_y': ['FastQC|avg_length'],
             # filter use returns the id of the filter to use
             'save_filter': "Name of filter"
         }
@@ -125,7 +125,7 @@ class TestDashboard(TestCase):
             self.assertEqual(created_filter_id.content, json.dumps(
                 {
                     'assay_select': ['Cancer Endocrine Neurology'],
-                    'metrics_y': ['avg_length']
+                    'metrics_y': ['read_data|avg_length']
                 }
             ))
 
