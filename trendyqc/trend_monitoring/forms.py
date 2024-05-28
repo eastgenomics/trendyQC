@@ -4,6 +4,8 @@ from django import forms
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
 
+from trendyqc.settings import DISPLAY_DATA_JSON
+
 username_validator = UnicodeUsernameValidator()
 
 
@@ -93,9 +95,18 @@ class FilterForm(forms.Form):
         if not cleaned_data.get("metrics_y", None):
             self.add_error(None, ValidationError("No Y-axis metric selected"))
         else:
-            cleaned_data["metrics_y"] = [
-                ele.lower() for ele in cleaned_data["metrics_y"]
-            ]
+            metrics = []
+
+            # for each metric passed, replace the display name by the actual
+            # model name
+            for ele in cleaned_data["metrics_y"]:
+                metrics.extend([
+                    f"{model_name}|{ele.split('|')[1]}".lower()
+                    for model_name, display_name in DISPLAY_DATA_JSON.items()
+                    if ele.split("|")[0] == display_name
+                ])
+
+            cleaned_data["metrics_y"] = metrics
 
         return cleaned_data
 
