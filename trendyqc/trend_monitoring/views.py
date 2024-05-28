@@ -14,6 +14,7 @@ from django.views.generic.edit import FormView
 from django_tables2 import MultiTableMixin
 from django_tables2.config import RequestConfig
 
+from trendyqc.settings import DISPLAY_DATA_JSON
 from trend_monitoring.models.metadata import Report, Report_Sample
 from trend_monitoring.models.filters import Filter
 from trend_monitoring.models import bam_qc, fastq_qc, vcf_qc
@@ -103,17 +104,19 @@ class Dashboard(MultiTableMixin, TemplateView):
         )
 
         for model_name, model in module_dict.items():
-            plotable_metrics.setdefault(model_name, [])
+            if model_name in DISPLAY_DATA_JSON:
+                display_name = DISPLAY_DATA_JSON[model_name]
+                plotable_metrics.setdefault(display_name, [])
 
-            for field in model._meta.fields:
-                # get the type of the field
-                field_type = field.get_internal_type()
+                for field in model._meta.fields:
+                    # get the type of the field
+                    field_type = field.get_internal_type()
 
-                # only get fields with those type for plotability
-                if field_type in ["FloatField", "IntegerField"]:
-                    plotable_metrics[model_name].append(field.name)
+                    # only get fields with those type for plotability
+                    if field_type in ["FloatField", "IntegerField"]:
+                        plotable_metrics[display_name].append(field.name)
 
-            plotable_metrics[model_name].sort()
+                plotable_metrics[display_name].sort()
 
         return plotable_metrics
 
@@ -204,8 +207,8 @@ class Dashboard(MultiTableMixin, TemplateView):
         # call the clean function and see if the form data is valid
         if form.is_valid():
             if "plot" in request.POST:
-                # save the cleaned data in the session so that it gets passed to
-                # the Plot view
+                # save the cleaned data in the session so that it gets passed
+                # to the Plot view
                 request.session["form"] = form.cleaned_data
                 return redirect("Plot")
 

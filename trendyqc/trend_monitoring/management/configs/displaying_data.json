@@ -1,0 +1,23 @@
+{
+    "Samtools_data": "Samtools",
+    "VerifyBAMid_data": "Verify BAMid",
+    "Custom_coverage": "Custom coverage",
+    "HS_metrics": "Picard - HS metrics",
+    "Alignment_summary_metrics": "Picard - Alignment summary metrics",
+    "Base_distribution_by_cycle_metrics": "Picard - Base distribution by cycle",
+    "GC_bias_metrics": "Picard - GC bias metrics",
+    "Insert_size_metrics": "Picard - Insert size metrics",
+    "Quality_yield_metrics": "Picard - Quality yield metrics",
+    "PCR_metrics": "Picard - PCR metrics",
+    "Duplication_metrics": "Picard - Duplication metrics",
+
+    "Read_data": "FastQC",
+    "Bcl2fastq_data": "Bcl2fastq",
+    "Somalier_data": "Somalier",
+    "Sompy_data": "Sompy",
+    "Vcfqc_data": "Vcfqc",
+    "Happy_snp_all": "Happy - SNP all",
+    "Happy_snp_pass": "Happy - SNP pass",
+    "Happy_indel_all": "Happy - INDEL all",
+    "Happy_indel_pass": "Happy - INDEL all"
+}

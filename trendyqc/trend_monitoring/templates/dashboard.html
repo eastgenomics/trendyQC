@@ -79,7 +79,7 @@
             <h5>Y axis - Metrics</h5>
             <select class="multiselect" name="metrics_y" title="Choose a metric">
                 {% for model, fields in metrics.items %}
-                    <optgroup label={{ model }}>
+                    <optgroup label="{{ model }}">
                         {% for field in fields %}
                             <option data-subtext="{{ model }}" data-tokens="{{ model }} {{ field }}" value="{{ model }}|{{ field }}">{{ field }}</option>
                         {% endfor %}

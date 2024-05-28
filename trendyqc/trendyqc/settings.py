@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import json
 import os
 from pathlib import Path
 
@@ -57,12 +58,19 @@ CRISPY_TEMPLATE_PACK = 'bootstrap5'
 SLACK_TOKEN = os.environ.get("SLACK_TOKEN")
 SLACK_CHANNEL = os.environ.get("SLACK_CHANNEL")
 
+###
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 ERROR_LOG = BASE_DIR / "logs" / "errors.log"
 DEBUG_LOG = BASE_DIR / "logs" / "debug.log"
 STORING_LOG = BASE_DIR / "logs" / "storing.log"
+
+with open(BASE_DIR / "trend_monitoring" / "management" / "configs" / "displaying_data.json") as f:
+    DISPLAY_DATA_JSON = json.loads(f.read())
+
+###
 
 DJANGO_TABLES2_TEMPLATE = "django_tables2/bootstrap5.html"
 
