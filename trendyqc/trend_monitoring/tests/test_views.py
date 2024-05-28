@@ -192,6 +192,9 @@ class TestPlot(TestCase):
             mock_plotly_js (Mock): Mock for the format_data_for_plotly_js
         """
 
+        # I use the session to send data to the Plot view, as posting using the
+        # normal URL dispatcher with the amount of parameters i have, sounds
+        # like a nightmare
         session = self.client.session
         session["form"] = {"k1": "v1", "k2": "v2"}
         session.save()
