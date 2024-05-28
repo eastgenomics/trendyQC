@@ -13,6 +13,7 @@
 
     "Read_data": "FastQC",
     "Bcl2fastq_data": "Bcl2fastq",
+
     "Somalier_data": "Somalier",
     "Sompy_data": "Sompy",
     "Vcfqc_data": "Vcfqc",
