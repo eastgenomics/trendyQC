@@ -290,9 +290,16 @@ class Plot(View):
                     f"{filter_data}"
                 )
 
-            (
-                json_plot_data, json_trend_data
-            ) = format_data_for_plotly_js(data_dfs[0])
+            json_plot_data = format_data_for_plotly_js(data_dfs[0])
+
+            if len(json_plot_data) == 1:
+                data = {"plot": json.dumps(json_plot_data[0])}
+            else:
+                data = {
+                    "plot": json.dumps(json_plot_data[0]),
+                    "first_lane": json.dumps(json_plot_data[1]),
+                    "second_lane": json.dumps(json_plot_data[2])
+                }
 
             formatted_form_data = {
                 k: ([v] if not isinstance(v, list) else v)
@@ -301,13 +308,12 @@ class Plot(View):
 
             context = {
                 "form": dict(sorted(formatted_form_data.items())),
-                "plot": json_plot_data,
-                "trend": json_trend_data,
                 "y_axis": " | ".join(filter_data["y_axis"]),
                 "skipped_projects": projects_no_metric,
                 "skipped_samples": samples_no_metric
             }
-            return render(request, self.template_name, context)
+
+            return render(request, self.template_name, {**context, **data})
 
         return render(request, self.template_name)
 
