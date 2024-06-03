@@ -8,7 +8,7 @@ from trend_monitoring.models.filters import Filter
 
 
 def import_filter(filter_name: str, username: str, data: dict) -> str:
-    """ Import filter data 
+    """ Import filter data
 
     Args:
         filter_name (str): Name of the filter
@@ -57,4 +57,4 @@ def serialize_date(obj):
     if isinstance(obj, (datetime, date)):
         return obj.isoformat()
 
-    raise TypeError (f"Type {type(obj)} not serializable")
+    raise TypeError(f"Type {type(obj)} not serializable")
