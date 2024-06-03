@@ -97,14 +97,14 @@ class Picard(models.Model):
         related_name="base_distribution_by_cycle_metrics_1st_lane_R2",
         on_delete=models.DO_NOTHING, blank=True, null=True
     )
-    base_distribution_by_cycle_metrics_2st_lane_R1 = models.ForeignKey(
+    base_distribution_by_cycle_metrics_2nd_lane_R1 = models.ForeignKey(
         "Base_distribution_by_cycle_metrics",
-        related_name="base_distribution_by_cycle_metrics_2st_lane_R1",
+        related_name="base_distribution_by_cycle_metrics_2nd_lane_R1",
         on_delete=models.DO_NOTHING, blank=True, null=True
     )
-    base_distribution_by_cycle_metrics_2st_lane_R2 = models.ForeignKey(
+    base_distribution_by_cycle_metrics_2nd_lane_R2 = models.ForeignKey(
         "Base_distribution_by_cycle_metrics",
-        related_name="base_distribution_by_cycle_metrics_2st_lane_R2",
+        related_name="base_distribution_by_cycle_metrics_2nd_lane_R2",
         on_delete=models.DO_NOTHING, blank=True, null=True
     )
     gc_bias_metrics = models.ForeignKey(
