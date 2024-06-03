@@ -292,15 +292,6 @@ class Plot(View):
 
             json_plot_data = format_data_for_plotly_js(data_dfs[0])
 
-            if len(json_plot_data) == 1:
-                data = {"plot": json.dumps(json_plot_data[0])}
-            else:
-                data = {
-                    "plot": json.dumps(json_plot_data[0]),
-                    "first_lane": json.dumps(json_plot_data[1]),
-                    "second_lane": json.dumps(json_plot_data[2])
-                }
-
             formatted_form_data = {
                 k: ([v] if not isinstance(v, list) else v)
                 for k, v in form.items()
@@ -313,7 +304,9 @@ class Plot(View):
                 "skipped_samples": samples_no_metric
             }
 
-            return render(request, self.template_name, {**context, **data})
+            return render(
+                request, self.template_name, {**context, **json_plot_data}
+            )
 
         return render(request, self.template_name)
 
