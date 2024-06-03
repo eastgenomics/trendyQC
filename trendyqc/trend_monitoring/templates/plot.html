@@ -100,8 +100,6 @@
 
 <script>
 var plot_data = JSON.parse("{{plot|escapejs}}");
-var trend_data = JSON.parse("{{trend|escapejs}}");
-plot_data.push(trend_data);
 var layout = {
     xaxis: {
         type: "category",
@@ -115,10 +113,12 @@ var layout = {
         title: "{{y_axis|escapejs}}"
     },
     height: 1000,
-    showlegend: false,
+    showlegend: true,
     boxgap: 0.1
 };
 Plotly.newPlot("plot-div", plot_data, layout, {responsive: true});
+Plotly.addTraces("plot-div", JSON.parse("{{first_lane|escapejs}}"));
+Plotly.addTraces("plot-div", JSON.parse("{{second_lane|escapejs}}"));
 
 function saveFilter() {
     var filter_name = prompt("Name your filter:", "");
