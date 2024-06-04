@@ -290,7 +290,7 @@ class Plot(View):
                     f"{filter_data}"
                 )
 
-            json_plot_data = format_data_for_plotly_js(data_dfs[0])
+            json_plot_data, is_grouped = format_data_for_plotly_js(data_dfs[0])
 
             formatted_form_data = {
                 k: ([v] if not isinstance(v, list) else v)
@@ -301,7 +301,8 @@ class Plot(View):
                 "form": dict(sorted(formatted_form_data.items())),
                 "y_axis": " | ".join(filter_data["y_axis"]),
                 "skipped_projects": projects_no_metric,
-                "skipped_samples": samples_no_metric
+                "skipped_samples": samples_no_metric,
+                "is_grouped": is_grouped
             }
 
             return render(
