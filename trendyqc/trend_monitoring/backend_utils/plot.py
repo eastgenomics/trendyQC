@@ -382,7 +382,6 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
                     project_name=project_name,
                     name="First lane",
                     visible="legendonly",
-                    hovertext=first_lane,
                     lane=first_lane,
                     boxplot_color="AED6F1",
                     boxplot_line_color="000000",
@@ -397,7 +396,6 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
                     name="Second lane",
                     visible="legendonly",
                     lane=second_lane,
-                    hovertext=second_lane,
                     boxplot_color="F1948A",
                     boxplot_line_color="000000",
                     showlegend=shown_legend
@@ -457,12 +455,20 @@ def create_trace(data, data_column, **kwargs):
         for value in sub_df[data_column].values
     ]
 
-    if kwargs.get("lane", None):
-        legend_group = f"{kwargs['name']} | {kwargs.get('lane')}"
-    else:
-        legend_group = kwargs['name']
-
     date = get_date_from_project_name(kwargs["project_name"])
+
+    if kwargs.get("lane", None):
+        lane_info = kwargs['lane']
+    else:
+        lane_info = ""
+
+    text_data = []
+
+    for ele in list(sub_df["sample_id"].values):
+        if lane_info:
+            text_data.append(f"{ele} - {lane_info}")
+        else:
+            text_data.append(ele)
 
     # setup each boxplot with the appropriate annotation and data points
     trace = {
@@ -472,7 +478,7 @@ def create_trace(data, data_column, **kwargs):
         "y": data_values,
         "name": kwargs["name"],
         "type": "box",
-        "text": list(sub_df["sample_id"].values),
+        "text": text_data,
         "boxpoints": "suspectedoutliers",
         "marker": {
             "color": kwargs["boxplot_color"],
@@ -480,9 +486,10 @@ def create_trace(data, data_column, **kwargs):
         "line": {
             "color": kwargs.get("boxplot_line_color", "#444")
         },
+        # +80 adds transparency
         "fillcolor": kwargs["boxplot_color"]+"80",
         "offsetgroup": kwargs["name"],
-        "legendgroup": legend_group,
+        "legendgroup": kwargs["name"],
         "visible": kwargs.get("visible", True),
         "showlegend": kwargs["showlegend"]
     }
