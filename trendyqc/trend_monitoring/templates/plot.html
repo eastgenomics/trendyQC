@@ -102,19 +102,29 @@
 var plot_data = JSON.parse("{{plot|escapejs}}");
 var layout = {
     xaxis: {
-        type: "category",
         automargin: true,
         title: {
             text: "Projects (ordered by date)",
             standoff: 10
-        }
+        },
+        showline: true,
+        tickson: "boundaries",
+        ticklen: 15,
+        showdividers: true,
+        dividercolor: 'grey',
+        dividerwidth: 2,
     },
     yaxis: {
-        title: "{{y_axis|escapejs}}"
+        title: "{{y_axis|escapejs}}",
+        showline: true,
+        mirror: "ticks",
+        gridwidth: 3,
     },
     height: 1000,
     showlegend: true,
-    boxgap: 0.1
+    boxgap: 0.1,
+    boxgroupgap: 0.075,
+    boxmode: "group"
 };
 Plotly.newPlot("plot-div", plot_data, layout, {responsive: true});
 Plotly.addTraces("plot-div", JSON.parse("{{first_lane|escapejs}}"));
