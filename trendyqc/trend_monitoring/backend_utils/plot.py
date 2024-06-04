@@ -1,5 +1,6 @@
+import calendar
 import json
-from statistics import median
+import re
 from typing import Dict
 
 import numpy as np
@@ -315,18 +316,18 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
     """
 
     date_coloring = {
-        1: "FF7800",
-        2: "000000",
-        3: "969696",
-        4: "c7962c",
-        5: "ff1c4d",
-        6: "ff65ff",
-        7: "6600cc",
-        8: "1c6dff",
-        9: "6ddfff",
-        10: "ffdf3c",
-        11: "00cc99",
-        12: "00a600",
+        1: "#FF7800",   # orange
+        2: "#000000",   # black
+        3: "#969696",   # grey
+        4: "#c7962c",   # goldish
+        5: "#ff1c4d",   # red
+        6: "#ff65ff",   # fushia
+        7: "#6600cc",   # purple
+        8: "#1c6dff",   # blue
+        9: "#6ddfff",   # light blue
+        10: "#ffdf3c",  # yellow
+        11: "#00cc99",  # turquoise
+        12: "#00a600",  # green
     }
 
     # Bool to indicate whether legend needs to be displayed
@@ -371,6 +372,7 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
                 project_name=project_name,
                 name="Combined",
                 boxplot_color=boxplot_color,
+                boxplot_line_color=boxplot_color,
                 showlegend=shown_legend
             )
 
@@ -382,7 +384,8 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
                     visible="legendonly",
                     hovertext=first_lane,
                     lane=first_lane,
-                    boxplot_color=boxplot_color,
+                    boxplot_color="AED6F1",
+                    boxplot_line_color="000000",
                     showlegend=shown_legend
                 )
                 first_lane_traces.append(first_lane_trace)
@@ -395,7 +398,8 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
                     visible="legendonly",
                     lane=second_lane,
                     hovertext=second_lane,
-                    boxplot_color=boxplot_color,
+                    boxplot_color="F1948A",
+                    boxplot_line_color="000000",
                     showlegend=shown_legend
                 )
                 second_lane_traces.append(second_data_trace)
@@ -411,6 +415,7 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
                 project_name=project_name,
                 name=str(report_date),
                 boxplot_color=boxplot_color,
+                boxplot_line_color=boxplot_color,
                 showlegend=False
             )
 
@@ -454,9 +459,13 @@ def create_trace(data, data_column, **kwargs):
     else:
         legend_group = kwargs['name']
 
+    date = get_date_from_project_name(kwargs["project_name"])
+
     # setup each boxplot with the appropriate annotation and data points
     trace = {
-        "x0": kwargs["project_name"],
+        "x": [
+            [date]*len(data_values), [kwargs["project_name"]]*len(data_values)
+        ],
         "y": data_values,
         "name": kwargs["name"],
         "type": "box",
@@ -465,12 +474,62 @@ def create_trace(data, data_column, **kwargs):
         "marker": {
             "color": kwargs["boxplot_color"],
         },
+        "line": {
+            "color": kwargs.get("boxplot_line_color", "#444")
+        },
+        "fillcolor": kwargs["boxplot_color"]+"80",
+        "offsetgroup": kwargs["name"],
         "legendgroup": legend_group,
         "visible": kwargs.get("visible", True),
         "showlegend": kwargs["showlegend"]
     }
 
     return trace
+
+
+def get_date_from_project_name(project_name):
+    matches = re.findall(r"[0-9]{2}[0-1][0-9][0-3][0-9]", project_name)
+
+    assert matches, f"Couldn't find a date in {project_name}"
+
+    if len(matches) > 1:
+        check = []
+
+        # extract individual elements and see if it's actually a date before
+        # throwing an error
+        for match in matches:
+            # check if there are any 00 elements in the date match i.e. not a
+            # date from the get go
+            for i in range(0, 6, 2):
+                if match[i:i+2] == "00":
+                    check.append(False)
+                    break
+
+            month = match[2:4]
+            day = match[4:6]
+
+            if month[0] == "1":
+                # check if second element of month is not higher than 2
+                if int(month[1]) > 2:
+                    check.append(False)
+                    continue
+
+            if day[0] == "3":
+                # check if second element of month is not higher than 1
+                if int(month[1]) > 2:
+                    check.append(False)
+                    continue
+
+            check.append(True)
+
+        assert not all(check), (
+            f"Multiple date looking objects have been found in {project_name}"
+        )
+        assert any(check), f"No date object found in {project_name}"
+
+    month_abbr = calendar.month_abbr[int(matches[0][2:4])]
+
+    return f"{month_abbr}. 20{matches[0][0:2]}"
 
 
 def calculate_mean_across_columns(row, *columns):
