@@ -1,4 +1,5 @@
 import calendar
+import datetime
 import json
 import re
 from typing import Dict
@@ -351,12 +352,14 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
         boxplot_color = date_coloring[report_date.month]
 
         if len(metrics) > 1:
+            # get the lane columns
             first_lane_column = data_one_run.columns[3]
             second_lane_column = data_one_run.columns[4]
-
+            # get the lane names
             first_lane = list(set(data_one_run[first_lane_column].values))[0]
             second_lane = list(set(data_one_run[second_lane_column].values))[0]
 
+            # calculate the mean across all lanes and individual lanes
             data_one_run["Default data"] = data_one_run.apply(
                 calculate_mean_across_columns, axis=1, args=(range(5, 9))
             )
@@ -367,6 +370,7 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
                 calculate_mean_across_columns, axis=1, args=([7, 8])
             )
 
+            # create box for combined data
             default_data_trace = create_trace(
                 data_one_run, "Default data",
                 project_name=project_name,
@@ -376,6 +380,7 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
                 showlegend=shown_legend
             )
 
+            # check if we have lanes before creating the box
             if first_lane:
                 first_lane_trace = create_trace(
                     data_one_run, first_lane,
@@ -402,6 +407,7 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
                 )
                 second_lane_traces.append(second_data_trace)
 
+            # if this wasn't set, it would duplicate the legend
             shown_legend = False
             combined_traces.append(default_data_trace)
 
@@ -457,16 +463,12 @@ def create_trace(data, data_column, **kwargs):
 
     date = get_date_from_project_name(kwargs["project_name"])
 
-    if kwargs.get("lane", None):
-        lane_info = kwargs['lane']
-    else:
-        lane_info = ""
-
     text_data = []
 
+    # set text displayed when hovering outliers
     for ele in list(sub_df["sample_id"].values):
-        if lane_info:
-            text_data.append(f"{ele} - {lane_info}")
+        if kwargs.get("lane", None):
+            text_data.append(f"{ele} - {kwargs['lane']}")
         else:
             text_data.append(ele)
 
@@ -478,17 +480,23 @@ def create_trace(data, data_column, **kwargs):
         "y": data_values,
         "name": kwargs["name"],
         "type": "box",
+        # text associated with every sample value
         "text": text_data,
+        # type of box to display
         "boxpoints": "suspectedoutliers",
+        # coloring of outliers
         "marker": {
             "color": kwargs["boxplot_color"],
         },
+        # coloring of edges of box
         "line": {
             "color": kwargs.get("boxplot_line_color", "#444")
         },
         # +80 adds transparency
         "fillcolor": kwargs["boxplot_color"]+"80",
+        # grouping of boxes
         "offsetgroup": kwargs["name"],
+        # name of group in the legend
         "legendgroup": kwargs["name"],
         "visible": kwargs.get("visible", True),
         "showlegend": kwargs["showlegend"]
@@ -498,39 +506,33 @@ def create_trace(data, data_column, **kwargs):
 
 
 def get_date_from_project_name(project_name):
+    """ Get a date formatted for reading i.e. 2405 -> May 2024
+
+    Args:
+        project_name (str): Project name in which to look for the date in
+
+    Returns:
+        str: String containing the abbreviated name of the month and the year
+    """
+
+    # regex to match most dates in the following format YYMMDD
     matches = re.findall(r"[0-9]{2}[0-1][0-9][0-3][0-9]", project_name)
 
     assert matches, f"Couldn't find a date in {project_name}"
 
+    # if multiple date matches are found, additional filtering is required
     if len(matches) > 1:
         check = []
 
         # extract individual elements and see if it's actually a date before
         # throwing an error
         for match in matches:
-            # check if there are any 00 elements in the date match i.e. not a
-            # date from the get go
-            for i in range(0, 6, 2):
-                if match[i:i+2] == "00":
-                    check.append(False)
-                    break
-
-            month = match[2:4]
-            day = match[4:6]
-
-            if month[0] == "1":
-                # check if second element of month is not higher than 2
-                if int(month[1]) > 2:
-                    check.append(False)
-                    continue
-
-            if day[0] == "3":
-                # check if second element of month is not higher than 1
-                if int(month[1]) > 2:
-                    check.append(False)
-                    continue
-
-            check.append(True)
+            try:
+                datetime.datetime.strptime(match, "%y%m%d")
+            except ValueError:
+                check.append(False)
+            else:
+                check.append(True)
 
         assert not all(check), (
             f"Multiple date looking objects have been found in {project_name}"
