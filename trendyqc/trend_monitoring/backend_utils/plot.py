@@ -426,13 +426,16 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
     else:
         plot_data = {"plot": json.dumps(combined_traces)}
 
-    return {
-        **plot_data,
-        **{
-            "first_lane": json.dumps(first_lane_traces),
-            "second_lane": json.dumps(second_lane_traces)
-        }
-    }
+    return [
+        {
+            **plot_data,
+            **{
+                "first_lane": json.dumps(first_lane_traces),
+                "second_lane": json.dumps(second_lane_traces)
+            }
+        },
+        json.dumps(True if len(metrics) > 1 else False)
+    ]
 
 
 def create_trace(data, data_column, **kwargs):
