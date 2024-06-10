@@ -360,15 +360,15 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
             second_lane = list(set(data_one_run[second_lane_column].values))[0]
 
             # calculate the mean across all lanes and individual lanes
-            data_one_run["Default data"] = data_one_run.apply(
-                calculate_mean_across_columns, axis=1, args=(range(5, 9))
-            )
-            data_one_run[first_lane] = data_one_run.apply(
-                calculate_mean_across_columns, axis=1, args=([5, 6])
-            )
-            data_one_run[second_lane] = data_one_run.apply(
-                calculate_mean_across_columns, axis=1, args=([7, 8])
-            )
+            data_one_run["Default data"] = data_one_run[
+                plot_data.columns[5:]
+            ].mean(axis=1)
+            data_one_run[first_lane] = data_one_run[
+                plot_data.columns[5:7]
+            ].mean(axis=1)
+            data_one_run[second_lane] = data_one_run[
+                plot_data.columns[7:9]
+            ].mean(axis=1)
 
             # create box for combined data
             default_data_trace = create_trace(
@@ -542,27 +542,3 @@ def get_date_from_project_name(project_name):
     month_abbr = calendar.month_abbr[int(matches[0][2:4])]
 
     return f"{month_abbr}. 20{matches[0][0:2]}"
-
-
-def calculate_mean_across_columns(row, *columns):
-    """ Calculate the mean for a selection of columns
-
-    Args:
-        row (pd.Series): Series containing the data to manipulate
-
-    Returns:
-        float: Mean of the values for the select columns
-    """
-
-    denominator = 0
-    value = 0
-
-    for column in columns:
-        if row.iloc[column]:
-            value += row[column]
-            denominator += 1
-
-    if denominator:
-        return value / denominator
-    else:
-        return None
