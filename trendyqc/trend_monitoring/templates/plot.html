@@ -100,11 +100,6 @@
 
 <script>
 var plot_data = JSON.parse("{{plot|escapejs}}");
-if ({{ is_grouped }}) {
-    var boxmode = "group";
-} else {
-    var boxmode = "overlay";
-}
 var layout = {
     xaxis: {
         automargin: true,
@@ -129,11 +124,9 @@ var layout = {
     showlegend: true,
     boxgap: 0.1,
     boxgroupgap: 0.075,
-    boxmode: boxmode
+    boxmode: "group"
 };
 Plotly.newPlot("plot-div", plot_data, layout, {responsive: true});
-Plotly.addTraces("plot-div", JSON.parse("{{first_lane|escapejs}}"));
-Plotly.addTraces("plot-div", JSON.parse("{{second_lane|escapejs}}"));
 
 function saveFilter() {
     var filter_name = prompt("Name your filter:", "");
