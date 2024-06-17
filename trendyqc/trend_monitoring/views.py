@@ -295,14 +295,15 @@ class Plot(View):
                 for k, v in form.items()
             }
 
+            json_plot_data, is_grouped = format_data_for_plotly_js(data_dfs[0])
+
             context = {
                 "form": dict(sorted(formatted_form_data.items())),
                 "y_axis": " | ".join(filter_data["y_axis"]),
                 "skipped_projects": projects_no_metric,
                 "skipped_samples": samples_no_metric,
+                "is_grouped": is_grouped
             }
-
-            json_plot_data = format_data_for_plotly_js(data_dfs[0])
 
             return render(
                 request, self.template_name, {**context, **{"plot": json_plot_data}}

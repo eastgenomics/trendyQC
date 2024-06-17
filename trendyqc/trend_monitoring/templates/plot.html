@@ -100,6 +100,11 @@
 
 <script>
 var plot_data = JSON.parse("{{plot|escapejs}}");
+if ({{ is_grouped }}) {
+    var boxmode = "group";
+} else {
+    var boxmode = "overlay";
+}
 var layout = {
     xaxis: {
         automargin: true,
@@ -120,11 +125,12 @@ var layout = {
         gridwidth: 3,
         ticklen: 10
     },
+    legend: {traceorder: "normal"},
     height: 1000,
     showlegend: true,
     boxgap: 0.1,
     boxgroupgap: 0.075,
-    boxmode: "group"
+    boxmode: boxmode
 };
 Plotly.newPlot("plot-div", plot_data, layout, {responsive: true});
 
