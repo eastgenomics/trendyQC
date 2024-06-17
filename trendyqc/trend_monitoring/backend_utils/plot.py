@@ -2,6 +2,7 @@ import calendar
 import datetime
 import json
 import re
+import random
 from typing import Dict
 
 import numpy as np
@@ -163,12 +164,15 @@ def get_data_for_plotting(
 
         df = pd.DataFrame(
             report_sample_queryset.values(
-                "sample__sample_id", "report__date",
-                "report__project_name", *metric_filter
+                "sample__sample_id", "report__date", "report__project_name",
+                "assay", "report__sequencer_id", *metric_filter
             )
         )
 
-        df.columns = ["sample_id", "date", "project_name", *metric_filter]
+        df.columns = [
+            "sample_id", "date", "project_name", "assay", "sequencer_id",
+            *metric_filter
+        ]
 
         for project_name in df["project_name"].unique():
             # get subdataframe for a single run
@@ -316,19 +320,53 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
         list: List of lists of the traces that need to be plotted
     """
 
-    date_coloring = {
-        1: "#FF7800",   # orange
-        2: "#000000",   # black
-        3: "#969696",   # grey
-        4: "#c7962c",   # goldish
-        5: "#ff1c4d",   # red
-        6: "#ff65ff",   # fushia
-        7: "#6600cc",   # purple
-        8: "#1c6dff",   # blue
-        9: "#6ddfff",   # light blue
-        10: "#ffdf3c",  # yellow
-        11: "#00cc99",  # turquoise
-        12: "#00a600",  # green
+    colors = [
+        "#FF0000",   # red
+        "#FFBABA",   # pinkish
+        "#A04D4D",   # brown
+        "#B30000",   # maroon
+        "#FF7800",   # orange
+        "#B69300",   # ugly yellow
+        "#7D8040",   # olive
+        "#00FF00",   # bright green
+        "#000000",   # black
+        "#969696",   # grey
+        "#c7962c",   # goldish
+        "#ff65ff",   # fushia
+        "#6600cc",   # purple
+        "#1c6dff",   # blue
+        "#6ddfff",   # light blue
+        "#ffdf3c",  # yellow
+        "#00cc99",  # turquoise
+        "#00a600",  # green
+    ]
+
+    # args dict for configuring the traces for combined, first, second lane
+    args = {
+        "Combined": {
+            "lane": None,
+            "visible": True,
+            "boxplot_color": None,
+            "boxplot_line_color": None,
+        },
+        "First lane": {
+            "lane": None,
+            "visible": "legendonly",
+            "boxplot_color": "AED6F1",
+            "boxplot_line_color": "000000",
+            "name": "First lane",
+            "offsetgroup": "First lane",
+            "legendgroup": "First lane",
+        },
+        "Second lane": {
+            "lane": None,
+            "visible": "legendonly",
+            "boxplot_color": "F1948A",
+            "boxplot_line_color": "000000",
+            "name": "Second lane",
+            "offsetgroup": "Second lane",
+            "legendgroup": "Second lane",
+        }
     }
 
     # Bool to indicate whether legend needs to be displayed
@@ -336,20 +374,45 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
 
     # get the column names for the metrics: either 6 columns when there is data
     # for lanes or 1 column if the data is not separated by lane
-    metrics = plot_data.columns[3:]
+    metrics = plot_data.columns[5:]
 
-    combined_traces = []
-    first_lane_traces = []
-    second_lane_traces = []
-    default_traces = []
+    traces = []
+
+    # get groups of assay and sequencer id
+    groups = build_groups(plot_data)
+    seen_groups = []
+
+    group_colors = {}
+
+    # assign colors to groups
+    for i, group in enumerate(groups):
+        random_color = random.choice(colors)
+        group_colors[group] = random_color
+        colors.remove(random_color)
+
+        # too many groups are available
+        if not colors and i != len(groups) - 1:
+            raise AssertionError("No more colors possible")
+
+    # first second lane flag to fix duplication in the legend
+    seen_first_lane = False
+    seen_second_lane = False
 
     # for each project name, gather the necessary data to create the individual
     # boxplots
     for project_name in plot_data.sort_values("date")["project_name"].unique():
         # get sub df with for the project name
         data_one_run = plot_data[plot_data["project_name"] == project_name]
-        report_date = data_one_run["date"].unique()[0]
-        boxplot_color = date_coloring[report_date.month]
+
+        assay_name = data_one_run['assay'].unique()[0]
+        sequencer_id = data_one_run['sequencer_id'].unique()[0]
+        legend_name = f"{assay_name} - {sequencer_id}"
+
+        if legend_name not in seen_groups:
+            seen_groups.append(legend_name)
+            shown_legend = True
+        else:
+            shown_legend = False
 
         if len(metrics) > 1:
             # get the lane columns
@@ -359,90 +422,82 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
             first_lane = list(set(data_one_run[first_lane_column].values))[0]
             second_lane = list(set(data_one_run[second_lane_column].values))[0]
 
-            # calculate the mean across all lanes and individual lanes
-            data_one_run["Default data"] = data_one_run[
-                plot_data.columns[5:]
-            ].mean(axis=1)
-            data_one_run[first_lane] = data_one_run[
-                plot_data.columns[5:7]
-            ].mean(axis=1)
-            data_one_run[second_lane] = data_one_run[
-                plot_data.columns[7:9]
-            ].mean(axis=1)
+            args["Combined"]["columns"] = plot_data.columns[7:]
+            args["First lane"]["columns"] = plot_data.columns[7:9]
+            args["Second lane"]["columns"] = plot_data.columns[9:11]
 
-            # create box for combined data
-            default_data_trace = create_trace(
-                data_one_run, "Default data",
-                project_name=project_name,
-                name="Combined",
-                boxplot_color=boxplot_color,
-                boxplot_line_color=boxplot_color,
-                showlegend=shown_legend
-            )
+            args["Combined"]["boxplot_color"] = group_colors[legend_name]
+            args["Combined"]["boxplot_line_color"] = group_colors[legend_name]
+            args["Combined"]["name"] = legend_name
+            args["Combined"]["offsetgroup"] = legend_name
+            args["Combined"]["legendgroup"] = legend_name
 
-            # check if we have lanes before creating the box
-            if first_lane:
-                first_lane_trace = create_trace(
-                    data_one_run, first_lane,
-                    project_name=project_name,
-                    name="First lane",
-                    visible="legendonly",
-                    lane=first_lane,
-                    boxplot_color="AED6F1",
-                    boxplot_line_color="000000",
-                    showlegend=shown_legend
-                )
-                first_lane_traces.append(first_lane_trace)
+            args["First lane"]["lane"] = first_lane
+            args["Second lane"]["lane"] = second_lane
 
-            if second_lane:
-                second_data_trace = create_trace(
-                    data_one_run, second_lane,
-                    project_name=project_name,
-                    name="Second lane",
-                    visible="legendonly",
-                    lane=second_lane,
-                    boxplot_color="F1948A",
-                    boxplot_line_color="000000",
-                    showlegend=shown_legend
-                )
-                second_lane_traces.append(second_data_trace)
+            for name, sub_dict in args.items():
+                # calculate mean across appropriate columns
+                data_one_run[name] = data_one_run[sub_dict["columns"]].mean(axis=1)
 
-            # if this wasn't set, it would duplicate the legend
-            shown_legend = False
-            combined_traces.append(default_data_trace)
+                if name == "First lane" and seen_first_lane:
+                    shown_legend = False
+
+                if name == "Second lane" and seen_second_lane:
+                    shown_legend = False
+
+                trace_args = {
+                    "data": data_one_run,
+                    "data_column": name,
+                    "project_name": project_name,
+                    "name": sub_dict["name"],
+                    "visible": sub_dict["visible"],
+                    "lane": sub_dict["lane"],
+                    "boxplot_color": sub_dict["boxplot_color"],
+                    "boxplot_line_color": sub_dict["boxplot_line_color"],
+                    "offsetgroup": sub_dict["offsetgroup"],
+                    "legendgroup": sub_dict["legendgroup"],
+                    "showlegend": shown_legend
+                }
+
+                if name == "First lane":
+                    seen_first_lane = True
+
+                if name == "Second lane":
+                    seen_second_lane = True
+
+                traces.append(create_trace(**trace_args))
+
+            is_grouped = True
 
         else:
             metric_name = data_one_run.columns[-1]
 
-            default_data_trace = create_trace(
-                data_one_run, metric_name,
-                project_name=project_name,
-                name=str(report_date),
-                boxplot_color=boxplot_color,
-                boxplot_line_color=boxplot_color,
-                showlegend=False
-            )
-
-            default_traces.append(default_data_trace)
-
-    if default_traces:
-        plot_data = {"plot": json.dumps(default_traces)}
-    else:
-        plot_data = {"plot": json.dumps(combined_traces)}
-
-    return [
-        {
-            **plot_data,
-            **{
-                "first_lane": json.dumps(first_lane_traces),
-                "second_lane": json.dumps(second_lane_traces)
+            legend_args = {
+                "legendgroup": legend_name,
+                "name": legend_name,
             }
-        },
-        json.dumps(True if len(metrics) > 1 else False)
-    ]
+
+            trace_args = {
+                **{
+                    "data": data_one_run,
+                    "data_column": metric_name,
+                    "project_name": project_name,
+                    "lane": None,
+                    "offsetgroup": "",
+                    "boxplot_color": group_colors[legend_name],
+                    "boxplot_line_color": group_colors[legend_name],
+                    "showlegend": shown_legend
+                },
+                **legend_args
+            }
+
+            traces.append(create_trace(**trace_args))
+            is_grouped = False
+
+    return json.dumps(traces), json.dumps(is_grouped)
 
 
-def create_trace(data, data_column, **kwargs):
+def create_trace(**kwargs):
     """ Setup the trace according to given data
 
     Args:
@@ -453,12 +508,14 @@ def create_trace(data, data_column, **kwargs):
         dict: Dict containing the data needed for Plotly
     """
 
-    sub_df = data.sort_values(data_column)[["sample_id", data_column]]
+    sub_df = kwargs["data"].sort_values(
+        kwargs["data_column"]
+    )[["sample_id", kwargs["data_column"]]]
 
     # convert values to native python types for JSON serialisation
     data_values = [
         value.item() if isinstance(value, np.float64) else value
-        for value in sub_df[data_column].values
+        for value in sub_df[kwargs["data_column"]].values
     ]
 
     date = get_date_from_project_name(kwargs["project_name"])
@@ -467,7 +524,7 @@ def create_trace(data, data_column, **kwargs):
 
     # set text displayed when hovering outliers
     for ele in list(sub_df["sample_id"].values):
-        if kwargs.get("lane", None):
+        if kwargs["lane"]:
             text_data.append(f"{ele} - {kwargs['lane']}")
         else:
             text_data.append(ele)
@@ -495,9 +552,10 @@ def create_trace(data, data_column, **kwargs):
         # +80 adds transparency
         "fillcolor": kwargs["boxplot_color"]+"80",
         # grouping of boxes
-        "offsetgroup": kwargs["name"],
+        "offsetgroup": kwargs["offsetgroup"],
         # name of group in the legend
-        "legendgroup": kwargs["name"],
+        "legendgroup": kwargs.get("legendgroup", ""),
+        "legend": kwargs.get("legendgroup", ""),
         "visible": kwargs.get("visible", True),
         "showlegend": kwargs["showlegend"]
     }
@@ -542,3 +600,32 @@ def get_date_from_project_name(project_name):
     month_abbr = calendar.month_abbr[int(matches[0][2:4])]
 
     return f"{month_abbr}. 20{matches[0][0:2]}"
+
+
+def build_groups(df):
+    """ Get the groups of assay and sequencer id combinaisons for the grouping
+    of traces
+
+    Args:
+        df (pd.DataFrame): Dataframe in which to extract the groups
+
+    Returns:
+        list: List of assay and sequencer id present in the dataframe
+    """
+
+    # group the rows by the assay and sequencer id columns
+    # count number of occurences of these combos
+    # add the first column back
+    # name the count column
+    df = df \
+        .groupby(['assay', 'sequencer_id']) \
+        .size() \
+        .reset_index() \
+        .rename(columns={0: 'count'})
+
+    # get the list of combos and format it for displaying in legend
+    return list(
+        df[df["count"] != 0].agg(
+            lambda x: f"{x['assay']} - {x['sequencer_id']}", axis=1
+        ).values
+    )
