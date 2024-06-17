@@ -384,15 +384,15 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
 
     group_colors = {}
 
+    # too many groups are possible
+    if len(colors) < len(groups):
+        return f"Not enough colors are possible for the groups: {groups}"
+
     # assign colors to groups
     for i, group in enumerate(groups):
         random_color = random.choice(colors)
         group_colors[group] = random_color
         colors.remove(random_color)
-
-        # too many groups are available
-        if not colors and i != len(groups) - 1:
-            raise AssertionError("No more colors possible")
 
     # first second lane flag to fix duplication in the legend
     seen_first_lane = False
@@ -437,7 +437,7 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
 
             for name, sub_dict in args.items():
                 # calculate mean across appropriate columns
-                data_one_run[name] = data_one_run[sub_dict["columns"]].mean(axis=1)
+                data_one_run[name] = data_one_run.loc[sub_dict["columns"]].mean(axis=1)
 
                 if name == "First lane" and seen_first_lane:
                     shown_legend = False

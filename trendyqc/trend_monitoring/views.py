@@ -295,7 +295,18 @@ class Plot(View):
                 for k, v in form.items()
             }
 
-            json_plot_data, is_grouped = format_data_for_plotly_js(data_dfs[0])
+            data = format_data_for_plotly_js(data_dfs[0])
+
+            if len(data) == 2:
+                json_plot_data, is_grouped = data
+            else:
+                msg = (
+                    "An issue has occurred. Please contact the bioinformatics "
+                    "team."
+                )
+                messages.add_message(request, messages.ERROR, msg)
+                logger.error(data)
+                return render(request, self.template_name)
 
             context = {
                 "form": dict(sorted(formatted_form_data.items())),
