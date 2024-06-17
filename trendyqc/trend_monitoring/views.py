@@ -290,24 +290,35 @@ class Plot(View):
                     f"{filter_data}"
                 )
 
-            (
-                json_plot_data, json_trend_data
-            ) = format_data_for_plotly_js(data_dfs[0])
-
             formatted_form_data = {
                 k: ([v] if not isinstance(v, list) else v)
                 for k, v in form.items()
             }
 
+            data = format_data_for_plotly_js(data_dfs[0])
+
+            if len(data) == 2:
+                json_plot_data, is_grouped = data
+            else:
+                msg = (
+                    "An issue has occurred. Please contact the bioinformatics "
+                    "team."
+                )
+                messages.add_message(request, messages.ERROR, msg)
+                logger.error(data)
+                return render(request, self.template_name)
+
             context = {
                 "form": dict(sorted(formatted_form_data.items())),
-                "plot": json_plot_data,
-                "trend": json_trend_data,
                 "y_axis": " | ".join(filter_data["y_axis"]),
                 "skipped_projects": projects_no_metric,
-                "skipped_samples": samples_no_metric
+                "skipped_samples": samples_no_metric,
+                "is_grouped": is_grouped
             }
-            return render(request, self.template_name, context)
+
+            return render(
+                request, self.template_name, {**context, **{"plot": json_plot_data}}
+            )
 
         return render(request, self.template_name)
 
