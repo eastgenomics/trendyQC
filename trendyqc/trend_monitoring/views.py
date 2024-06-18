@@ -310,11 +310,12 @@ class Plot(View):
                 "y_axis": " | ".join(form["metrics_y"]),
                 "skipped_projects": projects_no_metric,
                 "skipped_samples": samples_no_metric,
-                "is_grouped": is_grouped
+                "is_grouped": is_grouped,
+                "plot": json_plot_data
             }
 
             return render(
-                request, self.template_name, {**context, **{"plot": json_plot_data}}
+                request, self.template_name, context
             )
 
         return render(request, self.template_name)
