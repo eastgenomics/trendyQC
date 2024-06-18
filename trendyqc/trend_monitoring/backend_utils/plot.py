@@ -5,70 +5,12 @@ import re
 import random
 from typing import Dict
 
-import numpy as np
 import pandas as pd
 
 from django.apps import apps
 from django.core.exceptions import FieldError
 from django.db.models.query import QuerySet
 from trend_monitoring.models.metadata import Report_Sample
-
-
-def prepare_filter_data(filter_recap: Dict) -> Dict:
-    """ Order the data received in the filter form into a dict with the keys
-    being categories to help getting the data needed and the appropriate
-    metrics i.e.
-    {
-        "subset": {
-            "sequencer_id": A01303
-            "date_start": 2023-06-13
-        },
-        "y_axis": {
-            "gc_perc": 48
-        }
-    }
-
-    Args:
-        filter_recap (dict): Dict containing the field and values inputted in
-        the form
-
-    Returns:
-        dict: Dict as described above. Primary keys pointing to the category of
-        data and secondary keys and values being the data passed through the
-        form
-    """
-
-    data = {}
-    data.setdefault("subset", {})
-    data.setdefault("x_axis", [])
-    data.setdefault("y_axis", [])
-
-    for field, value in filter_recap.items():
-        if field in [
-            "assay_select", "run_select", "sequencer_select"
-        ]:
-            # I'm setting a list by default because I want the user to be able
-            # to select multiple runs for example
-            data["subset"].setdefault(field, [])
-
-            if isinstance(value, list):
-                data["subset"][field].extend(value)
-            else:
-                data["subset"][field].append(value)
-
-        # this is kept separated from the above because you can input only one
-        # date range
-        if field in ["date_start", "date_end"]:
-            data["subset"].setdefault(field, "")
-            data["subset"][field] = value
-
-        if field == "metrics_x":
-            data["x_axis"].extend(value)
-
-        if field == "metrics_y":
-            data["y_axis"].extend(value)
-
-    return data
 
 
 def get_subset_queryset(data: Dict) -> QuerySet:
