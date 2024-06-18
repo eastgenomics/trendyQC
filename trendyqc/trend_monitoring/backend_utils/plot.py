@@ -1,7 +1,11 @@
+import calendar
+import datetime
 import json
-from statistics import median
+import re
+import random
 from typing import Dict
 
+import numpy as np
 import pandas as pd
 
 from django.apps import apps
@@ -40,11 +44,11 @@ def prepare_filter_data(filter_recap: Dict) -> Dict:
     data.setdefault("y_axis", [])
 
     for field, value in filter_recap.items():
-        # I'm setting a list by default because I want the user to be able to
-        # select multiple runs for example
         if field in [
             "assay_select", "run_select", "sequencer_select"
         ]:
+            # I'm setting a list by default because I want the user to be able
+            # to select multiple runs for example
             data["subset"].setdefault(field, [])
 
             if isinstance(value, list):
@@ -157,42 +161,44 @@ def get_data_for_plotting(
 
         # get the filter string needed to get the metric data from the queryset
         metric_filter = get_metric_filter(model, form_metric)
-        metric_field = metric_filter.split("__")[-1]
 
         df = pd.DataFrame(
             report_sample_queryset.values(
-                "sample__sample_id", "report__date",
-                "report__project_name", metric_filter
+                "sample__sample_id", "report__date", "report__project_name",
+                "assay", "report__sequencer_id", *metric_filter
             )
         )
 
-        df.columns = ["sample_id", "date", "project_name", metric_field]
+        df.columns = [
+            "sample_id", "date", "project_name", "assay", "sequencer_id",
+            *metric_filter
+        ]
 
         for project_name in df["project_name"].unique():
             # get subdataframe for a single run
             data_one_run = df[df["project_name"] == project_name]
 
-            # get the metric series
-            metric_series = data_one_run[metric_field]
+            # get the metric df
+            metric_df = data_one_run[metric_filter]
 
-            # if all values are None/NaN
-            if metric_series.isnull().all():
-                projects_no_metrics.setdefault(metric, []).append(project_name)
+            for series_name, series in metric_df.items():
+                # if all values are None/NaN
+                if series.isnull().all():
+                    projects_no_metrics.setdefault(metric, set()).add(project_name)
 
-            # if one value is None/NaN
-            elif metric_series.isnull().any():
-                samples_no_metric.setdefault(metric, {})
+                # if one value is None/NaN
+                elif series.isnull().any():
+                    samples_no_metric.setdefault(metric, {})
 
-                for values in data_one_run.loc[metric_series.isna()].values:
-                    samples_no_metric[metric].setdefault(project_name, [])
-                    # extract sample name
-                    data = [value for value in values][0]
-                    samples_no_metric[metric][project_name].append(data)
+                    for values in data_one_run.loc[series.isna()].values:
+                        samples_no_metric[metric].setdefault(project_name, set())
+                        # extract sample name
+                        data = [value for value in values][0]
+                        samples_no_metric[metric][project_name].add(data)
 
-        # filter out the None/NaN values in the metric column
-        pd_data_no_none = df[~df[metric_field].isna()]
+        # filter out the None/NaN values in the metric column(s)
+        pd_data_no_none = df[df[metric_filter].notna().any(axis=1)]
 
-        # convert dict into a dataframe
         list_df.append(pd_data_no_none)
 
     return list_df, projects_no_metrics, samples_no_metric
@@ -226,13 +232,45 @@ def get_metric_filter(form_model: str, form_metric: str) -> str:
 
     original_metric_filter = list(metric_filter_dict.values())[0]
 
+    # for fastqc and picard base distribution, build the metric filter directly
+    # to take into account the lanes
+    if "read_data" in original_metric_filter:
+        metric_filter = [
+            f"fastqc__{lane_read}__{original_metric_filter.split('__')[-1]}"
+            for lane_read in [
+                "read_data_1st_lane_R1", "read_data_1st_lane_R2",
+                "read_data_2nd_lane_R1", "read_data_2nd_lane_R2"
+            ]
+        ]
+        metric_filter.insert(0, "fastqc__read_data_2nd_lane_R1__lane")
+        metric_filter.insert(0, "fastqc__read_data_1st_lane_R1__lane")
+        return metric_filter
+
+    elif "base_distribution" in original_metric_filter:
+        metric_filter = [
+            f"picard__{lane_read}__{original_metric_filter.split('__')[-1]}"
+            for lane_read in [
+                "base_distribution_by_cycle_metrics_1st_lane_R1",
+                "base_distribution_by_cycle_metrics_1st_lane_R2",
+                "base_distribution_by_cycle_metrics_2nd_lane_R1",
+                "base_distribution_by_cycle_metrics_2nd_lane_R2"
+            ]
+        ]
+        metric_filter.insert(
+            0, "picard__base_distribution_by_cycle_metrics_2nd_lane_R1__lane"
+        )
+        metric_filter.insert(
+            0, "picard__base_distribution_by_cycle_metrics_1st_lane_R1__lane"
+        )
+        return metric_filter
+
     # handle cases where there is an intermediary table between Report sample
     # and the table containing the metric field:
     # The list represent the cases we want to test. "" is testing if the field
     # is in a table directly linked to report_sample. Fastqc, picard and happy
     # are the intermediate tables that could separate the field to
     # report_sample
-    for intermediate_table in ["", "fastqc", "picard", "happy"]:
+    for intermediate_table in ["", "picard", "happy"]:
         if intermediate_table != "":
             # add the intermediary table in the filter string
             metric_filter = f"{intermediate_table}__{original_metric_filter}"
@@ -246,7 +284,7 @@ def get_metric_filter(form_model: str, form_metric: str) -> str:
         except FieldError:
             continue
         else:
-            return metric_filter
+            return [metric_filter]
 
     return None
 
@@ -258,6 +296,7 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
         plot_data (pd.DataFrame): Pandas Dataframe containing the data to plot
 
     Example format:
+    For tools with no lane data, the dataframe should only be 4 columns:
         +-----------+-------+--------------+--------------+
         | sample_id | date  | project_name | metric_field |
         +-----------+-------+--------------+--------------+
@@ -267,73 +306,325 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
         | sample4   | date2 | name3        | value4       |
         +-----------+-------+--------------+--------------+
 
+    For tools with lane data, the dataframe should be 8 columns:
+        +-----------+-------+--------------+------------+-------------+--------------------+--------------------+--------------------+--------------------+
+        | sample_id | date  | project_name | first lane | second lane | metric_field_L1_R1 | metric_field_L1_R2 | metric_field_L2_R1 | metric_field_L2_R2 |
+        +-----------+-------+--------------+------------+-------------+--------------------+--------------------+--------------------+--------------------+
+        | sample1   | date1 | name1        | value1     | value1      | value1             | value1             | value1             | value1             |
+        | sample2   | date1 | name1        | value2     | value2      | value2             | value2             | value2             | value2             |
+        | sample3   | date1 | name2        | value3     | value3      | value3             | value3             | value3             | value3             |
+        | sample4   | date2 | name3        | value4     | value4      | value4             | value4             | value4             | value4             |
+        +-----------+-------+--------------+------------+-------------+--------------------+--------------------+--------------------+--------------------+
+
     Returns:
-        str: Serialized string of the boxplot data that needs to be plotted
-        str: Serialized string of the trend data that needs to be plotted
+        list: List of lists of the traces that need to be plotted
     """
 
-    date_coloring = {
-        1: "FF7800",
-        2: "000000",
-        3: "969696",
-        4: "c7962c",
-        5: "ff1c4d",
-        6: "ff65ff",
-        7: "6600cc",
-        8: "1c6dff",
-        9: "6ddfff",
-        10: "ffdf3c",
-        11: "00cc99",
-        12: "00a600",
+    colors = [
+        "#FF0000",   # red
+        "#FFBABA",   # pinkish
+        "#A04D4D",   # brown
+        "#B30000",   # maroon
+        "#FF7800",   # orange
+        "#B69300",   # ugly yellow
+        "#7D8040",   # olive
+        "#00FF00",   # bright green
+        "#000000",   # black
+        "#969696",   # grey
+        "#c7962c",   # goldish
+        "#ff65ff",   # fushia
+        "#6600cc",   # purple
+        "#1c6dff",   # blue
+        "#6ddfff",   # light blue
+        "#ffdf3c",  # yellow
+        "#00cc99",  # turquoise
+        "#00a600",  # green
+    ]
+
+    # args dict for configuring the traces for combined, first, second lane
+    args = {
+        "Combined": {
+            "lane": None,
+            "visible": True,
+            "boxplot_color": None,
+            "boxplot_line_color": None,
+        },
+        "First lane": {
+            "lane": None,
+            "visible": "legendonly",
+            "boxplot_color": "AED6F1",
+            "boxplot_line_color": "000000",
+            "name": "First lane",
+            "offsetgroup": "First lane",
+            "legendgroup": "First lane",
+        },
+        "Second lane": {
+            "lane": None,
+            "visible": "legendonly",
+            "boxplot_color": "F1948A",
+            "boxplot_line_color": "000000",
+            "name": "Second lane",
+            "offsetgroup": "Second lane",
+            "legendgroup": "Second lane",
+        }
     }
 
-    # create the list of boxplots that will be displayed in the plot
+    # Bool to indicate whether legend needs to be displayed
+    shown_legend = True
+
+    # get the column names for the metrics: either 6 columns when there is data
+    # for lanes or 1 column if the data is not separated by lane
+    metrics = plot_data.columns[5:]
+
     traces = []
 
-    # formatting median trace
-    median_trace = {
-        "mode": "lines",
-        "name": "trend",
-        "line": {
-            "dash": "dashdot",
-            "width": 2
-        }
-    }
-    median_trace.setdefault("x", [])
-    median_trace.setdefault("y", [])
+    # get groups of assay and sequencer id
+    groups = build_groups(plot_data)
+    seen_groups = []
 
-    metric_name = plot_data.columns[-1]
+    group_colors = {}
 
+    # too many groups are possible
+    if len(colors) < len(groups):
+        return f"Not enough colors are possible for the groups: {groups}"
+
+    # assign colors to groups
+    for i, group in enumerate(groups):
+        random_color = random.choice(colors)
+        group_colors[group] = random_color
+        colors.remove(random_color)
+
+    # first second lane flag to fix duplication in the legend
+    seen_first_lane = False
+    seen_second_lane = False
+
+    # for each project name, gather the necessary data to create the individual
+    # boxplots
     for project_name in plot_data.sort_values("date")["project_name"].unique():
+        # get sub df with for the project name
         data_one_run = plot_data[plot_data["project_name"] == project_name]
 
-        report_date = data_one_run["date"].unique()[0]
-        boxplot_color = date_coloring[report_date.month]
+        assay_name = data_one_run['assay'].unique()[0]
+        sequencer_id = data_one_run['sequencer_id'].unique()[0]
+        legend_name = f"{assay_name} - {sequencer_id}"
 
-        sub_df = data_one_run.sort_values(
-            metric_name
-        )[["sample_id", metric_name]]
+        if legend_name not in seen_groups:
+            seen_groups.append(legend_name)
+            shown_legend = True
+        else:
+            shown_legend = False
 
-        # convert values to native python types for JSON serialisation
-        data_values = [value.item() for value in sub_df[metric_name].values]
+        if len(metrics) > 1:
+            # get the lane columns
+            first_lane_column = data_one_run.columns[3]
+            second_lane_column = data_one_run.columns[4]
+            # get the lane names
+            first_lane = list(set(data_one_run[first_lane_column].values))[0]
+            second_lane = list(set(data_one_run[second_lane_column].values))[0]
 
-        # setup each boxplot with the appropriate annotation and data points
-        trace = {
-            "x0": project_name,
-            "y": data_values,
-            "name": str(report_date),
-            "type": "box",
-            "text": list(sub_df["sample_id"].values),
-            "boxpoints": "suspectedoutliers",
-            "marker": {
-                "color": boxplot_color,
+            args["Combined"]["columns"] = plot_data.columns[7:]
+            args["First lane"]["columns"] = plot_data.columns[7:9]
+            args["Second lane"]["columns"] = plot_data.columns[9:11]
+
+            args["Combined"]["boxplot_color"] = group_colors[legend_name]
+            args["Combined"]["boxplot_line_color"] = group_colors[legend_name]
+            args["Combined"]["name"] = legend_name
+            args["Combined"]["offsetgroup"] = legend_name
+            args["Combined"]["legendgroup"] = legend_name
+
+            args["First lane"]["lane"] = first_lane
+            args["Second lane"]["lane"] = second_lane
+
+            for name, sub_dict in args.items():
+                # calculate mean across appropriate columns
+                data_one_run[name] = data_one_run.loc[:, sub_dict["columns"]].mean(axis=1)
+
+                if name == "First lane" and seen_first_lane:
+                    shown_legend = False
+
+                if name == "Second lane" and seen_second_lane:
+                    shown_legend = False
+
+                trace_args = {
+                    "data": data_one_run,
+                    "data_column": name,
+                    "project_name": project_name,
+                    "name": sub_dict["name"],
+                    "visible": sub_dict["visible"],
+                    "lane": sub_dict["lane"],
+                    "boxplot_color": sub_dict["boxplot_color"],
+                    "boxplot_line_color": sub_dict["boxplot_line_color"],
+                    "offsetgroup": sub_dict["offsetgroup"],
+                    "legendgroup": sub_dict["legendgroup"],
+                    "showlegend": shown_legend
+                }
+
+                if name == "First lane":
+                    seen_first_lane = True
+
+                if name == "Second lane":
+                    seen_second_lane = True
+
+                traces.append(create_trace(**trace_args))
+
+            is_grouped = True
+
+        else:
+            metric_name = data_one_run.columns[-1]
+
+            legend_args = {
+                "legendgroup": legend_name,
+                "name": legend_name,
             }
-        }
-        traces.append(trace)
 
-        # add median of current boxplot for trend line
-        data_median = median(data_values)
-        median_trace["x"].append(project_name)
-        median_trace["y"].append(data_median)
+            trace_args = {
+                **{
+                    "data": data_one_run,
+                    "data_column": metric_name,
+                    "project_name": project_name,
+                    "lane": None,
+                    "offsetgroup": "",
+                    "boxplot_color": group_colors[legend_name],
+                    "boxplot_line_color": group_colors[legend_name],
+                    "showlegend": shown_legend
+                },
+                **legend_args
+            }
 
-    return json.dumps(traces), json.dumps(median_trace)
+            traces.append(create_trace(**trace_args))
+            is_grouped = False
+
+    return json.dumps(traces), json.dumps(is_grouped)
+
+
+def create_trace(**kwargs):
+    """ Setup the trace according to given data
+
+    Args:
+        data (pd.DataFrame): Dataframe containing the data for that boxplot
+        data_column (str): Column name in which values are stored
+
+    Returns:
+        dict: Dict containing the data needed for Plotly
+    """
+
+    sub_df = kwargs["data"].sort_values(
+        kwargs["data_column"]
+    )[["sample_id", kwargs["data_column"]]]
+
+    # convert values to native python types for JSON serialisation
+    data_values = [
+        value for value in sub_df[kwargs["data_column"]].values
+    ]
+
+    date = get_date_from_project_name(kwargs["project_name"])
+
+    text_data = []
+
+    # set text displayed when hovering outliers
+    for ele in list(sub_df["sample_id"].values):
+        if kwargs["lane"]:
+            text_data.append(f"{ele} - {kwargs['lane']}")
+        else:
+            text_data.append(ele)
+
+    # setup each boxplot with the appropriate annotation and data points
+    trace = {
+        "x": [
+            [date]*len(data_values), [kwargs["project_name"]]*len(data_values)
+        ],
+        "y": data_values,
+        "name": kwargs["name"],
+        "type": "box",
+        # text associated with every sample value
+        "text": text_data,
+        # type of box to display
+        "boxpoints": "suspectedoutliers",
+        # coloring of outliers
+        "marker": {
+            "color": kwargs["boxplot_color"],
+        },
+        # coloring of edges of box
+        "line": {
+            "color": kwargs.get("boxplot_line_color", "#444")
+        },
+        # +80 adds transparency
+        "fillcolor": kwargs["boxplot_color"]+"80",
+        # grouping of boxes
+        "offsetgroup": kwargs["offsetgroup"],
+        # name of group in the legend
+        "legendgroup": kwargs.get("legendgroup", ""),
+        "legend": kwargs.get("legendgroup", ""),
+        "visible": kwargs.get("visible", True),
+        "showlegend": kwargs["showlegend"]
+    }
+
+    return trace
+
+
+def get_date_from_project_name(project_name):
+    """ Get a date formatted for reading i.e. 2405 -> May 2024
+
+    Args:
+        project_name (str): Project name in which to look for the date in
+
+    Returns:
+        str: String containing the abbreviated name of the month and the year
+    """
+
+    # regex to match most dates in the following format YYMMDD
+    matches = re.findall(r"[0-9]{2}[0-1][0-9][0-3][0-9]", project_name)
+
+    assert matches, f"Couldn't find a date in {project_name}"
+
+    # if multiple date matches are found, additional filtering is required
+    if len(matches) > 1:
+        check = []
+
+        # extract individual elements and see if it's actually a date before
+        # throwing an error
+        for match in matches:
+            try:
+                datetime.datetime.strptime(match, "%y%m%d")
+            except ValueError:
+                check.append(False)
+            else:
+                check.append(True)
+
+        assert not all(check), (
+            f"Multiple date looking objects have been found in {project_name}"
+        )
+        assert any(check), f"No date object found in {project_name}"
+
+    month_abbr = calendar.month_abbr[int(matches[0][2:4])]
+
+    return f"{month_abbr}. 20{matches[0][0:2]}"
+
+
+def build_groups(df):
+    """ Get the groups of assay and sequencer id combinaisons for the grouping
+    of traces
+
+    Args:
+        df (pd.DataFrame): Dataframe in which to extract the groups
+
+    Returns:
+        list: List of assay and sequencer id present in the dataframe
+    """
+
+    # group the rows by the assay and sequencer id columns
+    # count number of occurences of these combos
+    # add the first column back
+    # name the count column
+    df = df \
+        .groupby(['assay', 'sequencer_id']) \
+        .size() \
+        .reset_index() \
+        .rename(columns={0: 'count'})
+
+    # get the list of combos and format it for displaying in legend
+    return list(
+        df[df["count"] != 0].agg(
+            lambda x: f"{x['assay']} - {x['sequencer_id']}", axis=1
+        ).values
+    )

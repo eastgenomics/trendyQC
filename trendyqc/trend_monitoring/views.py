@@ -14,6 +14,7 @@ from django.views.generic.edit import FormView
 from django_tables2 import MultiTableMixin
 from django_tables2.config import RequestConfig
 
+from trendyqc.settings import DISPLAY_DATA_JSON
 from trend_monitoring.models.metadata import Report, Report_Sample
 from trend_monitoring.models.filters import Filter
 from trend_monitoring.models import bam_qc, fastq_qc, vcf_qc
@@ -103,17 +104,19 @@ class Dashboard(MultiTableMixin, TemplateView):
         )
 
         for model_name, model in module_dict.items():
-            plotable_metrics.setdefault(model_name, [])
+            if model_name in DISPLAY_DATA_JSON:
+                display_name = DISPLAY_DATA_JSON[model_name]
+                plotable_metrics.setdefault(display_name, [])
 
-            for field in model._meta.fields:
-                # get the type of the field
-                field_type = field.get_internal_type()
+                for field in model._meta.fields:
+                    # get the type of the field
+                    field_type = field.get_internal_type()
 
-                # only get fields with those type for plotability
-                if field_type in ["FloatField", "IntegerField"]:
-                    plotable_metrics[model_name].append(field.name)
+                    # only get fields with those type for plotability
+                    if field_type in ["FloatField", "IntegerField"]:
+                        plotable_metrics[display_name].append(field.name)
 
-            plotable_metrics[model_name].sort()
+                plotable_metrics[display_name].sort()
 
         return plotable_metrics
 
@@ -138,7 +141,7 @@ class Dashboard(MultiTableMixin, TemplateView):
         # i have no idea what this code does tbh
         table_counter = count()
         filter_table.prefix = (
-            filter_table.prefix or 
+            filter_table.prefix or
             self.table_prefix.format(next(table_counter))
         )
         RequestConfig(
@@ -181,7 +184,7 @@ class Dashboard(MultiTableMixin, TemplateView):
             # get the filter obj in the database
             filter_obj = Filter.objects.get(id=filter_id)
             filter_name = filter_obj.name
-            
+
             try:
                 # delete the filter
                 filter_obj.delete()
@@ -204,8 +207,8 @@ class Dashboard(MultiTableMixin, TemplateView):
         # call the clean function and see if the form data is valid
         if form.is_valid():
             if "plot" in request.POST:
-                # save the cleaned data in the session so that it gets passed to
-                # the Plot view
+                # save the cleaned data in the session so that it gets passed
+                # to the Plot view
                 request.session["form"] = form.cleaned_data
                 return redirect("Plot")
 
@@ -287,24 +290,35 @@ class Plot(View):
                     f"{filter_data}"
                 )
 
-            (
-                json_plot_data, json_trend_data
-            ) = format_data_for_plotly_js(data_dfs[0])
-
             formatted_form_data = {
                 k: ([v] if not isinstance(v, list) else v)
                 for k, v in form.items()
             }
 
+            data = format_data_for_plotly_js(data_dfs[0])
+
+            if len(data) == 2:
+                json_plot_data, is_grouped = data
+            else:
+                msg = (
+                    "An issue has occurred. Please contact the bioinformatics "
+                    "team."
+                )
+                messages.add_message(request, messages.ERROR, msg)
+                logger.error(data)
+                return render(request, self.template_name)
+
             context = {
                 "form": dict(sorted(formatted_form_data.items())),
-                "plot": json_plot_data,
-                "trend": json_trend_data,
                 "y_axis": " | ".join(filter_data["y_axis"]),
                 "skipped_projects": projects_no_metric,
-                "skipped_samples": samples_no_metric
+                "skipped_samples": samples_no_metric,
+                "is_grouped": is_grouped
             }
-            return render(request, self.template_name, context)
+
+            return render(
+                request, self.template_name, {**context, **{"plot": json_plot_data}}
+            )
 
         return render(request, self.template_name)
 
