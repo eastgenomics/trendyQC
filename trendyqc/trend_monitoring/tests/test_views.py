@@ -170,10 +170,8 @@ class TestPlot(TestCase):
     @patch("trend_monitoring.views.format_data_for_plotly_js")
     @patch("trend_monitoring.views.get_data_for_plotting")
     @patch("trend_monitoring.views.get_subset_queryset")
-    @patch("trend_monitoring.views.prepare_filter_data")
     def test_plot_get_with_filled_form_end_to_end(
         self,
-        mock_filter_data,
         mock_queryset,
         mock_plotting_data,
         mock_plotly_js
@@ -196,10 +194,9 @@ class TestPlot(TestCase):
         # normal URL dispatcher with the amount of parameters i have, sounds
         # like a nightmare
         session = self.client.session
-        session["form"] = {"k1": "v1", "k2": "v2"}
+        session["form"] = {"assay_select": ["v1"], "metrics_y": ["v2"]}
         session.save()
 
-        mock_filter_data.return_value = {"subset": "", "y_axis": ""}
         mock_queryset.return_value = "not None"
         mock_plotting_data.return_value = (
             ["mock dataframe"],
@@ -235,7 +232,7 @@ class TestPlot(TestCase):
         )
 
         expected_context = {
-            'form': {'k1': ['v1'], 'k2': ['v2']},
+            'form': {'assay_select': ['v1'], 'metrics_y': ['v2']},
             'plot': [
                 {
                     'x0': 'project1',
@@ -257,7 +254,7 @@ class TestPlot(TestCase):
                 }
             ],
             'is_grouped': False,
-            'y_axis': '',
+            'y_axis': 'v2',
             'skipped_projects': {},
             'skipped_samples': {}
         }
@@ -287,6 +284,7 @@ class TestPlot(TestCase):
                                 self.assertEqual(
                                     info[key], expected_context[key]
                                 )
+
                 self.assertEqual(
                     found_expected_dict,
                     True,
