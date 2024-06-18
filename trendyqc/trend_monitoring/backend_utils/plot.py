@@ -437,7 +437,7 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
 
             for name, sub_dict in args.items():
                 # calculate mean across appropriate columns
-                data_one_run[name] = data_one_run.loc[sub_dict["columns"]].mean(axis=1)
+                data_one_run[name] = data_one_run.loc[:, sub_dict["columns"]].mean(axis=1)
 
                 if name == "First lane" and seen_first_lane:
                     shown_legend = False
@@ -514,8 +514,7 @@ def create_trace(**kwargs):
 
     # convert values to native python types for JSON serialisation
     data_values = [
-        value.item() if isinstance(value, np.float64) else value
-        for value in sub_df[kwargs["data_column"]].values
+        value for value in sub_df[kwargs["data_column"]].values
     ]
 
     date = get_date_from_project_name(kwargs["project_name"])
