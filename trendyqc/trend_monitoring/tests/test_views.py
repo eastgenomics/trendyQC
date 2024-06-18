@@ -161,7 +161,7 @@ class TestPlot(TestCase):
         self.expected_keys = [
             "form",
             "plot",
-            "trend",
+            "is_grouped",
             "y_axis",
             "skipped_projects",
             "skipped_samples"
@@ -231,16 +231,7 @@ class TestPlot(TestCase):
                     }
                 }
             ],
-            {
-                "mode": "lines",
-                "name": "trend",
-                "line": {
-                    "dash": "dashdot",
-                    "width": 2
-                },
-                "x": ["project1", "project2"],
-                "y": ["value1", "value1"]
-            }
+            False
         )
 
         expected_context = {
@@ -265,13 +256,7 @@ class TestPlot(TestCase):
                     'marker': {'color': 'ff1c4d'}
                 }
             ],
-            'trend': {
-                'mode': 'lines',
-                'name': 'trend',
-                'line': {'dash': 'dashdot', 'width': 2},
-                'x': ['project1', 'project2'],
-                'y': ['value1', 'value1']
-            },
+            'is_grouped': False,
             'y_axis': '',
             'skipped_projects': {},
             'skipped_samples': {}
@@ -282,6 +267,8 @@ class TestPlot(TestCase):
         with self.subTest("Status code test"):
             self.assertEqual(response.status_code, 200)
 
+        found_expected_dict = False
+
         with self.subTest("Context data content test"):
             # for some reason i get 2 identical elements in the context data so
             # I need to loop to check one if the context data content
@@ -291,12 +278,21 @@ class TestPlot(TestCase):
                         # check if all the expected keys are present in the
                         # element
                         if all([
-                            info.get(key, None) for key in self.expected_keys
+                            True if info.get(key, None) is not None else False
+                            for key in self.expected_keys
                         ]):
+                            found_expected_dict = True
+
                             for key in self.expected_keys:
                                 self.assertEqual(
                                     info[key], expected_context[key]
                                 )
+                self.assertEqual(
+                    found_expected_dict,
+                    True,
+                    "Didn't find the dict containing all the expected keys"
+                )
+                break
 
     def test_plot_get_with_empty_form(self):
         """ Test for GET request in Plot class view.
@@ -324,7 +320,8 @@ class TestPlot(TestCase):
                         # check if all the expected keys are present in the
                         # element
                         if all([
-                            info.get(key, None) for key in self.expected_keys
+                            True if info.get(key, None) is not None else False
+                            for key in self.expected_keys
                         ]):
                             flag_to_test_presence = True
 
