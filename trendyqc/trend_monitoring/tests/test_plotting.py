@@ -1,5 +1,6 @@
+import datetime
+
 from django.test import TestCase
-from django.utils import timezone
 
 from trend_monitoring.backend_utils.plot import get_subset_queryset
 from trend_monitoring.models.metadata import Report, Report_Sample, Patient, Sample
@@ -9,6 +10,7 @@ class TestPlotting(TestCase):
     @classmethod
     def setUpClass(cls):
         super(TestPlotting, cls).setUpClass()
+
         Report_Sample.objects.create(
             assay="CEN",
             report=Report.objects.create(
@@ -17,8 +19,8 @@ class TestPlotting(TestCase):
                 project_name="ProjectName1",
                 dnanexus_file_id="File1",
                 sequencer_id="Sequencer1",
-                date=timezone.now(),
-                job_date=timezone.now()
+                date=datetime.date(2020, 1, 1),
+                job_date=datetime.datetime(2020, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc)
             ),
             sample=Sample.objects.create(
                 patient=Patient.objects.create(
@@ -47,8 +49,8 @@ class TestPlotting(TestCase):
                 project_name="ProjectName2",
                 dnanexus_file_id="File2",
                 sequencer_id="Sequencer2",
-                date=timezone.now(),
-                job_date=timezone.now()
+                date=datetime.date(2024, 1, 1),
+                job_date=datetime.datetime(2024, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc)
             ),
             sample=Sample.objects.create(
                 patient=Patient.objects.create(
@@ -82,5 +84,30 @@ class TestPlotting(TestCase):
         test_output = get_subset_queryset(test_input)
         expected_output = Report_Sample.objects.filter(
             report__project_name__in=["ProjectName1", "ProjectName2"]
+        )
+        self.assertQuerysetEqual(test_output, expected_output, ordered=False)
+
+    def test_get_subset_queryset_sequencer_query(self):
+        test_input = {"sequencer_select": ["Sequencer1", "Sequencer2"]}
+        test_output = get_subset_queryset(test_input)
+        expected_output = Report_Sample.objects.filter(
+            report__sequencer_id__in=["Sequencer1", "Sequencer2"]
+        )
+        self.assertQuerysetEqual(test_output, expected_output, ordered=False)
+
+    def test_get_subset_queryset_date_query(self):
+        test_input = {"date_start": datetime.date(2022, 1, 1), "date_end": datetime.date.today()}
+        test_output = get_subset_queryset(test_input)
+        expected_output = Report_Sample.objects.filter(
+            report__date__range=[datetime.date(2022, 1, 1), datetime.date.today()]
+        )
+        self.assertQuerysetEqual(test_output, expected_output, ordered=False)
+
+    def test_get_subset_queryset_multiple_query(self):
+        test_input = {"assay_select": "CEN", "sequencer_select": "Sequencer2"}
+        test_output = get_subset_queryset(test_input)
+        expected_output = Report_Sample.objects.filter(
+            assay__in=["CEN"],
+            report__sequencer_id__in=["Sequencer2"]
         )
         self.assertQuerysetEqual(test_output, expected_output, ordered=False)
