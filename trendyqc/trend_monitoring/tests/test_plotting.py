@@ -72,6 +72,11 @@ class TestPlotting(TestCase):
         )
 
     def test_get_subset_queryset_assay_query(self):
+        """ Test the get_subset_queryset function which gets a queryset based
+        on filtering options, case:
+        - Assay filter
+        """
+
         test_input = {"assay_select": ["CEN", "MYE"]}
         test_output = get_subset_queryset(test_input)
         expected_output = Report_Sample.objects.filter(
@@ -80,6 +85,10 @@ class TestPlotting(TestCase):
         self.assertQuerysetEqual(test_output, expected_output, ordered=False)
 
     def test_get_subset_queryset_run_query(self):
+        """ Test the get_subset_queryset function which gets a queryset based
+        on filtering options, case:
+        - Run filter
+        """
         test_input = {"run_select": ["ProjectName1", "ProjectName2"]}
         test_output = get_subset_queryset(test_input)
         expected_output = Report_Sample.objects.filter(
@@ -88,6 +97,10 @@ class TestPlotting(TestCase):
         self.assertQuerysetEqual(test_output, expected_output, ordered=False)
 
     def test_get_subset_queryset_sequencer_query(self):
+        """ Test the get_subset_queryset function which gets a queryset based
+        on filtering options, case:
+        - Sequencer filter
+        """
         test_input = {"sequencer_select": ["Sequencer1", "Sequencer2"]}
         test_output = get_subset_queryset(test_input)
         expected_output = Report_Sample.objects.filter(
@@ -96,6 +109,10 @@ class TestPlotting(TestCase):
         self.assertQuerysetEqual(test_output, expected_output, ordered=False)
 
     def test_get_subset_queryset_date_query(self):
+        """ Test the get_subset_queryset function which gets a queryset based
+        on filtering options, case:
+        - Date filter
+        """
         test_input = {"date_start": datetime.date(2022, 1, 1), "date_end": datetime.date.today()}
         test_output = get_subset_queryset(test_input)
         expected_output = Report_Sample.objects.filter(
@@ -104,6 +121,11 @@ class TestPlotting(TestCase):
         self.assertQuerysetEqual(test_output, expected_output, ordered=False)
 
     def test_get_subset_queryset_multiple_query(self):
+        """ Test the get_subset_queryset function which gets a queryset based
+        on filtering options, case:
+        - Assay filter
+        - Sequencer filter
+        """
         test_input = {"assay_select": "CEN", "sequencer_select": "Sequencer2"}
         test_output = get_subset_queryset(test_input)
         expected_output = Report_Sample.objects.filter(
