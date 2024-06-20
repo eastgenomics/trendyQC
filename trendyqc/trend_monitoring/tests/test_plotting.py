@@ -89,6 +89,7 @@ class TestPlotting(TestCase):
         on filtering options, case:
         - Run filter
         """
+
         test_input = {"run_select": ["ProjectName1", "ProjectName2"]}
         test_output = get_subset_queryset(test_input)
         expected_output = Report_Sample.objects.filter(
@@ -101,6 +102,7 @@ class TestPlotting(TestCase):
         on filtering options, case:
         - Sequencer filter
         """
+
         test_input = {"sequencer_select": ["Sequencer1", "Sequencer2"]}
         test_output = get_subset_queryset(test_input)
         expected_output = Report_Sample.objects.filter(
@@ -113,6 +115,7 @@ class TestPlotting(TestCase):
         on filtering options, case:
         - Date filter
         """
+
         test_input = {"date_start": datetime.date(2022, 1, 1), "date_end": datetime.date.today()}
         test_output = get_subset_queryset(test_input)
         expected_output = Report_Sample.objects.filter(
@@ -126,6 +129,7 @@ class TestPlotting(TestCase):
         - Assay filter
         - Sequencer filter
         """
+
         test_input = {"assay_select": "CEN", "sequencer_select": "Sequencer2"}
         test_output = get_subset_queryset(test_input)
         expected_output = Report_Sample.objects.filter(
