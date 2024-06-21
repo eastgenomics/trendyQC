@@ -536,7 +536,6 @@ def get_date_from_project_name(project_name):
         assert not all(check), (
             f"Multiple date looking objects have been found in {project_name}"
         )
-        assert any(check), f"No date object found in {project_name}"
 
     month_abbr = calendar.month_abbr[int(matches[0][2:4])]
 
