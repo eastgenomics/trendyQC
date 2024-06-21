@@ -22,8 +22,7 @@ from trend_monitoring.models import bam_qc, fastq_qc, vcf_qc
 from .tables import ReportTable, FilterTable
 from .forms import FilterForm, LoginForm
 from .backend_utils.plot import (
-    get_subset_queryset, get_data_for_plotting, prepare_filter_data,
-    format_data_for_plotly_js
+    get_subset_queryset, get_data_for_plotting, format_data_for_plotly_js
 )
 from .backend_utils.filtering import import_filter
 
@@ -262,21 +261,19 @@ class Plot(View):
 
         # check if we have the form data in the session request
         if form:
-            # clean the form data
-            filter_data = prepare_filter_data(form)
             # get queryset of report_sample filtered using the "subset" options
             # selected by the user and passed through the form
-            subset_queryset = get_subset_queryset(filter_data["subset"])
+            subset_queryset = get_subset_queryset(form)
 
             if not subset_queryset:
-                msg = f"No data found for {filter_data['subset']}"
+                msg = f"No data found for {form}"
                 messages.error(request, msg)
-                return render(request, self.template_name, {})
+                return render(request, self.template_name)
 
             (
                 data_dfs, projects_no_metric, samples_no_metric
             ) = get_data_for_plotting(
-                subset_queryset, filter_data["y_axis"]
+                subset_queryset, form["metrics_y"]
             )
 
             if len(data_dfs) != 1:
@@ -287,7 +284,7 @@ class Plot(View):
                 messages.warning(request, msg)
                 logger.debug(
                     "An error occurred using the following filtering data: "
-                    f"{filter_data}"
+                    f"{form}"
                 )
 
             formatted_form_data = {
@@ -310,14 +307,15 @@ class Plot(View):
 
             context = {
                 "form": dict(sorted(formatted_form_data.items())),
-                "y_axis": " | ".join(filter_data["y_axis"]),
+                "y_axis": " | ".join(form["metrics_y"]),
                 "skipped_projects": projects_no_metric,
                 "skipped_samples": samples_no_metric,
-                "is_grouped": is_grouped
+                "is_grouped": is_grouped,
+                "plot": json_plot_data
             }
 
             return render(
-                request, self.template_name, {**context, **{"plot": json_plot_data}}
+                request, self.template_name, context
             )
 
         return render(request, self.template_name)
