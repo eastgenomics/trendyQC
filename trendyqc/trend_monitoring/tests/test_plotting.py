@@ -1,9 +1,15 @@
 import datetime
+from unittest.mock import Mock, patch
 
 from django.test import TestCase
+import pandas as pd
 
-from trend_monitoring.backend_utils.plot import get_subset_queryset
-from trend_monitoring.models.metadata import Report, Report_Sample, Patient, Sample
+from trend_monitoring.backend_utils.plot import (
+    get_subset_queryset, get_data_for_plotting
+)
+from trend_monitoring.models.metadata import (
+    Report, Report_Sample, Patient, Sample
+)
 
 
 class TestPlotting(TestCase):
@@ -12,7 +18,7 @@ class TestPlotting(TestCase):
         super(TestPlotting, cls).setUpClass()
 
         Report_Sample.objects.create(
-            assay="CEN",
+            assay="Assay1",
             report=Report.objects.create(
                 name="Report1",
                 project_id="Project1",
@@ -42,7 +48,7 @@ class TestPlotting(TestCase):
         )
 
         Report_Sample.objects.create(
-            assay="MYE",
+            assay="Assay2",
             report=Report.objects.create(
                 name="Report2",
                 project_id="Project2",
@@ -77,10 +83,10 @@ class TestPlotting(TestCase):
         - Assay filter
         """
 
-        test_input = {"assay_select": ["CEN", "MYE"]}
+        test_input = {"assay_select": ["Assay1", "Assay2"]}
         test_output = get_subset_queryset(test_input)
         expected_output = Report_Sample.objects.filter(
-            assay__in=["CEN", "MYE"]
+            assay__in=["Assay1", "Assay2"]
         )
         self.assertQuerysetEqual(test_output, expected_output, ordered=False)
 
@@ -137,3 +143,59 @@ class TestPlotting(TestCase):
             report__sequencer_id__in=["Sequencer2"]
         )
         self.assertQuerysetEqual(test_output, expected_output, ordered=False)
+
+    @patch("trend_monitoring.backend_utils.plot.get_metric_filter")
+    def test_get_data_for_plotting_no_missing_values(self, mock_metric_filter):
+        """ Test the get_data_for_plotting function while providing no empty
+        values
+
+        Args:
+            mock_metric_filter (Mock thing?): Mock thing for the
+            get_metric_filter function used in get_data_for_plotting
+        """
+
+        mock_metric_filter.return_value = [
+            "picard__hs_metrics__fold_enrichment"
+        ]
+        test_queryset = Mock()
+        # configure the mock object to return the following values when the
+        # ".values" method is called on the mock
+        test_queryset.configure_mock(**{
+            "values.return_value": [{
+                "sample__sample_id": "Sample1",
+                "report__date": "2000-01-01",
+                "report__project_name": "Project1",
+                "assay": "Assay1",
+                "report__sequencer_id": "Sequencer1",
+                "picard__hs_metrics__fold_enrichment": 80.0
+            }]
+        })
+
+        test_output = get_data_for_plotting(
+            test_queryset, ["fake_metric|fake_metric"]
+        )
+
+        expected_output = (
+            [
+                pd.DataFrame(
+                    {
+                        "sample_id": ["Sample1"],
+                        "date": ["2000-01-01"],
+                        "project_name": ["Project1"],
+                        "assay": ["Assay1"],
+                        "sequencer_id": ["Sequencer1"],
+                        "picard__hs_metrics__fold_enrichment": [80.0]
+                    }
+                )
+            ],
+            {},
+            {}
+        )
+
+        with self.subTest():
+            for test, expected in zip(test_output, expected_output):
+                if isinstance(test, list):
+                    for test_pd, expected_pd in zip(test, expected):
+                        pd.testing.assert_frame_equal(test_pd, expected_pd)
+                else:
+                    self.assertEqual(test, expected)
