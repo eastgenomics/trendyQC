@@ -1,4 +1,6 @@
 import datetime
+import json
+import random
 from unittest.mock import Mock, patch
 
 from django.test import TestCase
@@ -9,7 +11,8 @@ from trend_monitoring.backend_utils.plot import (
     get_data_for_plotting,
     get_metric_filter,
     get_date_from_project_name,
-    build_groups
+    build_groups,
+    format_data_for_plotly_js
 )
 from trend_monitoring.models.metadata import (
     Report, Report_Sample, Patient, Sample
@@ -550,5 +553,318 @@ class TestPlotting(TestCase):
             "Assay2 - Sequencer1",
             "Assay3 - Sequencer2"
         ]
+
+        self.assertEqual(test_output, expected_output)
+
+    def test_format_data_for_plotly_js_normal_metric(self):
+        test_input = pd.DataFrame(
+            {
+                "sample_id": ["Sample1", "Sample2", "Sample3", "Sample4"],
+                "date": ["2024-06-24", "2024-06-24", "2024-06-24", "2024-06-24"],
+                "project_name": ["240624_Project1", "240624_Project1", "240624_Project2", "240624_Project2"],
+                "assay": ["Assay1", "Assay1", "Assay2", "Assay2"],
+                "sequencer_id": ["Sequencer1", "Sequencer1", "Sequencer2", "Sequencer2"],
+                "verifybamid_data__freemix": [1, 2, 3, 4]
+            }
+        )
+
+        # set the seed to get expected results
+        random.seed(0)
+        test_output = format_data_for_plotly_js(test_input)
+        expected_output = (
+            json.dumps([
+                {
+                    "x": [
+                        ["Jun. 2024", "Jun. 2024"],
+                        ["240624_Project1", "240624_Project1"]
+                    ],
+                    "y": [1.0, 2.0],
+                    "name": "Assay1 - Sequencer1",
+                    "type": "box",
+                    "text": ["Sample1", "Sample2"],
+                    "boxpoints": "suspectedoutliers",
+                    "marker": {
+                        "color": "#6600cc",
+                    },
+                    "line": {
+                        "color": "#6600cc"
+                    },
+                    "fillcolor": "#6600cc80",
+                    "offsetgroup": "",
+                    "legendgroup": "Assay1 - Sequencer1",
+                    "legend": "Assay1 - Sequencer1",
+                    "visible": True,
+                    "showlegend": True
+                },
+                {
+                    "x": [
+                        ["Jun. 2024", "Jun. 2024"],
+                        ["240624_Project2", "240624_Project2"]
+                    ],
+                    "y": [3.0, 4.0],
+                    "name": "Assay2 - Sequencer2",
+                    "type": "box",
+                    "text": ["Sample3", "Sample4"],
+                    "boxpoints": "suspectedoutliers",
+                    "marker": {
+                        "color": "#6ddfff",
+                    },
+                    "line": {
+                        "color": "#6ddfff"
+                    },
+                    "fillcolor": "#6ddfff80",
+                    "offsetgroup": "",
+                    "legendgroup": "Assay2 - Sequencer2",
+                    "legend": "Assay2 - Sequencer2",
+                    "visible": True,
+                    "showlegend": True
+                },
+            ]),
+            json.dumps(False)
+        )
+
+        self.assertEqual(test_output, expected_output)
+
+    def test_format_data_for_plotly_js_lane_metric(self):
+        test_input = pd.DataFrame(
+            {
+                "sample_id": ["Sample1", "Sample2", "Sample3", "Sample4", "Sample5"],
+                "date": ["2024-06-24", "2024-06-24", "2024-06-24", "2024-06-24", "2024-06-25"],
+                "project_name": ["240624_Project1", "240624_Project1", "240624_Project2", "240624_Project2", "240625_Project3"],
+                "assay": ["Assay1", "Assay1", "Assay2", "Assay2", "Assay1"],
+                "sequencer_id": ["Sequencer1", "Sequencer1", "Sequencer2", "Sequencer2", "Sequencer1"],
+                "fastqc__read_data_1st_lane_R1__lane": ["L001", "L001", "L003", "L003", "L001"],
+                "fastqc__read_data_2nd_lane_R1__lane": ["L002", "L002", "L004", "L004", "L002"],
+                "read_data_1st_lane_R1": [1, 2, 3, 4, 1],
+                "read_data_1st_lane_R2": [5, 6, 7, 8, 1],
+                "read_data_2nd_lane_R1": [9, 10, 11, 12, 2],
+                "read_data_2nd_lane_R2": [13, 14, 15, 16, 4]
+            }
+        )
+
+        # set the seed to get expected results
+        random.seed(0)
+        test_output = format_data_for_plotly_js(test_input)
+        expected_output = (
+            json.dumps([
+                # trace for Project1 all values
+                {
+                    "x": [
+                        ["Jun. 2024", "Jun. 2024"],
+                        ["240624_Project1", "240624_Project1"]
+                    ],
+                    "y": [7.0, 8.0],
+                    "name": "Assay1 - Sequencer1",
+                    "type": "box",
+                    "text": ["Sample1", "Sample2"],
+                    "boxpoints": "suspectedoutliers",
+                    "marker": {
+                        "color": "#6600cc",
+                    },
+                    "line": {
+                        "color": "#6600cc"
+                    },
+                    "fillcolor": "#6600cc80",
+                    "offsetgroup": "Assay1 - Sequencer1",
+                    "legendgroup": "Assay1 - Sequencer1",
+                    "legend": "Assay1 - Sequencer1",
+                    "visible": True,
+                    "showlegend": True
+                },
+                # trace for Project1 first lane
+                {
+                    "x": [
+                        ["Jun. 2024", "Jun. 2024"],
+                        ["240624_Project1", "240624_Project1"]
+                    ],
+                    "y": [3.0, 4.0],
+                    "name": "First lane",
+                    "type": "box",
+                    "text": ["Sample1 - L001", "Sample2 - L001"],
+                    "boxpoints": "suspectedoutliers",
+                    "marker": {
+                        "color": "AED6F1",
+                    },
+                    "line": {
+                        "color": "000000"
+                    },
+                    "fillcolor": "AED6F180",
+                    "offsetgroup": "First lane",
+                    "legendgroup": "First lane",
+                    "legend": "First lane",
+                    "visible": "legendonly",
+                    "showlegend": True
+                },
+                # trace for Project1 second lane
+                {
+                    "x": [
+                        ["Jun. 2024", "Jun. 2024"],
+                        ["240624_Project1", "240624_Project1"]
+                    ],
+                    "y": [11.0, 12.0],
+                    "name": "Second lane",
+                    "type": "box",
+                    "text": ["Sample1 - L002", "Sample2 - L002"],
+                    "boxpoints": "suspectedoutliers",
+                    "marker": {
+                        "color": "F1948A",
+                    },
+                    "line": {
+                        "color": "000000"
+                    },
+                    "fillcolor": "F1948A80",
+                    "offsetgroup": "Second lane",
+                    "legendgroup": "Second lane",
+                    "legend": "Second lane",
+                    "visible": "legendonly",
+                    "showlegend": True
+                },
+                # trace for Project2 all values
+                {
+                    "x": [
+                        ["Jun. 2024", "Jun. 2024"],
+                        ["240624_Project2", "240624_Project2"]
+                    ],
+                    "y": [9.0, 10.0],
+                    "name": "Assay2 - Sequencer2",
+                    "type": "box",
+                    "text": ["Sample3", "Sample4"],
+                    "boxpoints": "suspectedoutliers",
+                    "marker": {
+                        "color": "#6ddfff",
+                    },
+                    "line": {
+                        "color": "#6ddfff"
+                    },
+                    "fillcolor": "#6ddfff80",
+                    "offsetgroup": "Assay2 - Sequencer2",
+                    "legendgroup": "Assay2 - Sequencer2",
+                    "legend": "Assay2 - Sequencer2",
+                    "visible": True,
+                    "showlegend": True
+                },
+                # trace for Project2 first lane
+                {
+                    "x": [
+                        ["Jun. 2024", "Jun. 2024"],
+                        ["240624_Project2", "240624_Project2"]
+                    ],
+                    "y": [5.0, 6.0],
+                    "name": "First lane",
+                    "type": "box",
+                    "text": ["Sample3 - L003", "Sample4 - L003"],
+                    "boxpoints": "suspectedoutliers",
+                    "marker": {
+                        "color": "AED6F1",
+                    },
+                    "line": {
+                        "color": "000000"
+                    },
+                    "fillcolor": "AED6F180",
+                    "offsetgroup": "First lane",
+                    "legendgroup": "First lane",
+                    "legend": "First lane",
+                    "visible": "legendonly",
+                    "showlegend": False
+                },
+                # trace for Project2 second lane
+                {
+                    "x": [
+                        ["Jun. 2024", "Jun. 2024"],
+                        ["240624_Project2", "240624_Project2"]
+                    ],
+                    "y": [13.0, 14.0],
+                    "name": "Second lane",
+                    "type": "box",
+                    "text": ["Sample3 - L004", "Sample4 - L004"],
+                    "boxpoints": "suspectedoutliers",
+                    "marker": {
+                        "color": "F1948A",
+                    },
+                    "line": {
+                        "color": "000000"
+                    },
+                    "fillcolor": "F1948A80",
+                    "offsetgroup": "Second lane",
+                    "legendgroup": "Second lane",
+                    "legend": "Second lane",
+                    "visible": "legendonly",
+                    "showlegend": False
+                },
+                # trace for Project3 all values
+                {
+                    "x": [
+                        ["Jun. 2024"],
+                        ["240625_Project3"]
+                    ],
+                    "y": [2.0],
+                    "name": "Assay1 - Sequencer1",
+                    "type": "box",
+                    "text": ["Sample5"],
+                    "boxpoints": "suspectedoutliers",
+                    "marker": {
+                        "color": "#6600cc",
+                    },
+                    "line": {
+                        "color": "#6600cc"
+                    },
+                    "fillcolor": "#6600cc80",
+                    "offsetgroup": "Assay1 - Sequencer1",
+                    "legendgroup": "Assay1 - Sequencer1",
+                    "legend": "Assay1 - Sequencer1",
+                    "visible": True,
+                    "showlegend": False
+                },
+                # trace for Project3 first lane
+                {
+                    "x": [
+                        ["Jun. 2024"],
+                        ["240625_Project3"]
+                    ],
+                    "y": [1.0],
+                    "name": "First lane",
+                    "type": "box",
+                    "text": ["Sample5 - L001"],
+                    "boxpoints": "suspectedoutliers",
+                    "marker": {
+                        "color": "AED6F1",
+                    },
+                    "line": {
+                        "color": "000000"
+                    },
+                    "fillcolor": "AED6F180",
+                    "offsetgroup": "First lane",
+                    "legendgroup": "First lane",
+                    "legend": "First lane",
+                    "visible": "legendonly",
+                    "showlegend": False
+                },
+                # trace for Project3 second lane
+                {
+                    "x": [
+                        ["Jun. 2024"],
+                        ["240625_Project3"]
+                    ],
+                    "y": [3.0],
+                    "name": "Second lane",
+                    "type": "box",
+                    "text": ["Sample5 - L002"],
+                    "boxpoints": "suspectedoutliers",
+                    "marker": {
+                        "color": "F1948A",
+                    },
+                    "line": {
+                        "color": "000000"
+                    },
+                    "fillcolor": "F1948A80",
+                    "offsetgroup": "Second lane",
+                    "legendgroup": "Second lane",
+                    "legend": "Second lane",
+                    "visible": "legendonly",
+                    "showlegend": False
+                },
+            ]),
+            json.dumps(True)
+        )
 
         self.assertEqual(test_output, expected_output)
