@@ -202,8 +202,8 @@ class TestPlotting(TestCase):
 
     @patch("trend_monitoring.backend_utils.plot.get_metric_filter")
     def test_get_data_for_plotting_missing_samples(self, mock_metric_filter):
-        """ Test the get_data_for_plotting function while providing no empty
-        values
+        """ Test the get_data_for_plotting function while providing a sample
+        without a value
 
         Args:
             mock_metric_filter (Mock thing?): Mock thing for the
