@@ -249,14 +249,14 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
         +-----------+-------+--------------+--------------+
 
     For tools with lane data, the dataframe should be 8 columns:
-        +-----------+-------+--------------+------------+-------------+--------------------+--------------------+--------------------+--------------------+
-        | sample_id | date  | project_name | first lane | second lane | metric_field_L1_R1 | metric_field_L1_R2 | metric_field_L2_R1 | metric_field_L2_R2 |
-        +-----------+-------+--------------+------------+-------------+--------------------+--------------------+--------------------+--------------------+
-        | sample1   | date1 | name1        | value1     | value1      | value1             | value1             | value1             | value1             |
-        | sample2   | date1 | name1        | value2     | value2      | value2             | value2             | value2             | value2             |
-        | sample3   | date1 | name2        | value3     | value3      | value3             | value3             | value3             | value3             |
-        | sample4   | date2 | name3        | value4     | value4      | value4             | value4             | value4             | value4             |
-        +-----------+-------+--------------+------------+-------------+--------------------+--------------------+--------------------+--------------------+
+        +-----------+-------+--------------+--------+--------------+------------+-------------+--------------------+--------------------+--------------------+--------------------+
+        | sample_id | date  | project_name | assay  | sequencer_id | first lane | second lane | metric_field_L1_R1 | metric_field_L1_R2 | metric_field_L2_R1 | metric_field_L2_R2 |
+        +-----------+-------+--------------+--------+--------------+------------+-------------+--------------------+--------------------+--------------------+--------------------+
+        | sample1   | date1 | name1        | assay1 | sequencer1   | value1     | value1      | value1             | value1             | value1             | value1             |
+        | sample2   | date1 | name1        | assay2 | sequencer2   | value2     | value2      | value2             | value2             | value2             | value2             |
+        | sample3   | date1 | name2        | assay3 | sequencer3   | value3     | value3      | value3             | value3             | value3             | value3             |
+        | sample4   | date2 | name3        | assay4 | sequencer4   | value4     | value4      | value4             | value4             | value4             | value4             |
+        +-----------+-------+--------------+--------+--------------+------------+-------------+--------------------+--------------------+--------------------+--------------------+
 
     Returns:
         list: List of lists of the traces that need to be plotted
