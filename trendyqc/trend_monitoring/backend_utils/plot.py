@@ -344,7 +344,9 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
     # boxplots
     for project_name in plot_data.sort_values("date")["project_name"].unique():
         # get sub df with for the project name
-        data_one_run = plot_data[plot_data["project_name"] == project_name]
+        data_one_run = plot_data[
+            plot_data["project_name"] == project_name
+        ].copy()
 
         assay_name = data_one_run['assay'].unique()[0]
         sequencer_id = data_one_run['sequencer_id'].unique()[0]
@@ -358,8 +360,8 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
 
         if len(metrics) > 1:
             # get the lane columns
-            first_lane_column = data_one_run.columns[3]
-            second_lane_column = data_one_run.columns[4]
+            first_lane_column = data_one_run.columns[5]
+            second_lane_column = data_one_run.columns[6]
             # get the lane names
             first_lane = list(set(data_one_run[first_lane_column].values))[0]
             second_lane = list(set(data_one_run[second_lane_column].values))[0]
@@ -456,7 +458,7 @@ def create_trace(**kwargs):
 
     # convert values to native python types for JSON serialisation
     data_values = [
-        value for value in sub_df[kwargs["data_column"]].values
+        float(value) for value in sub_df[kwargs["data_column"]].values
     ]
 
     date = get_date_from_project_name(kwargs["project_name"])
