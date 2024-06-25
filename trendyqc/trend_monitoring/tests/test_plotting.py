@@ -873,12 +873,12 @@ class TestPlotting(TestCase):
     def test_create_trace(self):
         test_df = pd.DataFrame(
             {
-                "sample_id": [],
-                "date": [],
-                "project_name": [],
-                "assay": [],
-                "sequencer_id": [],
-                "metric": []
+                "sample_id": ["Sample1", "Sample2", "Sample3"],
+                "date": ["2024-06-25", "2024-06-25", "2024-06-25"],
+                "project_name": ["240625_Project1", "240625_Project1", "240625_Project1"],
+                "assay": ["Assay1", "Assay1", "Assay1"],
+                "sequencer_id": ["Sequencer1", "Sequencer1", "Sequencer1"],
+                "metric": [1, 2, 3]
             }
         )
 
@@ -900,15 +900,20 @@ class TestPlotting(TestCase):
         test_output = create_trace(**test_input)
 
         expected_output = {
-            "data": test_df,
-            "data_column": "metric",
-            "project_name": "Assay1 - Project1",
-            "lane": None,
+            "x": [
+                ["Jun. 2024"]*3, ["240625_Project1"]*3
+            ],
+            "y": [1.0, 2.0, 3.0],
+            "type": "box",
+            "text": ["Sample1", "Sample2", "Sample3"],
+            "boxpoints": "suspectedoutliers",
+            "marker": {"color": "#6600cc"},
+            "line": {"color": "#6600cc"},
+            "fillcolor": "#6600cc80",
             "name": "Assay1 - Project1",
-            "boxplot_color": "#6600cc",
-            "boxplot_line_color": "#6600cc",
             "offsetgroup": "",
-            "legendgroup": "",
+            "legendgroup": "Assay1 - Project1",
+            "legend": "Assay1 - Project1",
             "visible": True,
             "showlegend": True
         }
