@@ -12,7 +12,8 @@ from trend_monitoring.backend_utils.plot import (
     get_metric_filter,
     get_date_from_project_name,
     build_groups,
-    format_data_for_plotly_js
+    format_data_for_plotly_js,
+    create_trace
 )
 from trend_monitoring.models.metadata import (
     Report, Report_Sample, Patient, Sample
@@ -866,5 +867,50 @@ class TestPlotting(TestCase):
             ]),
             json.dumps(True)
         )
+
+        self.assertEqual(test_output, expected_output)
+
+    def test_create_trace(self):
+        test_df = pd.DataFrame(
+            {
+                "sample_id": [],
+                "date": [],
+                "project_name": [],
+                "assay": [],
+                "sequencer_id": [],
+                "metric": []
+            }
+        )
+
+        test_input = {
+            "data": test_df,
+            "data_column": "metric",
+            "project_name": "240625_Project1",
+            "lane": None,
+            "name": "Assay1 - Project1",
+            "boxplot_color": "#6600cc",
+            "boxplot_line_color": "#6600cc",
+            "offsetgroup": "",
+            "legendgroup": "Assay1 - Project1",
+            "showlegend": True
+        }
+
+        # set the seed to get expected results
+        random.seed(0)
+        test_output = create_trace(**test_input)
+
+        expected_output = {
+            "data": test_df,
+            "data_column": "metric",
+            "project_name": "Assay1 - Project1",
+            "lane": None,
+            "name": "Assay1 - Project1",
+            "boxplot_color": "#6600cc",
+            "boxplot_line_color": "#6600cc",
+            "offsetgroup": "",
+            "legendgroup": "",
+            "visible": True,
+            "showlegend": True
+        }
 
         self.assertEqual(test_output, expected_output)
