@@ -20,10 +20,10 @@ from trend_monitoring.models.metadata import (
 )
 
 
-class TestPlotting(TestCase):
+class TestGetSubsetQueryset(TestCase):
     @classmethod
     def setUpClass(cls):
-        super(TestPlotting, cls).setUpClass()
+        super(TestGetSubsetQueryset, cls).setUpClass()
 
         Report_Sample.objects.create(
             assay="Assay1",
@@ -152,6 +152,8 @@ class TestPlotting(TestCase):
         )
         self.assertQuerysetEqual(test_output, expected_output, ordered=False)
 
+
+class TestGetDataForPlotting(TestCase):
     @patch("trend_monitoring.backend_utils.plot.get_metric_filter")
     def test_get_data_for_plotting_no_missing_values(self, mock_metric_filter):
         """ Test the get_data_for_plotting function while providing no empty
@@ -444,6 +446,8 @@ class TestPlotting(TestCase):
                 else:
                     self.assertEqual(test, expected)
 
+
+class TestGetMetricFilter(TestCase):
     def test_get_metric_filter_normal_filter(self):
         """ Test the get_metric_filter using VerifyBAMid """
 
@@ -502,6 +506,16 @@ class TestPlotting(TestCase):
         ]
         self.assertEqual(test_output, expected_output)
 
+    def test_get_metric_filter_raise_error(self):
+        """ Test the get_metric_filter using a non existing model/metric """
+
+        model, metric = "NonExistingModel", "NonExistingMetric"
+
+        with self.assertRaises(AssertionError):
+            get_metric_filter(model, metric)
+
+
+class TestGetDateFromProjectName(TestCase):
     def test_get_date_from_project_name_date_present(self):
         """ Test get_date_from_project_name function using a mock project name
         that contains a correct date
@@ -530,6 +544,8 @@ class TestPlotting(TestCase):
         with self.assertRaises(AssertionError):
             get_date_from_project_name(test_project_name)
 
+
+class TestBuildGroups(TestCase):
     def test_build_groups(self):
         """ Test build_groups function """
 
@@ -557,6 +573,8 @@ class TestPlotting(TestCase):
 
         self.assertEqual(test_output, expected_output)
 
+
+class TestFormatDataForPlotlyJS(TestCase):
     def test_format_data_for_plotly_js_normal_metric(self):
         test_input = pd.DataFrame(
             {
@@ -870,6 +888,8 @@ class TestPlotting(TestCase):
 
         self.assertEqual(test_output, expected_output)
 
+
+class TestCreateTrace(TestCase):
     def test_create_trace(self):
         test_df = pd.DataFrame(
             {
