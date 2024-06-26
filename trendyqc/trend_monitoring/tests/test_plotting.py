@@ -516,7 +516,7 @@ class TestPlotting(TestCase):
         test_project_name = "243101"
         with self.assertRaisesRegex(
             AssertionError,
-            "Couldn't find a date in 243101",
+            r"^Couldn't find a date in 243101$",
         ):
             get_date_from_project_name(test_project_name)
 
@@ -528,7 +528,7 @@ class TestPlotting(TestCase):
         test_project_name = "240101_240102"
         with self.assertRaisesRegex(
             AssertionError,
-            "Multiple date looking objects have been found in 240101_240102"
+            r"^Multiple date looking objects have been found in 240101_240102$"
         ):
             get_date_from_project_name(test_project_name)
 
