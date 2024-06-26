@@ -5,7 +5,11 @@ from django.test import TestCase
 import pandas as pd
 
 from trend_monitoring.backend_utils.plot import (
-    get_subset_queryset, get_data_for_plotting, get_metric_filter
+    get_subset_queryset,
+    get_data_for_plotting,
+    get_metric_filter,
+    get_date_from_project_name,
+    build_groups
 )
 from trend_monitoring.models.metadata import (
     Report, Report_Sample, Patient, Sample
@@ -492,4 +496,82 @@ class TestPlotting(TestCase):
             "picard__base_distribution_by_cycle_metrics_2nd_lane_R1__sum_pct_t",
             "picard__base_distribution_by_cycle_metrics_2nd_lane_R2__sum_pct_t"
         ]
+        self.assertEqual(test_output, expected_output)
+
+    def test_get_date_from_project_name_date_present(self):
+        """ Test get_date_from_project_name function using a mock project name
+        that contains a correct date
+        """
+
+        test_project_name = "240101"
+        test_output = get_date_from_project_name(test_project_name)
+        expected_output = "Jan. 2024"
+        self.assertEqual(test_output, expected_output)
+
+    def test_get_date_from_project_name_date_absent(self):
+        """ Test get_date_from_project_name function using a mock project name
+        that doesn't contain a correct date
+        """
+
+        test_project_name = "243101"
+        with self.assertRaisesRegex(
+            AssertionError,
+            r"^Couldn't find a date in 243101$",
+        ):
+            get_date_from_project_name(test_project_name)
+
+    def test_get_date_from_project_name_multiple_dates(self):
+        """ Test get_date_from_project_name function using a mock project name
+        that contains multiple valid dates
+        """
+
+        test_project_name = "240101_240102"
+        with self.assertRaisesRegex(
+            AssertionError,
+            r"^Multiple date looking objects have been found in 240101_240102$"
+        ):
+            get_date_from_project_name(test_project_name)
+
+    def test_get_date_from_project_name_check_a_lot_of_dates(self):
+        """ Test get_date_from_project_name function using 1000 dates to check
+        """
+
+        today = datetime.datetime.today()
+        dates_to_check = [
+            (today - datetime.timedelta(days=x)).strftime('%y%m%d')
+            for x in range(1000)
+        ]
+
+        for date in dates_to_check:
+            with self.subTest():
+                try:
+                    get_date_from_project_name(date)
+                except AssertionError:
+                    raise AssertionError(f"{date} is not a valid date")
+
+    def test_build_groups(self):
+        """ Test build_groups function """
+
+        test_df = pd.DataFrame(
+            {
+                "assay": ["Assay1", "Assay1", "Assay1", "Assay2", "Assay3"],
+                "sequencer_id": [
+                    "Sequencer1",
+                    "Sequencer2",
+                    "Sequencer1",
+                    "Sequencer1",
+                    "Sequencer2"
+                ],
+                "values": [1, 2, 3, 4, 5]
+            }
+        )
+
+        test_output = build_groups(test_df)
+        expected_output = [
+            "Assay1 - Sequencer1",
+            "Assay1 - Sequencer2",
+            "Assay2 - Sequencer1",
+            "Assay3 - Sequencer2"
+        ]
+
         self.assertEqual(test_output, expected_output)
