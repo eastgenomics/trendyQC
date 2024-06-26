@@ -5,7 +5,7 @@ from django.test import TestCase
 import pandas as pd
 
 from trend_monitoring.backend_utils.plot import (
-    get_subset_queryset, get_data_for_plotting
+    get_subset_queryset, get_data_for_plotting, get_metric_filter
 )
 from trend_monitoring.models.metadata import (
     Report, Report_Sample, Patient, Sample
@@ -435,3 +435,61 @@ class TestPlotting(TestCase):
                         pd.testing.assert_frame_equal(test_pd, expected_pd)
                 else:
                     self.assertEqual(test, expected)
+
+    def test_get_metric_filter_normal_filter(self):
+        """ Test the get_metric_filter using VerifyBAMid """
+
+        model, metric = "verifybamid_data", "freemix"
+        test_output = get_metric_filter(model, metric)
+        expected_output = ["verifybamid_data__freemix"]
+        self.assertEqual(test_output, expected_output)
+
+    def test_get_metric_filter_intermediate_picard_filter(self):
+        """ Test the get_metric_filter using Picard """
+
+        model, metric = "hs_metrics", "fold_enrichment"
+        test_output = get_metric_filter(model, metric)
+        expected_output = ["picard__hs_metrics__fold_enrichment"]
+        self.assertEqual(test_output, expected_output)
+
+    def test_get_metric_filter_intermediate_happy_filter(self):
+        """ Test the get_metric_filter using Happy """
+
+        model, metric = "happy_snp_all", "truth_total_het_hom_ratio_snp"
+        test_output = get_metric_filter(model, metric)
+        expected_output = [
+            "happy__happy_snp_all__truth_total_het_hom_ratio_snp"
+        ]
+        self.assertEqual(test_output, expected_output)
+
+    def test_get_metric_filter_fastqc_filter(self):
+        """ Test the get_metric_filter using FastQC (special case) """
+
+        model, metric = "read_data", "total_sequences"
+        test_output = get_metric_filter(model, metric)
+        expected_output = [
+            "fastqc__read_data_1st_lane_R1__lane",
+            "fastqc__read_data_2nd_lane_R1__lane",
+            "fastqc__read_data_1st_lane_R1__total_sequences",
+            "fastqc__read_data_1st_lane_R2__total_sequences",
+            "fastqc__read_data_2nd_lane_R1__total_sequences",
+            "fastqc__read_data_2nd_lane_R2__total_sequences"
+        ]
+        self.assertEqual(test_output, expected_output)
+
+    def test_get_metric_filter_base_distribution_filter(self):
+        """ Test the get_metric_filter using Picard Base distribution by cycle
+        (special case)
+        """
+
+        model, metric = "base_distribution_by_cycle_metrics", "sum_pct_t"
+        test_output = get_metric_filter(model, metric)
+        expected_output = [
+            "picard__base_distribution_by_cycle_metrics_1st_lane_R1__lane",
+            "picard__base_distribution_by_cycle_metrics_2nd_lane_R1__lane",
+            "picard__base_distribution_by_cycle_metrics_1st_lane_R1__sum_pct_t",
+            "picard__base_distribution_by_cycle_metrics_1st_lane_R2__sum_pct_t",
+            "picard__base_distribution_by_cycle_metrics_2nd_lane_R1__sum_pct_t",
+            "picard__base_distribution_by_cycle_metrics_2nd_lane_R2__sum_pct_t"
+        ]
+        self.assertEqual(test_output, expected_output)
