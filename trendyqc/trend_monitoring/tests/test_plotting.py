@@ -526,6 +526,23 @@ class TestPlotting(TestCase):
         with self.assertRaises(AssertionError):
             get_date_from_project_name(test_project_name)
 
+    def test_get_date_from_project_name_check_a_lot_of_dates(self):
+        """ Test get_date_from_project_name function using 1000 dates to check
+        """
+
+        today = datetime.datetime.today()
+        dates_to_check = [
+            (today - datetime.timedelta(days=x)).strftime('%y%m%d')
+            for x in range(1000)
+        ]
+
+        for date in dates_to_check:
+            with self.subTest():
+                try:
+                    get_date_from_project_name(date)
+                except AssertionError:
+                    raise AssertionError(f"{date} is not a valid date")
+
     def test_build_groups(self):
         """ Test build_groups function """
 
