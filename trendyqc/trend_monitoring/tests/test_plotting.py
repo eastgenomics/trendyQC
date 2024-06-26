@@ -514,7 +514,10 @@ class TestPlotting(TestCase):
         """
 
         test_project_name = "243101"
-        with self.assertRaises(AssertionError):
+        with self.assertRaisesRegex(
+            AssertionError,
+            "Couldn't find a date in 243101",
+        ):
             get_date_from_project_name(test_project_name)
 
     def test_get_date_from_project_name_multiple_dates(self):
@@ -523,7 +526,10 @@ class TestPlotting(TestCase):
         """
 
         test_project_name = "240101_240102"
-        with self.assertRaises(AssertionError):
+        with self.assertRaisesRegex(
+            AssertionError,
+            "Multiple date looking objects have been found in 240101_240102"
+        ):
             get_date_from_project_name(test_project_name)
 
     def test_get_date_from_project_name_check_a_lot_of_dates(self):
