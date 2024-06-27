@@ -249,14 +249,14 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
         +-----------+-------+--------------+--------------+
 
     For tools with lane data, the dataframe should be 8 columns:
-        +-----------+-------+--------------+------------+-------------+--------------------+--------------------+--------------------+--------------------+
-        | sample_id | date  | project_name | first lane | second lane | metric_field_L1_R1 | metric_field_L1_R2 | metric_field_L2_R1 | metric_field_L2_R2 |
-        +-----------+-------+--------------+------------+-------------+--------------------+--------------------+--------------------+--------------------+
-        | sample1   | date1 | name1        | value1     | value1      | value1             | value1             | value1             | value1             |
-        | sample2   | date1 | name1        | value2     | value2      | value2             | value2             | value2             | value2             |
-        | sample3   | date1 | name2        | value3     | value3      | value3             | value3             | value3             | value3             |
-        | sample4   | date2 | name3        | value4     | value4      | value4             | value4             | value4             | value4             |
-        +-----------+-------+--------------+------------+-------------+--------------------+--------------------+--------------------+--------------------+
+        +-----------+-------+--------------+--------+--------------+------------+-------------+--------------------+--------------------+--------------------+--------------------+
+        | sample_id | date  | project_name | assay  | sequencer_id | first lane | second lane | metric_field_L1_R1 | metric_field_L1_R2 | metric_field_L2_R1 | metric_field_L2_R2 |
+        +-----------+-------+--------------+--------+--------------+------------+-------------+--------------------+--------------------+--------------------+--------------------+
+        | sample1   | date1 | name1        | assay1 | sequencer1   | value1     | value1      | value1             | value1             | value1             | value1             |
+        | sample2   | date1 | name1        | assay2 | sequencer2   | value2     | value2      | value2             | value2             | value2             | value2             |
+        | sample3   | date1 | name2        | assay3 | sequencer3   | value3     | value3      | value3             | value3             | value3             | value3             |
+        | sample4   | date2 | name3        | assay4 | sequencer4   | value4     | value4      | value4             | value4             | value4             | value4             |
+        +-----------+-------+--------------+--------+--------------+------------+-------------+--------------------+--------------------+--------------------+--------------------+
 
     Returns:
         list: List of lists of the traces that need to be plotted
@@ -344,7 +344,9 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
     # boxplots
     for project_name in plot_data.sort_values("date")["project_name"].unique():
         # get sub df with for the project name
-        data_one_run = plot_data[plot_data["project_name"] == project_name]
+        data_one_run = plot_data[
+            plot_data["project_name"] == project_name
+        ].copy()
 
         assay_name = data_one_run['assay'].unique()[0]
         sequencer_id = data_one_run['sequencer_id'].unique()[0]
@@ -358,8 +360,8 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
 
         if len(metrics) > 1:
             # get the lane columns
-            first_lane_column = data_one_run.columns[3]
-            second_lane_column = data_one_run.columns[4]
+            first_lane_column = data_one_run.columns[5]
+            second_lane_column = data_one_run.columns[6]
             # get the lane names
             first_lane = list(set(data_one_run[first_lane_column].values))[0]
             second_lane = list(set(data_one_run[second_lane_column].values))[0]
@@ -456,7 +458,7 @@ def create_trace(**kwargs):
 
     # convert values to native python types for JSON serialisation
     data_values = [
-        value for value in sub_df[kwargs["data_column"]].values
+        float(value) for value in sub_df[kwargs["data_column"]].values
     ]
 
     date = get_date_from_project_name(kwargs["project_name"])
