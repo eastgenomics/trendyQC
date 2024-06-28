@@ -212,8 +212,8 @@ class TestGetDataForPlotting(TestCase):
 
     @patch("trend_monitoring.backend_utils.plot.get_metric_filter")
     def test_get_data_for_plotting_missing_samples(self, mock_metric_filter):
-        """ Test the get_data_for_plotting function while providing no empty
-        values
+        """ Test the get_data_for_plotting function while providing a sample
+        without a value
 
         Args:
             mock_metric_filter (Mock thing?): Mock thing for the
@@ -532,7 +532,10 @@ class TestGetDateFromProjectName(TestCase):
         """
 
         test_project_name = "243101"
-        with self.assertRaises(AssertionError):
+        with self.assertRaisesRegex(
+            AssertionError,
+            r"^Couldn't find a date in 243101$",
+        ):
             get_date_from_project_name(test_project_name)
 
     def test_get_date_from_project_name_multiple_dates(self):
@@ -541,8 +544,28 @@ class TestGetDateFromProjectName(TestCase):
         """
 
         test_project_name = "240101_240102"
-        with self.assertRaises(AssertionError):
+        with self.assertRaisesRegex(
+            AssertionError,
+            r"^Multiple date looking objects have been found in 240101_240102$"
+        ):
             get_date_from_project_name(test_project_name)
+
+    def test_get_date_from_project_name_check_a_lot_of_dates(self):
+        """ Test get_date_from_project_name function using 1000 dates to check
+        """
+
+        today = datetime.datetime.today()
+        dates_to_check = [
+            (today - datetime.timedelta(days=x)).strftime('%y%m%d')
+            for x in range(1000)
+        ]
+
+        for date in dates_to_check:
+            with self.subTest():
+                try:
+                    get_date_from_project_name(date)
+                except AssertionError:
+                    raise AssertionError(f"{date} is not a valid date")
 
 
 class TestBuildGroups(TestCase):
