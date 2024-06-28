@@ -576,6 +576,8 @@ class TestBuildGroups(TestCase):
 
 class TestFormatDataForPlotlyJS(TestCase):
     def test_format_data_for_plotly_js_normal_metric(self):
+        """ Test format_data_for_plotly_js with a normal metric """
+
         test_input = pd.DataFrame(
             {
                 "sample_id": ["Sample1", "Sample2", "Sample3", "Sample4"],
@@ -645,6 +647,10 @@ class TestFormatDataForPlotlyJS(TestCase):
         self.assertEqual(test_output, expected_output)
 
     def test_format_data_for_plotly_js_lane_metric(self):
+        """ Test format_data_for_plotly_js with a metric linked to individual
+        lanes
+        """
+
         test_input = pd.DataFrame(
             {
                 "sample_id": ["Sample1", "Sample2", "Sample3", "Sample4", "Sample5"],
@@ -891,6 +897,8 @@ class TestFormatDataForPlotlyJS(TestCase):
 
 class TestCreateTrace(TestCase):
     def test_create_trace(self):
+        """ Test to create a trace """
+
         test_df = pd.DataFrame(
             {
                 "sample_id": ["Sample1", "Sample2", "Sample3"],
