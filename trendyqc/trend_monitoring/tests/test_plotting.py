@@ -20,10 +20,10 @@ from trend_monitoring.models.metadata import (
 )
 
 
-class TestPlotting(TestCase):
+class TestGetSubsetQueryset(TestCase):
     @classmethod
     def setUpClass(cls):
-        super(TestPlotting, cls).setUpClass()
+        super(TestGetSubsetQueryset, cls).setUpClass()
 
         Report_Sample.objects.create(
             assay="Assay1",
@@ -152,6 +152,8 @@ class TestPlotting(TestCase):
         )
         self.assertQuerysetEqual(test_output, expected_output, ordered=False)
 
+
+class TestGetDataForPlotting(TestCase):
     @patch("trend_monitoring.backend_utils.plot.get_metric_filter")
     def test_get_data_for_plotting_no_missing_values(self, mock_metric_filter):
         """ Test the get_data_for_plotting function while providing no empty
@@ -444,6 +446,8 @@ class TestPlotting(TestCase):
                 else:
                     self.assertEqual(test, expected)
 
+
+class TestGetMetricFilter(TestCase):
     def test_get_metric_filter_normal_filter(self):
         """ Test the get_metric_filter using VerifyBAMid """
 
@@ -502,6 +506,16 @@ class TestPlotting(TestCase):
         ]
         self.assertEqual(test_output, expected_output)
 
+    def test_get_metric_filter_raise_error(self):
+        """ Test the get_metric_filter using a non existing model/metric """
+
+        model, metric = "NonExistingModel", "NonExistingMetric"
+
+        with self.assertRaises(AssertionError):
+            get_metric_filter(model, metric)
+
+
+class TestGetDateFromProjectName(TestCase):
     def test_get_date_from_project_name_date_present(self):
         """ Test get_date_from_project_name function using a mock project name
         that contains a correct date
@@ -553,6 +567,8 @@ class TestPlotting(TestCase):
                 except AssertionError:
                     raise AssertionError(f"{date} is not a valid date")
 
+
+class TestBuildGroups(TestCase):
     def test_build_groups(self):
         """ Test build_groups function """
 
@@ -580,7 +596,11 @@ class TestPlotting(TestCase):
 
         self.assertEqual(test_output, expected_output)
 
+
+class TestFormatDataForPlotlyJS(TestCase):
     def test_format_data_for_plotly_js_normal_metric(self):
+        """ Test format_data_for_plotly_js with a normal metric """
+
         test_input = pd.DataFrame(
             {
                 "sample_id": ["Sample1", "Sample2", "Sample3", "Sample4"],
@@ -650,6 +670,10 @@ class TestPlotting(TestCase):
         self.assertEqual(test_output, expected_output)
 
     def test_format_data_for_plotly_js_lane_metric(self):
+        """ Test format_data_for_plotly_js with a metric linked to individual
+        lanes
+        """
+
         test_input = pd.DataFrame(
             {
                 "sample_id": ["Sample1", "Sample2", "Sample3", "Sample4", "Sample5"],
@@ -893,7 +917,36 @@ class TestPlotting(TestCase):
 
         self.assertEqual(test_output, expected_output)
 
+    @patch("trend_monitoring.backend_utils.plot.build_groups")
+    def test_format_data_for_plotly_js_too_many_groups(self, mock_groups):
+        """ Test format_data_for_plotly_js with too many groups for the number
+        of colors defined
+        """
+
+        # there are 18 colors set up for the groups, make a list bigger to
+        # trigger the return
+        mock_groups.return_value = range(0, 100)
+
+        test_output = format_data_for_plotly_js(pd.DataFrame(
+            {
+                "column1": [1],
+                "column2": [1],
+                "column3": [1],
+                "column4": [1],
+                "column5": [1],
+                "column6": [1],
+            },
+        ))
+        self.assertEqual(
+            test_output,
+            f"Not enough colors are possible for the groups: {range(0, 100)}"
+        )
+
+
+class TestCreateTrace(TestCase):
     def test_create_trace(self):
+        """ Test to create a trace """
+
         test_df = pd.DataFrame(
             {
                 "sample_id": ["Sample1", "Sample2", "Sample3"],
