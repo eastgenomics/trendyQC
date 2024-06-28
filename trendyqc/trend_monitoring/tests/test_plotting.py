@@ -894,6 +894,31 @@ class TestFormatDataForPlotlyJS(TestCase):
 
         self.assertEqual(test_output, expected_output)
 
+    @patch("trend_monitoring.backend_utils.plot.build_groups")
+    def test_format_data_for_plotly_js_too_many_groups(self, mock_groups):
+        """ Test format_data_for_plotly_js with too many groups for the number
+        of colors defined
+        """
+
+        # there are 18 colors set up for the groups, make a list bigger to
+        # trigger the return
+        mock_groups.return_value = range(0, 100)
+
+        test_output = format_data_for_plotly_js(pd.DataFrame(
+            {
+                "column1": [1],
+                "column2": [1],
+                "column3": [1],
+                "column4": [1],
+                "column5": [1],
+                "column6": [1],
+            },
+        ))
+        self.assertEqual(
+            test_output,
+            f"Not enough colors are possible for the groups: {range(0, 100)}"
+        )
+
 
 class TestCreateTrace(TestCase):
     def test_create_trace(self):
