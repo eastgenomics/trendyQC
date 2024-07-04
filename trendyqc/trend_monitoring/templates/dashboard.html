@@ -76,7 +76,10 @@
 
         <!-- 3rd inner div: Metrics for y-axis -->
         <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%">
-            <h5>Y axis - Metrics</h5>
+            <h5>
+                Y axis - Metrics
+                <img src="{% static "images/exclamation-triangle.svg" %}" data-bs-toggle="tooltip" alt="Caution" width="25" height="25" title="Some Picard data is not available for some assays. Example: GC Bias data for CEN assay"/>
+            </h5>
             <select class="multiselect" name="metrics_y" title="Choose a metric">
                 {% for model, fields in metrics.items %}
                     <optgroup label="{{ model }}">
@@ -100,6 +103,11 @@
 </form>
 
 <script>
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+})
+
 $(function () {
     $(".multiselect").selectpicker({
         liveSearch: true
