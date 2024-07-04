@@ -59,7 +59,10 @@ class Command(BaseCommand):
 
         if is_automated_update:
             now = datetime.datetime.now().strftime("%y%m%d|%I:%M")
-            print(f"Starting update at {now}: {' '.join(sys.argv)}")
+            print(
+                f"Starting update to add projects from the last 48h at {now}: "
+                f"{' '.join(sys.argv)}"
+            )
 
         project_ids = None
 
@@ -79,31 +82,41 @@ class Command(BaseCommand):
                 "No projects found using following command: "
                 f"{' '.join(sys.argv)}"
             )
-            logger.error(msg)
-            raise Exception(msg)
+            logger.warning(msg)
+            print(msg)
 
-        invalid = [
-            p
-            for p in project_ids
-            if not regex.fullmatch(r"project-[a-zA-Z0-9]{24}", p)
-        ]
+            if is_automated_update:
+                now = datetime.datetime.now().strftime("%y%m%d|%I:%M")
+                print(
+                    f"Finished update at {now}, no new projects added"
+                )
 
-        if invalid:
-            msg = f"Invalid DNAnexus project id(s): {','.join(invalid)}"
-            logger.error(msg)
-            raise AssertionError(msg)
+        else:
+            invalid = [
+                p
+                for p in project_ids
+                if not regex.fullmatch(r"project-[a-zA-Z0-9]{24}", p)
+            ]
 
-        imported_reports = []
+            if invalid:
+                msg = f"Invalid DNAnexus project id(s): {','.join(invalid)}"
+                logger.error(msg)
+                raise AssertionError(msg)
 
-        for project_id in project_ids:
-            for report in setup_report_object(project_id):
-                if not options["dry_run"]:
-                    import_multiqc_report(report)
-                    imported_reports.append(report.multiqc_json_id)
+            imported_reports = []
 
-        if is_automated_update:
-            now = datetime.datetime.now().strftime("%y%m%d|%I:%M")
-            formatted_reports = "\n".join(imported_reports)
-            print(
-                f"Finished update at {now}, new reports:\n{formatted_reports}"
-            )
+            for project_id in project_ids:
+                for report in setup_report_object(project_id):
+                    if not options["dry_run"]:
+                        import_multiqc_report(report)
+                        imported_reports.append(report.multiqc_json_id)
+
+            print(f"Finished importing {len(imported_reports)} reports")
+
+            if is_automated_update:
+                now = datetime.datetime.now().strftime("%y%m%d|%I:%M")
+                formatted_reports = "\n".join(imported_reports)
+                print(
+                    f"Finished update at {now}, new reports:\n"
+                    f"{formatted_reports}"
+                )

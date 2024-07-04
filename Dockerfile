@@ -22,6 +22,8 @@ RUN chmod 0644 /etc/cron.d/trendyqc_cron
 RUN crontab /etc/cron.d/trendyqc_cron
 # create log file
 RUN touch /var/log/cron.log
+# fix the cron job: https://stackoverflow.com/questions/21926465/issues-running-cron-in-docker-on-different-hosts
+RUN cat /etc/pam.d/cron | sed -e "s/required     pam_loginuid.so/optional     pam_loginuid.so/g" > /tmp/cron && mv /tmp/cron /etc/pam.d/cron
 
 # copy the gunicorn/cron script
 COPY trendyqc.sh trendyqc.sh
