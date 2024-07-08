@@ -83,10 +83,13 @@ def import_multiqc_report(report: MultiQC_report):
                 "```"
             )
             slack_notify(msg)
+            return False
 
         logger.info((
             f"Successfully imported: "
             f"{report.multiqc_json_id}"
         ))
+        return True
     else:
         logger.debug(f"{report.multiqc_json_id} is not importable")
+        return False
