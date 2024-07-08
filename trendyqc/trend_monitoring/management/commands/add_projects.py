@@ -88,7 +88,7 @@ class Command(BaseCommand):
             if is_automated_update:
                 now = datetime.datetime.now().strftime("%y%m%d|%I:%M")
                 print(
-                    f"Finished update at {now}, no new projects added"
+                    f"Finished update at {now}, no new projects detected"
                 )
 
         else:
@@ -108,15 +108,23 @@ class Command(BaseCommand):
             for project_id in project_ids:
                 for report in setup_report_object(project_id):
                     if not options["dry_run"]:
-                        import_multiqc_report(report)
-                        imported_reports.append(report.multiqc_json_id)
+                        has_been_imported = import_multiqc_report(report)
 
-            print(f"Finished importing {len(imported_reports)} reports")
+                        if has_been_imported:
+                            imported_reports.append(report.multiqc_json_id)
 
             if is_automated_update:
                 now = datetime.datetime.now().strftime("%y%m%d|%I:%M")
-                formatted_reports = "\n".join(imported_reports)
-                print(
-                    f"Finished update at {now}, new reports:\n"
-                    f"{formatted_reports}"
-                )
+
+                if imported_reports:
+                    formatted_reports = "\n".join(imported_reports)
+                    print(
+                        f"Finished update at {now}, new reports:\n"
+                        f"{formatted_reports}"
+                    )
+                else:
+                    print(
+                        f"Finished update at {now}, no new projects added"
+                    )
+            else:
+                print(f"Finished importing {len(imported_reports)} reports")
