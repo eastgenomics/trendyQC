@@ -74,7 +74,6 @@ def import_multiqc_report(report: MultiQC_report):
     if report.is_importable:
         try:
             report.import_instances()
-            return True
         except Exception:
             msg = (
                 f"TrendyQC - Failed to import {report.multiqc_json_id}\n"
@@ -84,11 +83,13 @@ def import_multiqc_report(report: MultiQC_report):
                 "```"
             )
             slack_notify(msg)
+            return False
 
         logger.info((
             f"Successfully imported: "
             f"{report.multiqc_json_id}"
         ))
+        return True
     else:
         logger.debug(f"{report.multiqc_json_id} is not importable")
         return False
