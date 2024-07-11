@@ -14,14 +14,26 @@ Collection of functions that have something to do with DNAnexus.
 
 Script containing the MultiQC report object and everything needed to setup the data in a way to be imported.
 
+## _notifications.py
+
+Script containing functions for the notifications via Slack
+
 ## _parsing.py
 
 Script to parse things (only parsing the assay config)
+
+## _report.py
+
+Script to handle the setup and import of MultiQC reports.
 
 ## _tool.py
 
 Script containing the tool class object.
 
-## initial_import.py
+## _utils.py
+
+Script containing functions that didn't fit in other scripts or are general purpose
+
+## add_projects.py
 
 This script is the entrypoint for importing data.

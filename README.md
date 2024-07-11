@@ -3,7 +3,7 @@ Django app for monitoring trends in MultiQC data using Python 3.8. It is compris
 
 - trendyqc_db: Postgres database for containing the data
 - trendyqc: Django web app which contains the backend and frontend as well as providing the importing functionality
-- trendyqc_proxy: Web proxy in order to function in the prod/dev servers of the bioinformatics team
+- trendyqc_proxy: Nginx web proxy in order to function in the prod/dev servers of the bioinformatics team
 
 ## Environment
 
@@ -57,13 +57,75 @@ In the end, TrendyQC will be available at the `${VIRTUAL_HOST}/${VIRTUAL_PATH}` 
 
 ## How to setup
 
-The dev (10.252.166.183) and prod servers block most URLs. In order to be able to run the containers on the servers, you need to run the docker file locally:
+### Setup the config files for the containers
+
+Each docker container has a config file. These config files need to be located as the following:
+
+- docker-compose.yml
+- config
+  - db
+    - qc_trends_db_env
+  - nginx
+    - conf.d
+      - local.conf
+  - gunicorn
+    - conf.py
+
+The `qc_trends_db_env` file contains the database name and the user setup data:
+
+```txt
+POSTGRES_USER=${db_username}
+POSTGRES_PASSWORD=${db_pwd}
+POSTGRES_DB=${db_name}
+```
+
+The `local.conf` file contains the proxy information for proper proxy setup:
+
+```conf
+upstream trendyqc {
+    # name of the app container
+    server trendyqc:${port_to_use};
+}
+
+server {
+
+    listen 80;
+
+    location /trendyqc/static/ {
+        autoindex on;
+        alias /staticfiles/;
+    }
+
+    location / {
+        proxy_pass http://trendyqc;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $host;
+        proxy_redirect off;
+    }
+}
+```
+
+The `conf.py` file contains basic info on for the gunicorn web server:
+
+```py
+name = 'trendyqc'
+loglevel = 'info'
+errorlog = '-'
+accesslog = '-'
+workers = 2
+```
+
+The directory structure need to be respected and placed at the same level as the docker-compose file used to first setup the images.
+
+### Setup the docker stack
+
+The dev and prod servers block most URLs. In order to be able to run the containers on the servers, you need to run the docker-compose file locally:
 
 ```bash
 docker-compose up -d --build
 ```
 
-Once the containers are running, you need to save the image of the TrendyQC container (the Nginx and Postgres should already be set up on the servers but you can repeat the step to move the Nginx and Postgres images on the servers):
+Once the containers are running, you need to save the image of the TrendyQC container (the Nginx and Postgres should already be set up on the servers but you can repeat the following steps with the appropriate image names to move the Nginx and Postgres images on the servers):
 
 ```bash
 docker save ${name_of_container} | gzip > ${tar_name}.tar.gz
@@ -146,14 +208,19 @@ python trendyqc/manage.py test trend_monitoring.tests
 |  |  |  |- readme.md
 
 |  |  |- management
+|  |  |  |- __init__.py
+
 |  |  |  |- commands
 |  |  |  |  |- utils
 |  |  |  |  |  |- __init__.py
 |  |  |  |  |  |- _check.py
 |  |  |  |  |  |- _dnanexus_utils_.py
 |  |  |  |  |  |- _multiqc.py
+|  |  |  |  |  |- _notifications.py
 |  |  |  |  |  |- _parsing_.py
+|  |  |  |  |  |- _report.py
 |  |  |  |  |  |- _tool.py
+|  |  |  |  |  |- _utils.py
 |  |  |  |  |- add_projects.py
 |  |  |  |  |- readme.md
 
@@ -171,9 +238,9 @@ python trendyqc/manage.py test trend_monitoring.tests
 |  |  |  |  |  |- verifybamid.json
 
 |  |  |  |  |- assays.json
+|  |  |  |  |- displaying_data.json
+|  |  |  |  |- sample_read_tools.json
 |  |  |  |  |- config_readme.md
-
-|  |  |  |- __init__.py
 
 |  |  |- models
 |  |  |  |- __init__.py
@@ -186,7 +253,19 @@ python trendyqc/manage.py test trend_monitoring.tests
 |  |  |- templates
 |  |  |  |- base.html
 |  |  |  |- dashboard.html
+|  |  |  |- login.html
 |  |  |  |- plot.html
+
+|  |  |- tests
+|  |  |  |- test_data
+|  |  |  |- test_reports
+|  |  |  |- __init__.py
+|  |  |  |- custom_tests.py
+|  |  |  |- test_filtering.py
+|  |  |  |- test_multiqc.py
+|  |  |  |- test_plotting.py
+|  |  |  |- test_tool.py
+|  |  |  |- test_views.py
 
 |  |  |- admin.py
 |  |  |- apps.py
@@ -207,4 +286,6 @@ python trendyqc/manage.py test trend_monitoring.tests
 |- Dockerfile
 |- docker-compose.yml
 |- requirements.txt
+|- trendyqc_cron
+|- trendyqc.sh
 ```

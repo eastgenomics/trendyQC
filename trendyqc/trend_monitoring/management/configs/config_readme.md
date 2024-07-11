@@ -192,3 +192,46 @@ Example file with granularity:
     }
 }
 ```
+
+## Additional configs
+
+### displaying_data.json
+
+The `displaying_data.json` file contains the name of models setup and their corresponding "display" names in order to provide the users searching for metrics a more human readable name:
+
+```json
+{
+    "Samtools_data": "Samtools",
+    "VerifyBAMid_data": "Verify BAMid",
+    "Custom_coverage": "Custom coverage",
+    "HS_metrics": "Picard - HS metrics",
+    "Alignment_summary_metrics": "Picard - Alignment summary metrics",
+    "Base_distribution_by_cycle_metrics": "Picard - Base distribution by cycle",
+    "GC_bias_metrics": "Picard - GC bias metrics",
+    "Insert_size_metrics": "Picard - Insert size metrics",
+    "Quality_yield_metrics": "Picard - Quality yield metrics",
+    "PCR_metrics": "Picard - PCR metrics",
+    "Duplication_metrics": "Picard - Duplication metrics",
+
+    "Read_data": "FastQC",
+    "Bcl2fastq_data": "Bcl2fastq",
+
+    "Somalier_data": "Somalier",
+    "Sompy_data": "Sompy",
+    "Vcfqc_data": "Vcfqc",
+    "Happy_snp_all": "Happy - SNP all",
+    "Happy_snp_pass": "Happy - SNP pass",
+    "Happy_indel_all": "Happy - INDEL all",
+    "Happy_indel_pass": "Happy - INDEL all"
+}
+```
+
+### sample_read_tools.json
+
+The `sample_read_tools.json` file contains the name of the models that have data coming from individual lanes which requires a specific handling in the parsing and plotting code.
+
+```json
+{
+    "tools": ["fastqc", "base_distribution_by_cycle_metrics"]
+}
+```
