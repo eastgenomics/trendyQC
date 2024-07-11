@@ -4,7 +4,7 @@ The scripts present in this folder are used by the `views.py` file to handle tas
 
 ## filtering.py
 
-Handle filters and needed functions for saving filters
+Handle filters and needed functions for saving filters.
 
 ## plot.py
 
