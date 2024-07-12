@@ -8,6 +8,7 @@
         "multiqc_picard_insertSize": ["picard", "insert_size_metrics"],
         "multiqc_samtools_flagstat": ["samtools", null],
         "multiqc_somalier_sex_check": ["somalier", null],
+        "multiqc_somalier_table": ["somalier", null],
         "multiqc_sompy": ["sompy", null],
         "multiqc_verifybamid": ["verifybamid", null]
     },
@@ -17,11 +18,13 @@
         "multiqc_happy_indel_data": ["happy", "indel"],
         "multiqc_happy_snp_data": ["happy", "snp"],
         "multiqc_het-hom_analysis": ["vcfqc", null],
+        "multiqc_het-hom_table": ["vcfqc", null],
         "multiqc_picard_HsMetrics": ["picard", "hs_metrics"],
         "multiqc_samtools_flagstat": ["samtools", null],
         "multiqc_sentieon_AlignmentSummaryMetrics": ["picard", "alignment_summary_metrics"],
         "multiqc_sentieon_insertSize": ["picard", "insert_size_metrics"],
         "multiqc_somalier_sex_check": ["somalier", null],
+        "multiqc_somalier_table": ["somalier", null],
         "multiqc_verifybamid": ["verifybamid", null]
     },
     "Twist WES": {
@@ -30,11 +33,13 @@
         "multiqc_happy_indel_data": ["happy", "indel"],
         "multiqc_happy_snp_data": ["happy", "snp"],
         "multiqc_het-hom_analysis": ["vcfqc", null],
+        "multiqc_het-hom_table": ["vcfqc", null],
         "multiqc_picard_HsMetrics": ["picard", "hs_metrics"],
         "multiqc_samtools_flagstat": ["samtools", null],
         "multiqc_sentieon_AlignmentSummaryMetrics": ["picard", "alignment_summary_metrics"],
         "multiqc_sentieon_insertSize": ["picard", "insert_size_metrics"],
         "multiqc_somalier_sex_check": ["somalier", null],
+        "multiqc_somalier_table": ["somalier", null],
         "multiqc_verifybamid": ["verifybamid", null]
     },
     "TruSight Oncology 500": {
@@ -43,6 +48,7 @@
     "SNP genotyping": {
         "multiqc_fastqc": ["fastqc", "read_data"],
         "multiqc_het-hom_analysis": ["vcfqc", null],
+        "multiqc_het-hom_table": ["vcfqc", null],
         "multiqc_picard_AlignmentSummaryMetrics": ["picard", "alignment_summary_metrics"],
         "multiqc_picard_HsMetrics": ["picard", "hs_metrics"],
         "multiqc_picard_QualityYieldMetrics": ["picard", "quality_yield_metrics"],
@@ -56,6 +62,7 @@
         "multiqc_bcl2fastq_bysample": ["bcl2fastq", null],
         "multiqc_fastqc": ["fastqc", "read_data"],
         "multiqc_het-hom_analysis": ["vcfqc", null],
+        "multiqc_het-hom_table": ["vcfqc", null],
         "multiqc_picard_HsMetrics": ["picard", "hs_metrics"],
         "multiqc_picard_dups": ["picard", "duplication_metrics"],
         "multiqc_samtools_flagstat": ["samtools", null],
@@ -68,6 +75,7 @@
         "multiqc_happy_indel_data": ["happy", "indel"],
         "multiqc_happy_snp_data": ["happy", "snp"],
         "multiqc_het-hom_analysis": ["vcfqc", null],
+        "multiqc_het-hom_table": ["vcfqc", null],
         "multiqc_picard_HsMetrics": ["picard", "hs_metrics"],
         "multiqc_picard_dups": ["picard", "duplication_metrics"],
         "multiqc_samtools_flagstat": ["samtools", null],
