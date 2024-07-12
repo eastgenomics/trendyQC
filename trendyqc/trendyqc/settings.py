@@ -292,7 +292,9 @@ LOGGING = {
     },
 }
 
-LOG_VIEWER_FILES = [str(ERROR_LOG), str(STORING_LOG), str(DEBUG_LOG)]
+LOG_VIEWER_FILES = [
+    str(ERROR_LOG), str(STORING_LOG), str(DEBUG_LOG), str(WARNING_LOG)
+]
 LOG_VIEWER_FILES_PATTERN = '*.log*'
 LOG_VIEWER_FILES_DIR = str(BASE_DIR / "logs")
 LOG_VIEWER_PAGE_LENGTH = 25       # total log lines per-page
