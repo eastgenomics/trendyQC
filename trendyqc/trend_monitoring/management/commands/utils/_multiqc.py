@@ -96,7 +96,7 @@ class MultiQC_report():
 
         for multiqc_field_in_config, tool_metadata in self.assay_data.items():
             if multiqc_field_in_config not in multiqc_raw_data:
-                logger.debug((
+                logger.warning((
                     f"{self.multiqc_json_id}: {multiqc_field_in_config} not "
                     "present in report"
                 ))
