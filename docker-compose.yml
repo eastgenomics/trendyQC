@@ -44,7 +44,7 @@ services:
       - 8006
     volumes:
       - static:/app/trendyqc/staticfiles
-      - monitoring:/var/log/monitoring
+      - /var/log/monitoring:/app/trendyqc/grafana
     depends_on:
       - db
 
