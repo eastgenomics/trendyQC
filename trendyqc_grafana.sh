@@ -1,11 +1,11 @@
 #!/bin/bash
 
-if [[ ! -d "/var/log/monitoring" ]]; then
-    mkdir -p /var/log/monitoring
+if [[ ! -d "/app/trendyqc/grafana" ]]; then
+    mkdir -p /app/trendyqc/grafana
 fi
 
-if [[ -f "/var/log/monitoring/trendyqc.prom" ]]; then
-    rm /var/log/monitoring/trendyqc.prom
+if [[ -f "/app/trendyqc/grafana/trendyqc.prom" ]]; then
+    rm /app/trendyqc/grafana/trendyqc.prom
 fi
 
-echo "TrendyQC_cronjob_completed - $(date +'%Y/%m/%d %T')" > /var/log/monitoring/trendyqc.prom
+echo "TrendyQC_cronjob_completed - $(date +'%Y/%m/%d %T')" > /app/trendyqc/grafana/trendyqc.prom
