@@ -64,6 +64,7 @@ SLACK_CHANNEL = os.environ.get("SLACK_CHANNEL")
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 ERROR_LOG = BASE_DIR / "logs" / "errors.log"
+WARNING_LOG = BASE_DIR / "logs" / "warning.log"
 DEBUG_LOG = BASE_DIR / "logs" / "debug.log"
 STORING_LOG = BASE_DIR / "logs" / "storing.log"
 
@@ -259,6 +260,14 @@ LOGGING = {
             "maxBytes": 5242880,  # 5MB
             "backupCount": 2,
         },
+        "warning-log": {
+            "level": "WARNING",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": WARNING_LOG,
+            "formatter": "verbose",
+            "maxBytes": 5242880,
+            "backupCount": 2,
+        },
         "debug-log": {
             "level": "DEBUG",
             "class": "logging.handlers.RotatingFileHandler",
@@ -271,7 +280,7 @@ LOGGING = {
     # Loggers
     "loggers": {
         "basic": {
-            "handlers": ["debug-log", "error-log"],
+            "handlers": ["debug-log", "error-log", "warning-log"],
             "level": "DEBUG",
             "propagate": True,
         },
@@ -283,7 +292,9 @@ LOGGING = {
     },
 }
 
-LOG_VIEWER_FILES = [str(ERROR_LOG), str(STORING_LOG), str(DEBUG_LOG)]
+LOG_VIEWER_FILES = [
+    str(ERROR_LOG), str(STORING_LOG), str(DEBUG_LOG), str(WARNING_LOG)
+]
 LOG_VIEWER_FILES_PATTERN = '*.log*'
 LOG_VIEWER_FILES_DIR = str(BASE_DIR / "logs")
 LOG_VIEWER_PAGE_LENGTH = 25       # total log lines per-page
