@@ -166,9 +166,12 @@ def get_metric_filter(form_model: str, form_metric: str) -> str:
     for model in apps.get_models():
         model_name = model.__name__.lower()
 
-        for field in model._meta.get_fields():
-            if (field.name == form_metric) and (model_name == form_model):
-                metric_filter_dict[model_name] = f"{model_name}__{field.name}"
+        if model_name == form_model:
+            for field in model._meta.get_fields():
+                if field.name.lower() == form_metric:
+                    metric_filter_dict[model_name] = (
+                        f"{model_name}__{field.name}"
+                    )
 
     assert metric_filter_dict, f"{form_metric} does not exist in any model"
 
