@@ -82,28 +82,23 @@ def untar_stream_reports(tar):
     reports = {}
 
     with tarfile.open(tar) as tf:
+        metadata_file_contents = [
+            json.loads(tf.extractfile(member).read())
+            for member in tf.getmembers()
+            if member.isfile() and "metadata" in member.name
+        ]
+
         # go through the files in the tar
         for member in tf.getmembers():
-            # folders are present in the tar, skip them
             if member.isfile():
-                folder_name, file_name = member.name.split("/")
-                metadata_file = member if "metadata" in file_name else None
-                data_file = member if "metadata" not in file_name else None
+                data_file = member.name.split("/")[-1]
 
-                reports.setdefault(folder_name, {})
-
-                if metadata_file:
-                    # get the data from the metadata file
-                    metadata_file_content = tf.extractfile(metadata_file).read()
-                    metadata_json = json.loads(metadata_file_content)
-
-                    for key, value in metadata_json.items():
-                        reports[folder_name][key] = value
-
-                if data_file:
-                    # get the JSON data from the report
-                    file_content = tf.extractfile(data_file).read()
-                    reports[folder_name]["data"] = file_content
+                for metadata in metadata_file_contents:
+                    if data_file in metadata.keys():
+                        reports[data_file] = metadata[data_file]
+                        reports[data_file].update(
+                            {"data": tf.extractfile(member.name).read()}
+                        )
 
     return reports
 
