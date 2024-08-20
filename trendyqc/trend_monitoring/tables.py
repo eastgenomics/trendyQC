@@ -6,12 +6,14 @@ from django.utils.safestring import mark_safe
 
 import django_tables2 as tables
 
+from trend_monitoring.forms import FilterForm
+
 from .models import Report, Filter
 
 
 class FilterContentColumn(tables.Column):
     def __init__(self, classname=None, *args, **kwargs):
-        self.classname=classname
+        self.classname = classname
         super(FilterContentColumn, self).__init__(*args, **kwargs)
 
     def render(self, value):
@@ -30,18 +32,14 @@ class FilterContentColumn(tables.Column):
         """
 
         order_key = [
-            "assay", "run", "sequencer",
+            "assay_select", "run_select", "sequencer_select",
             "metrics_x", "metrics_y",
             "date_start", "date_end", "days_back"
         ]
 
         # load data (json dumped data)
         filter_data = json.loads(value)
-        # remove the select from the keys
-        filter_data = {
-            k.replace("_select", ""): v
-            for k, v in filter_data.items()
-        }
+
         # order the dict for displaying in the filter table
         filter_data = OrderedDict(
             (k, filter_data[k]) for k in order_key if k in filter_data
@@ -49,7 +47,7 @@ class FilterContentColumn(tables.Column):
 
         formatted_data = []
 
-        for key, values in filter_data.items():
+        for key, values in FilterForm.clean_form_for_user(filter_data).items():
             data = f"<ul><li><b>{key}</b>: <ul>"
 
             if isinstance(values, list):
