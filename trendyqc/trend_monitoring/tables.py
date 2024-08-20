@@ -31,7 +31,7 @@ class FilterContentColumn(tables.Column):
 
         order_key = [
             "assay", "run", "sequencer",
-            "metrixs_x", "metrics_y",
+            "metrics_x", "metrics_y",
             "date_start", "date_end",
         ]
 
