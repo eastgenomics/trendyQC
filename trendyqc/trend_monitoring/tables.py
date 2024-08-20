@@ -35,7 +35,7 @@ class FilterContentColumn(tables.Column):
             "date_start", "date_end",
         ]
 
-        # load data (json dumped data) 
+        # load data (json dumped data)
         filter_data = json.loads(value)
         # remove the select from the keys
         filter_data = {
