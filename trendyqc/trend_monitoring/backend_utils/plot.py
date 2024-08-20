@@ -45,6 +45,10 @@ def get_subset_queryset(data: Dict) -> QuerySet:
         filter_dict["report__sequencer_id__in"] = sequencer_ids
 
     if days_back:
+        # calculate the date range at the filtering level in order to keep the
+        # days back option dynamic i.e. if a filter is saved with 30 days back
+        # and is used at the beginning of the month or at the end of the month,
+        # the results will be different
         today = datetime.date.today()
         filter_dict["report__date__range"] = ((
             today + relativedelta(days=-int(days_back[0])),
