@@ -32,7 +32,7 @@ class FilterContentColumn(tables.Column):
         order_key = [
             "assay", "run", "sequencer",
             "metrics_x", "metrics_y",
-            "date_start", "date_end",
+            "date_start", "date_end", "days_back"
         ]
 
         # load data (json dumped data)
