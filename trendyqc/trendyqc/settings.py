@@ -85,6 +85,8 @@ MESSAGE_TAGS = {
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+VERSION = f"v1.0.0{'_dev' if DEBUG else ''}"
+
 ALLOWED_HOSTS = [
     'testserver',
     'localhost',
