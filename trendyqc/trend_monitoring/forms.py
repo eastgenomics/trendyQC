@@ -18,7 +18,51 @@ class FilterForm(forms.Form):
     metrics_x = forms.CharField(required=False)
     date_start = forms.DateField(required=False)
     date_end = forms.DateField(required=False)
+    days_back = forms.IntegerField(required=False)
     metrics_y = forms.CharField()
+
+    @staticmethod
+    def clean_form_for_user(form_data: dict):
+        """ Clean the form info for the ease of comprehension for the user
+
+        Args:
+            form_data (dict): Dict containing the form data used to filter the
+            data to plot
+
+        Returns:
+            dict: Dict containing the form data in a more human readable way
+        """
+
+        cleaned_form_data = {}
+
+        for key, values in form_data.items():
+            if key == "assay_select":
+                new_key = "Assay(s) selected"
+            elif key == "run_select":
+                new_key = "Run(s) selected"
+            elif key == "sequencer_select":
+                new_key = "Sequencer(s) select"
+            elif key == "date_start":
+                new_key = "Selected date start"
+            elif key == "date_end":
+                new_key = "Selected date end"
+            elif key == "days_back":
+                new_key = "Last x days"
+            elif key == "metrics_x":
+                new_key = "Metric for the X-axis"
+            elif key == "metrics_y":
+                new_key = "Metric for the Y-axis"
+            else:
+                new_key = key
+
+            for value in values:
+                if key == "days_back":
+                    today = datetime.date.today()
+                    value = f"{value} days: {today + relativedelta(days=-int(value))} - {today}"
+
+                cleaned_form_data.setdefault(new_key, []).append(value)
+
+        return cleaned_form_data
 
     def clean(self):
         # i can't use super().clean() because QueryDict are dumb:
@@ -112,8 +156,6 @@ class FilterForm(forms.Form):
                 ])
 
             cleaned_data["metrics_y"] = metrics
-
-        print(cleaned_data)
 
         return cleaned_data
 
