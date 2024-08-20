@@ -1,5 +1,6 @@
 import datetime
 
+from dateutil.relativedelta import relativedelta
 from django import forms
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
@@ -65,32 +66,29 @@ class FilterForm(forms.Form):
             ).date()
             cleaned_data["date_end"] = end_date
 
-        if not start_date and end_date:
-            self.add_error(
-                "date_start", ValidationError("No start date selected")
-            )
+        if not start_date:
+            start_date = datetime.date.today() + relativedelta(months=-6)
+            cleaned_data["date_start"] = start_date
 
         # if start date provided but not end date, define end date as today's
         # date
-        if not end_date and start_date:
-            now = datetime.date.today()
-            cleaned_data["date_end"] = now
-            end_date = now
+        if not end_date:
+            end_date = datetime.date.today()
+            cleaned_data["date_end"] = end_date
 
         if not any(run_subset):
             self.add_error(None, ValidationError("No subset of runs selected"))
 
         # basic check if the start date is later than the end date
-        if end_date and start_date:
-            if end_date < start_date:
-                self.add_error(
-                    None, ValidationError(
-                        (
-                            "Date end cannot be smaller than date start: "
-                            f"{start_date} - {end_date}"
-                        )
+        if end_date < start_date:
+            self.add_error(
+                None, ValidationError(
+                    (
+                        "Date end cannot be smaller than date start: "
+                        f"{start_date} - {end_date}"
                     )
                 )
+            )
 
         if not cleaned_data.get("metrics_y", None):
             self.add_error(None, ValidationError("No Y-axis metric selected"))
@@ -115,11 +113,13 @@ class LoginForm(forms.Form):
     username = forms.CharField(
         label='Username',
         widget=forms.TextInput(
-        attrs={'class': 'form-input', 'placeholder': 'Enter username'})
+            attrs={'class': 'form-input', 'placeholder': 'Enter username'}
+        )
     )
 
     password = forms.CharField(
         label='Password',
         widget=forms.PasswordInput(
-        attrs={'class': 'form-input', 'placeholder': 'Enter password'})
+            attrs={'class': 'form-input', 'placeholder': 'Enter password'}
+        )
     )
