@@ -14,7 +14,7 @@ from django.views.generic.edit import FormView
 from django_tables2 import MultiTableMixin
 from django_tables2.config import RequestConfig
 
-from trendyqc.settings import DISPLAY_DATA_JSON
+from trendyqc.settings import DISPLAY_DATA_JSON, VERSION
 from trend_monitoring.models.metadata import Report, Report_Sample
 from trend_monitoring.models.filters import Filter
 from trend_monitoring.models import bam_qc, fastq_qc, vcf_qc
@@ -77,6 +77,7 @@ class Dashboard(MultiTableMixin, TemplateView):
             **self._get_plotable_metrics(vcf_qc)
         }
         context["metrics"] = dict(sorted(plotable_metrics.items()))
+        context["version"] = VERSION
         return context
 
     def _get_plotable_metrics(self, module) -> dict:
@@ -311,7 +312,8 @@ class Plot(View):
                 "skipped_projects": projects_no_metric,
                 "skipped_samples": samples_no_metric,
                 "is_grouped": is_grouped,
-                "plot": json_plot_data
+                "plot": json_plot_data,
+                "version": VERSION
             }
 
             return render(
@@ -347,7 +349,9 @@ class Login(FormView):
     form_class = LoginForm
 
     def get(self, request):
-        return render(request, self.template_name, super().get_context_data())
+        context = super().get_context_data()
+        context["version"] = VERSION
+        return render(request, self.template_name, context)
 
     def post(self, request):
         form = self.form_class(request.POST)
@@ -367,7 +371,10 @@ class Login(FormView):
         msg = "Login failed!"
         messages.add_message(request, messages.ERROR, msg)
 
-        return render(request, self.template_name, super().get_context_data())
+        context = super().get_context_data()
+        context["version"] = VERSION
+
+        return render(request, self.template_name, context)
 
 
 class Logout(View):
