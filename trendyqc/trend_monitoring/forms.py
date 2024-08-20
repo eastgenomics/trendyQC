@@ -1,6 +1,7 @@
 import datetime
 
 from dateutil.relativedelta import relativedelta
+
 from django import forms
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
@@ -46,49 +47,55 @@ class FilterForm(forms.Form):
             cleaned_data.get("run_select", None),
             cleaned_data.get("sequencer_select", None),
             cleaned_data.get("date_start", None),
-            cleaned_data.get("date_end", None)
+            cleaned_data.get("date_end", None),
+            cleaned_data.get("days_back", None)
         ]
 
         start_date = cleaned_data.get("date_start", None)
         end_date = cleaned_data.get("date_end", None)
 
-        if start_date:
-            # clean was converting the type automatically, i need to do it
-            # manually now
-            start_date = datetime.datetime.strptime(
-                start_date[0], "%Y-%m-%d"
-            ).date()
-            cleaned_data["date_start"] = start_date
+        if cleaned_data.get("days_back", None):
+            cleaned_data["days_back"] = cleaned_data.get("days_back")
+        else:
+            if start_date:
+                # clean was converting the type automatically, i need to do it
+                # manually now
+                start_date = datetime.datetime.strptime(
+                    start_date[0], "%Y-%m-%d"
+                ).date()
+                cleaned_data["date_start"] = start_date
 
-        if end_date:
-            end_date = datetime.datetime.strptime(
-                end_date[0], "%Y-%m-%d"
-            ).date()
-            cleaned_data["date_end"] = end_date
+            if end_date:
+                end_date = datetime.datetime.strptime(
+                    end_date[0], "%Y-%m-%d"
+                ).date()
+                cleaned_data["date_end"] = end_date
 
-        if not start_date:
-            start_date = datetime.date.today() + relativedelta(months=-6)
-            cleaned_data["date_start"] = start_date
+            if not start_date:
+                start_date = datetime.date.today() + relativedelta(months=-6)
+                cleaned_data["date_start"] = start_date
 
-        # if start date provided but not end date, define end date as today's
-        # date
-        if not end_date:
-            end_date = datetime.date.today()
-            cleaned_data["date_end"] = end_date
+            # if start date provided but not end date, define end date as
+            # today's date
+            if not end_date:
+                end_date = datetime.date.today()
+                cleaned_data["date_end"] = end_date
 
-        if not any(run_subset):
-            self.add_error(None, ValidationError("No subset of runs selected"))
+            if not any(run_subset):
+                self.add_error(
+                    None, ValidationError("No subset of runs selected")
+                )
 
-        # basic check if the start date is later than the end date
-        if end_date < start_date:
-            self.add_error(
-                None, ValidationError(
-                    (
-                        "Date end cannot be smaller than date start: "
-                        f"{start_date} - {end_date}"
+            # basic check if the start date is later than the end date
+            if end_date < start_date:
+                self.add_error(
+                    None, ValidationError(
+                        (
+                            "Date end cannot be smaller than date start: "
+                            f"{start_date} - {end_date}"
+                        )
                     )
                 )
-            )
 
         if not cleaned_data.get("metrics_y", None):
             self.add_error(None, ValidationError("No Y-axis metric selected"))
@@ -105,6 +112,8 @@ class FilterForm(forms.Form):
                 ])
 
             cleaned_data["metrics_y"] = metrics
+
+        print(cleaned_data)
 
         return cleaned_data
 
