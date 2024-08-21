@@ -98,9 +98,7 @@ class FilterForm(forms.Form):
         start_date = cleaned_data.get("date_start", None)
         end_date = cleaned_data.get("date_end", None)
 
-        if cleaned_data.get("days_back", None):
-            cleaned_data["days_back"] = cleaned_data.get("days_back")
-        else:
+        if not cleaned_data.get("days_back", None):
             if start_date:
                 # clean was converting the type automatically, i need to do it
                 # manually now
