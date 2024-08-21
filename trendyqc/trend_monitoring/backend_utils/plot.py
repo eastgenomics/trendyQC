@@ -5,6 +5,7 @@ import re
 import random
 from typing import Dict
 
+from dateutil.relativedelta import relativedelta
 import pandas as pd
 
 from django.apps import apps
@@ -32,6 +33,7 @@ def get_subset_queryset(data: Dict) -> QuerySet:
     sequencer_ids = data.get("sequencer_select", [])
     date_start = data.get("date_start")
     date_end = data.get("date_end")
+    days_back = data.get("days_back")
 
     if assays:
         filter_dict["assay__in"] = assays
@@ -42,8 +44,19 @@ def get_subset_queryset(data: Dict) -> QuerySet:
     if sequencer_ids:
         filter_dict["report__sequencer_id__in"] = sequencer_ids
 
-    if date_start and date_end:
-        filter_dict["report__date__range"] = (date_start, date_end)
+    if days_back:
+        # calculate the date range at the filtering level in order to keep the
+        # days back option dynamic i.e. if a filter is saved with 30 days back
+        # and is used at the beginning of the month or at the end of the month,
+        # the results will be different
+        today = datetime.date.today()
+        filter_dict["report__date__range"] = ((
+            today + relativedelta(days=-int(days_back[0])),
+            today
+        ))
+    else:
+        if date_start and date_end:
+            filter_dict["report__date__range"] = (date_start, date_end)
 
     # combine all the data passed through the form to build the final queryset
     return Report_Sample.objects.filter(**filter_dict).prefetch_related()

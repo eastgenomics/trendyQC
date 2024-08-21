@@ -15,6 +15,7 @@ from django_tables2 import MultiTableMixin
 from django_tables2.config import RequestConfig
 
 from trendyqc.settings import DISPLAY_DATA_JSON, VERSION
+from trend_monitoring.forms import FilterForm
 from trend_monitoring.models.metadata import Report, Report_Sample
 from trend_monitoring.models.filters import Filter
 from trend_monitoring.models import bam_qc, fastq_qc, vcf_qc
@@ -306,8 +307,12 @@ class Plot(View):
                 logger.error(data)
                 return render(request, self.template_name)
 
+            cleaned_form_data = FilterForm.clean_form_for_user(
+                dict(sorted(formatted_form_data.items()))
+            )
+
             context = {
-                "form": dict(sorted(formatted_form_data.items())),
+                "form": cleaned_form_data,
                 "y_axis": " | ".join(form["metrics_y"]),
                 "skipped_projects": projects_no_metric,
                 "skipped_samples": samples_no_metric,
