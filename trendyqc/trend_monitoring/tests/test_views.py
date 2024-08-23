@@ -13,7 +13,9 @@ class TestDashboard(TestCase):
         """ Create a test filter to be used in the tests """
         json_dict = {
             "assay_select": "Cancer Endocrine Neurology",
-            "metrics_y": "avg_length"
+            "metrics_y": "avg_length",
+            "date_start": "2024-08-20",
+            "date_end": "2024-08-23"
         }
 
         filter_obj = Filter.objects.create(
@@ -104,8 +106,8 @@ class TestDashboard(TestCase):
 
         post_data = {
             'assay_select': ['Cancer Endocrine Neurology'],
-            'date_start': [''],
-            'date_end': [''],
+            'date_start': ['2024-08-20'],
+            'date_end': ['2024-08-23'],
             'metrics_y': ['FastQC|avg_length'],
             # filter use returns the id of the filter to use
             'save_filter': "Name of filter"
@@ -125,7 +127,9 @@ class TestDashboard(TestCase):
             self.assertEqual(created_filter_id.content, json.dumps(
                 {
                     'assay_select': ['Cancer Endocrine Neurology'],
-                    'metrics_y': ['read_data|avg_length']
+                    'date_start': '2024-08-20',
+                    'date_end': '2024-08-23',
+                    'metrics_y': ['read_data|avg_length'],
                 }
             ))
 
@@ -232,7 +236,9 @@ class TestPlot(TestCase):
         )
 
         expected_context = {
-            'form': {'assay_select': ['v1'], 'metrics_y': ['v2']},
+            'form': {
+                'Assay(s) selected': ['v1'], 'Metric for the Y-axis': ['v2']
+            },
             'plot': [
                 {
                     'x0': 'project1',
