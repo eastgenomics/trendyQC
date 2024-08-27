@@ -56,6 +56,12 @@ def get_subset_queryset(data: Dict) -> QuerySet:
         ))
     else:
         if date_start and date_end:
+            if isinstance(date_start, list):
+                date_start = date_start[0]
+
+            if isinstance(date_end, list):
+                date_end = date_end[0]
+
             filter_dict["report__date__range"] = (date_start, date_end)
 
     # combine all the data passed through the form to build the final queryset
