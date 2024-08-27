@@ -105,23 +105,19 @@ class FilterForm(forms.Form):
                 start_date = datetime.datetime.strptime(
                     start_date[0], "%Y-%m-%d"
                 ).date()
-                cleaned_data["date_start"] = start_date
 
             if end_date:
                 end_date = datetime.datetime.strptime(
                     end_date[0], "%Y-%m-%d"
                 ).date()
-                cleaned_data["date_end"] = end_date
 
             if not start_date:
                 start_date = datetime.date.today() + relativedelta(months=-6)
-                cleaned_data["date_start"] = start_date
 
             # if start date provided but not end date, define end date as
             # today's date
             if not end_date:
                 end_date = datetime.date.today()
-                cleaned_data["date_end"] = end_date
 
             if not any(run_subset):
                 self.add_error(
@@ -138,6 +134,9 @@ class FilterForm(forms.Form):
                         )
                     )
                 )
+            else:
+                cleaned_data["date_start"] = [start_date]
+                cleaned_data["date_end"] = [end_date]
 
         if not cleaned_data.get("metrics_y", None):
             self.add_error(None, ValidationError("No Y-axis metric selected"))
