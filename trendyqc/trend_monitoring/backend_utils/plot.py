@@ -56,6 +56,12 @@ def get_subset_queryset(data: Dict) -> QuerySet:
         ))
     else:
         if date_start and date_end:
+            if isinstance(date_start, list):
+                date_start = date_start[0]
+
+            if isinstance(date_end, list):
+                date_end = date_end[0]
+
             filter_dict["report__date__range"] = (date_start, date_end)
 
     # combine all the data passed through the form to build the final queryset
@@ -278,26 +284,33 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
         list: List of lists of the traces that need to be plotted
     """
 
-    colors = [
-        "#FF0000",   # red
-        "#FFBABA",   # pinkish
-        "#A04D4D",   # brown
-        "#B30000",   # maroon
-        "#FF7800",   # orange
-        "#B69300",   # ugly yellow
-        "#7D8040",   # olive
-        "#00FF00",   # bright green
-        "#000000",   # black
-        "#969696",   # grey
-        "#c7962c",   # goldish
-        "#ff65ff",   # fushia
-        "#6600cc",   # purple
-        "#1c6dff",   # blue
-        "#6ddfff",   # light blue
-        "#ffdf3c",  # yellow
-        "#00cc99",  # turquoise
-        "#00a600",  # green
-    ]
+    colors = {
+        "Cancer Endocrine Neurology": [
+            "#FF0000",   # red
+            "#FFBABA",   # pinkish
+            "#A04D4D",   # brown
+            "#B30000",   # maroon
+        ],
+        "Myeloid": [
+            "#FF7800",   # orange
+            "#B69300",   # ugly yellow
+            "#000000",   # black
+            "#969696",   # grey
+        ],
+        "TruSight Oncology 500": [
+            "#7D8040",   # olive
+            "#00cc99",  # turquoise
+            "#00a600",  # green
+            "#00FF00",   # bright green
+
+        ],
+        "Twist WES": [
+            "#ff65ff",   # fushia
+            "#6600cc",   # purple
+            "#1c6dff",   # blue
+            "#6ddfff",   # light blue
+        ]
+    }
 
     # args dict for configuring the traces for combined, first, second lane
     args = {
@@ -340,17 +353,9 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
     groups = build_groups(plot_data)
     seen_groups = []
 
-    group_colors = {}
-
     # too many groups are possible
-    if len(colors) < len(groups):
+    if sum([len(v) for v in colors.values()]) < len(groups):
         return f"Not enough colors are possible for the groups: {groups}"
-
-    # assign colors to groups
-    for i, group in enumerate(groups):
-        random_color = random.choice(colors)
-        group_colors[group] = random_color
-        colors.remove(random_color)
 
     # first second lane flag to fix duplication in the legend
     seen_first_lane = False
@@ -369,6 +374,8 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
         legend_name = f"{assay_name} - {sequencer_id}"
 
         if legend_name not in seen_groups:
+            assay_colors = colors[assay_name]
+            color_assay_sequencer = assay_colors.pop(0)
             seen_groups.append(legend_name)
             shown_legend = True
         else:
@@ -386,8 +393,8 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
             args["First lane"]["columns"] = plot_data.columns[7:9]
             args["Second lane"]["columns"] = plot_data.columns[9:11]
 
-            args["Combined"]["boxplot_color"] = group_colors[legend_name]
-            args["Combined"]["boxplot_line_color"] = group_colors[legend_name]
+            args["Combined"]["boxplot_color"] = color_assay_sequencer
+            args["Combined"]["boxplot_line_color"] = color_assay_sequencer
             args["Combined"]["name"] = legend_name
             args["Combined"]["offsetgroup"] = legend_name
             args["Combined"]["legendgroup"] = legend_name
@@ -444,8 +451,8 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
                     "project_name": project_name,
                     "lane": None,
                     "offsetgroup": "",
-                    "boxplot_color": group_colors[legend_name],
-                    "boxplot_line_color": group_colors[legend_name],
+                    "boxplot_color": color_assay_sequencer,
+                    "boxplot_line_color": color_assay_sequencer,
                     "showlegend": shown_legend
                 },
                 **legend_args
