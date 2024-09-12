@@ -1,0 +1,8 @@
+{
+    "custom_coverage_mqc-generalstats-custom_coverage-1000x": "cov_1000x",
+    "custom_coverage_mqc-generalstats-custom_coverage-250x": "cov_250x",
+    "custom_coverage_mqc-generalstats-custom_coverage-300x": "cov_300x",
+    "custom_coverage_mqc-generalstats-custom_coverage-200x": "cov_200x",
+    "custom_coverage_mqc-generalstats-custom_coverage-500x": "cov_500x",
+    "custom_coverage_mqc-generalstats-custom_coverage-Usable_unique_bases_on_target": "usable_unique_bases_on_target"
+}

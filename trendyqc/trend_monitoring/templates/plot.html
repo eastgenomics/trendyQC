@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block plot %}
+
+{% if plot %}
+    <div class="recap" style="width:90%; margin: auto; padding: 10px; ">
+        <!-- 1st inner div: recap of plotting filter -->
+        {% if form %}
+            <div class="recap-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:40%; padding: 10px;">
+                <div class="recap">
+                    <h5>Plotting filter</h5>
+                    {% for key, values in form.items %}
+                        <ul>
+                            - <b>{{ key }}</b>:
+                            {% for value in values %}
+                                <ul>- {{ value }}</ul>
+                            {% endfor %}
+                        </ul>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="button-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%; padding: 10px;">
+                <form action="{% url "Plot" %}" method="post" id="return_dashboard"> {% csrf_token %}
+                        <input class="btn btn-info" type="submit" name="dashboard" value="Go back to dashboard">
+                </form>
+
+                <br>
+
+                {% if user.is_authenticated %}
+                    <form action="{% url "Plot" %}" method="post" id="filter_form"> {% csrf_token %}
+                        <button class="btn btn-info" type="submit" value="Save filter" name="save_filter" id="save_filter" onclick="saveFilter();"/>Save filter</button>
+                    </form>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    <br>
+
+    <div class="skipped_div" style="width:90%; margin: auto; padding: 10px; ">
+        <!-- 2nd potential inner div: collapsible button for displaying projects which didn't have that metric in the database -->
+        {% if skipped_projects %}
+            <div class="skipped-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:45%; padding: 10px;">
+                <p>
+                    <button class="btn btn-warning" type="button" data-toggle="collapse" data-target="#collapseSkipped" aria-expanded="false" aria-controls="collapseSkipped">
+                        Skipped projects (no metrics found)
+                    </button>
+                </p>
+                <div class="collapse" id="collapseSkipped">
+                    <div class="card card-body">
+                        <ul>
+                        {% for metric, projects in skipped_projects.items %}
+                            <li>{{ metric }}</li>
+                            <ul>
+                            {% for project in projects %}
+                                <li>{{ project }}</li>
+                            {% endfor %}
+                            </ul>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        <!-- 3rd potential inner div: collapsible button for displaying samples which didn't have that metric -->
+        <!-- Example: X226025-GM2312272-23NGCEN4-9527-F-99347387-FR in 002_230706_A01295_0198_AHHHT5DRX3_CEN for gt_depth_sd in Somalier -->
+        {% if skipped_samples %}
+            <div class="skipped-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:45%; padding: 10px;">
+                <p>
+                    <button class="btn btn-warning" type="button" data-toggle="collapse" data-target="#collapseSkipped" aria-expanded="false" aria-controls="collapseSkipped">
+                        Skipped samples (no metrics found)
+                    </button>
+                </p>
+                <div class="collapse" id="collapseSkipped">
+                    <div class="card card-body">
+                        <ul>
+                        {% for metric, projects in skipped_samples.items %}
+                            <li>{{ metric }}</li>
+                            <ul>
+                            {% for project, samples in projects.items %}
+                                <li>{{ project }}</li>
+                                <ul>
+                                {% for sample in samples %}
+                                    <li>{{ sample }}</li>
+                                {% endfor %}
+                                </ul>
+                            {% endfor %}
+                            </ul>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div id="plot-div"></div>
+
+    <script>
+    var plot_data = JSON.parse("{{plot|escapejs}}");
+    if ({{ is_grouped }}) {
+        var boxmode = "group";
+    } else {
+        var boxmode = "overlay";
+    }
+    var layout = {
+        xaxis: {
+            automargin: true,
+            title: {
+                text: "Projects (ordered by date)",
+                standoff: 10
+            },
+            showline: true,
+            tickson: "boundaries",
+            ticklen: 15,
+            showdividers: true,
+            dividercolor: 'grey',
+            dividerwidth: 2,
+        },
+        yaxis: {
+            title: "{{y_axis|escapejs}}",
+            showline: true,
+            gridwidth: 3,
+            ticklen: 10,
+            categoryorder: "array"
+        },
+        height: 1000,
+        showlegend: true,
+        boxgap: 0.1,
+        boxgroupgap: 0.075,
+        boxmode: boxmode
+    };
+    Plotly.newPlot("plot-div", plot_data, layout, {responsive: true});
+
+    function saveFilter() {
+        var filter_name = prompt("Name your filter:", "");
+        if (!filter_name) return;
+        $("#save_filter").val(filter_name);
+        $("#filter_form").submit();
+    }
+    </script>
+
+{% endif %}
+
+{% endblock %}

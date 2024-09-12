@@ -1,0 +1,1 @@
+0 0 * * * /usr/local/bin/python /app/trendyqc/manage.py add_projects -t=-48h -update >> /var/log/cron.log 2>&1 && ./trendyqc_grafana.sh

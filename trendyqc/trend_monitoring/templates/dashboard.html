@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load render_table from django_tables2 %}
+
+{% block dashboard %}
+
+<div style="width:90%; margin: auto; padding: 10px;">
+<p>There are <b>{{ project_names|length }}</b> projects currently in TrendyQC.</p>
+</div>
+
+
+<div style="width:90%; margin: auto; padding: 10px;">
+    {% render_table tables.0 %}
+</div>
+
+{% if user.is_authenticated %}
+    <br>
+
+    <form action="{% url 'Dashboard' %}" method="post" id="filter_use"> {% csrf_token %}
+        <div style="width:90%; margin: auto; padding: 10px;">
+            {% render_table tables.1 %}
+        </div>
+    </form>
+{% endif %}
+
+<br>
+
+<form action="{% url 'Dashboard' %}" method="post" id="filter_form"> {% csrf_token %}
+    <!-- Div for 3 inner divs that will occupy the page horizontally -->
+    <div class="filter" style="width:90%; margin: auto; padding: 10px; ">
+        <!-- 1st inner div: filter for obtaining a subset of runs -->
+        <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%">
+            <h5>Subset selection (select at least one)</h5>
+            <div>
+                <ul>
+                    <select class="multiselect" name="assay_select" multiple title="Choose an assay">
+                        {% for assay in assays %}
+                            <option value="{{ assay }}">{{ assay }}</option>
+                        {% endfor %}
+                    </select>
+                </ul>
+                <ul>
+                    <select class="multiselect" name="run_select" multiple title="Choose a run">
+                        {% for project_name in project_names %}
+                            <option value="{{ project_name }}">{{ project_name }}</option>
+                        {% endfor %}
+                    </select>
+                </ul>
+                <ul>
+                    <select class="multiselect" name="sequencer_select" multiple title="Choose a sequencer id">
+                        {% for sequencer_id in sequencer_ids %}
+                            <option value="{{ sequencer_id }}">{{ sequencer_id }}</option>
+                        {% endfor %}
+                    </select>
+                </ul>
+                <ul>
+                    <input type="date" name="date_start"> - <input type="date" name="date_end">
+                    <img src="{% static "images/exclamation-triangle.svg" %}" data-bs-toggle="tooltip" alt="Caution" width="25" height="25"
+                    title="If not selected, the default date range will get data for the last 6 months"/>
+                </ul>
+                <ul>
+                    <select class="multiselect" name="days_back" title="Number of days back from today">
+                        <option value="30">30 days</option>
+                        <option value="60">60 days</option>
+                        <option value="90">90 days</option>
+                        <option value="120">120 days</option>
+                    </select>
+                    <img src="{% static "images/exclamation-triangle.svg" %}" data-bs-toggle="tooltip" alt="Caution" width="25" height="25"
+                    title="If saved in a filter, the data will be filtered when the filter is used. If the date range and the 'days back' are both selected, the 'days back' will take precedence"/>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 2nd inner div: Metrics for x-axis -->
+        <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%">
+            <h5>X axis - Metrics</h5>
+            <select class="multiselect" name="metrics_x" disabled title="Choose a metric">
+                {% for model, fields in metrics.items %}
+                    <optgroup label={{ model }}>
+                        {% for field in fields %}
+                            <option data-subtext="{{ model }}" data-tokens="{{ model }} {{ field }}" value="{{ model }}|{{ field }}">{{ field }}</option>
+                        {% endfor %}
+                    </optgroup>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- 3rd inner div: Metrics for y-axis -->
+        <div class="filter-column" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; width:30%">
+            <h5>
+                Y axis - Metrics
+                <img src="{% static "images/exclamation-triangle.svg" %}" data-bs-toggle="tooltip" alt="Caution" width="25" height="25"
+                title="Some Picard data is not available for some assays for v1 of TrendyQC but will be fixed in the future. Example: GC Bias data for CEN assay"/>
+            </h5>
+            <select class="multiselect" name="metrics_y" title="Choose a metric">
+                {% for model, fields in metrics.items %}
+                    <optgroup label="{{ model }}">
+                        {% for field in fields %}
+                            <option data-subtext="{{ model }}" data-tokens="{{ model }} {{ field }}" value="{{ model }}|{{ field }}">{{ field }}</option>
+                        {% endfor %}
+                    </optgroup>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <br>
+
+    <div style="display: inline-block; *display: inline; zoom: 1; vertical-align: top; padding-left:5%">
+        <button class="btn btn-info" type="submit" name="plot" value="Plot">Plot</button>
+        {% if user.is_authenticated %}
+            <button class="btn btn-info" type="submit" value="Save filter" name="save_filter" id="save_filter" onclick="saveFilter();"/>Save filter</button>
+        {% endif %}
+    </div>
+</form>
+
+<script>
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+})
+
+$(function () {
+    $(".multiselect").selectpicker({
+        liveSearch: true
+    });
+});
+
+function saveFilter() {
+    var filter_name = prompt("Name your filter:", "");
+    if (!filter_name) return;
+    $("#save_filter").val(filter_name);
+    $("#filter_form").submit();
+};
+
+function submitFilterUse() {
+    $("#filter_use").submit();
+};
+
+function confirmDelete(e) {
+    if (confirm("Do you want to delete?") == true) {
+        $("#filter_use").submit();
+    } else {
+        e.preventDefault();
+    }
+};
+</script>
+
+{% endblock %}

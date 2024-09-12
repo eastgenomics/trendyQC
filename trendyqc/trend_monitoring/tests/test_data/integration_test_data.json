@@ -1,0 +1,305 @@
+[
+    {
+        "model": "trend_monitoring.custom_coverage",
+        "pk": "1",
+        "fields": {
+            "cov_200x": 5.0,
+            "cov_250x": 10.0,
+            "cov_300x": 20.0,
+            "cov_500x": 40.0,
+            "cov_1000x": 67.0,
+            "usable_unique_bases_on_target": 100
+        }
+    },
+    {
+        "model": "trend_monitoring.custom_coverage",
+        "pk": "2",
+        "fields": {
+            "cov_200x": 9.0,
+            "cov_250x": 14.0,
+            "cov_300x": 18.0,
+            "cov_500x": 49.0,
+            "cov_1000x": 20.0,
+            "usable_unique_bases_on_target": 482
+        }
+    },
+    {
+        "model": "trend_monitoring.custom_coverage",
+        "pk": "3",
+        "fields": {
+            "cov_200x": 1.0,
+            "cov_250x": 23.0,
+            "cov_300x": 53.0,
+            "cov_500x": 10.0,
+            "cov_1000x": 49.0,
+            "usable_unique_bases_on_target": 43844
+        }
+    },
+    {
+        "model": "trend_monitoring.custom_coverage",
+        "pk": "4",
+        "fields": {
+            "cov_200x": 239.0,
+            "cov_250x": 24.0,
+            "cov_300x": 96.0,
+            "cov_500x": 38.0,
+            "cov_1000x": 10.0,
+            "usable_unique_bases_on_target": 4237
+        }
+    },
+    {
+        "model": "trend_monitoring.custom_coverage",
+        "pk": "5",
+        "fields": {
+            "cov_200x": 53.0,
+            "cov_250x": 83.0,
+            "cov_300x": 69.0,
+            "cov_500x": 59.0,
+            "cov_1000x": 48.0,
+            "usable_unique_bases_on_target": 2393
+        }
+    },
+    {
+        "model": "trend_monitoring.custom_coverage",
+        "pk": "6",
+        "fields": {
+            "cov_200x": 9.0,
+            "cov_250x": 14.0,
+            "cov_300x": 18.0,
+            "cov_500x": 49.0,
+            "cov_1000x": 20.0,
+            "usable_unique_bases_on_target": 482
+        }
+    },
+    {
+        "model": "trend_monitoring.custom_coverage",
+        "pk": "7",
+        "fields": {
+            "cov_200x": 23.0,
+            "cov_250x": 45.0,
+            "cov_300x": 13.0,
+            "cov_500x": 120.0,
+            "cov_1000x": 43.0,
+            "usable_unique_bases_on_target": 923
+        }
+    },
+    {
+        "model": "trend_monitoring.custom_coverage",
+        "pk": "8",
+        "fields": {
+            "cov_200x": 934.0,
+            "cov_250x": 423.0,
+            "cov_300x": 31.0,
+            "cov_500x": 54.0,
+            "cov_1000x": 96.0,
+            "usable_unique_bases_on_target": 3495
+        }
+    },
+    {
+        "model": "trend_monitoring.custom_coverage",
+        "pk": "9",
+        "fields": {
+            "cov_200x": 23.0,
+            "cov_250x": 54.0,
+            "cov_300x": 93.0,
+            "cov_500x": 89.0,
+            "cov_1000x": 43.0,
+            "usable_unique_bases_on_target": 239
+        }
+    },
+    {
+        "model": "trend_monitoring.custom_coverage",
+        "pk": "10",
+        "fields": {
+            "cov_200x": 7.0,
+            "cov_250x": 48.0,
+            "cov_300x": 61.0,
+            "cov_500x": 69.0,
+            "cov_1000x": 23.0,
+            "usable_unique_bases_on_target": 48953
+        }
+    },
+    {
+        "model": "trend_monitoring.sample",
+        "pk": "1",
+        "fields": {
+            "sample_id": "Sample1"
+        }
+    },
+    {
+        "model": "trend_monitoring.sample",
+        "pk": "2",
+        "fields": {
+            "sample_id": "Sample2"
+        }
+    },
+    {
+        "model": "trend_monitoring.sample",
+        "pk": "3",
+        "fields": {
+            "sample_id": "Sample3"
+        }
+    },
+    {
+        "model": "trend_monitoring.sample",
+        "pk": "4",
+        "fields": {
+            "sample_id": "Sample4"
+        }
+    },
+    {
+        "model": "trend_monitoring.sample",
+        "pk": "5",
+        "fields": {
+            "sample_id": "Sample5"
+        }
+    },
+    {
+        "model": "trend_monitoring.sample",
+        "pk": "6",
+        "fields": {
+            "sample_id": "Sample6"
+        }
+    },
+    {
+        "model": "trend_monitoring.sample",
+        "pk": "7",
+        "fields": {
+            "sample_id": "Sample7"
+        }
+    },
+    {
+        "model": "trend_monitoring.sample",
+        "pk": "8",
+        "fields": {
+            "sample_id": "Sample8"
+        }
+    },
+    {
+        "model": "trend_monitoring.sample",
+        "pk": "9",
+        "fields": {
+            "sample_id": "Sample9"
+        }
+    },
+    {
+        "model": "trend_monitoring.sample",
+        "pk": "10",
+        "fields": {
+            "sample_id": "Sample10"
+        }
+    },
+    {
+        "model": "trend_monitoring.report",
+        "pk": "1",
+        "fields": {
+            "name": "Report",
+            "project_id": "Project_id",
+            "project_name": "240822_Project",
+            "dnanexus_file_id": "File_id",
+            "sequencer_id": "Sequencer",
+            "date": "2024-08-22",
+            "job_date": "2024-08-22T00:00:00Z"
+        }
+    },
+    {
+        "model": "trend_monitoring.report_sample",
+        "pk": "1",
+        "fields": {
+            "assay": "Cancer Endocrine Neurology",
+            "sample": 1,
+            "report": 1,
+            "custom_coverage": 1
+        }
+    },
+    {
+        "model": "trend_monitoring.report_sample",
+        "pk": "2",
+        "fields": {
+            "assay": "Cancer Endocrine Neurology",
+            "sample": 2,
+            "report": 1,
+            "custom_coverage": 2
+        }
+    },
+    {
+        "model": "trend_monitoring.report_sample",
+        "pk": "3",
+        "fields": {
+            "assay": "Cancer Endocrine Neurology",
+            "sample": 3,
+            "report": 1,
+            "custom_coverage": 3
+        }
+    },
+    {
+        "model": "trend_monitoring.report_sample",
+        "pk": "4",
+        "fields": {
+            "assay": "Cancer Endocrine Neurology",
+            "sample": 4,
+            "report": 1,
+            "custom_coverage": 4
+        }
+    },
+    {
+        "model": "trend_monitoring.report_sample",
+        "pk": "5",
+        "fields": {
+            "assay": "Cancer Endocrine Neurology",
+            "sample": 5,
+            "report": 1,
+            "custom_coverage": 5
+        }
+    },
+    {
+        "model": "trend_monitoring.report_sample",
+        "pk": "6",
+        "fields": {
+            "assay": "Cancer Endocrine Neurology",
+            "sample": 6,
+            "report": 1,
+            "custom_coverage": 6
+        }
+    },
+    {
+        "model": "trend_monitoring.report_sample",
+        "pk": "7",
+        "fields": {
+            "assay": "Cancer Endocrine Neurology",
+            "sample": 7,
+            "report": 1,
+            "custom_coverage": 7
+        }
+    },
+    {
+        "model": "trend_monitoring.report_sample",
+        "pk": "8",
+        "fields": {
+            "assay": "Cancer Endocrine Neurology",
+            "sample": 8,
+            "report": 1,
+            "custom_coverage": 8
+        }
+    },
+    {
+        "model": "trend_monitoring.report_sample",
+        "pk": "9",
+        "fields": {
+            "assay": "Cancer Endocrine Neurology",
+            "sample": 9,
+            "report": 1,
+            "custom_coverage": 9
+        }
+    },
+    {
+        "model": "trend_monitoring.report_sample",
+        "pk": "10",
+        "fields": {
+            "assay": "Cancer Endocrine Neurology",
+            "sample": 10,
+            "report": 1,
+            "custom_coverage": 10
+        }
+    }
+]
