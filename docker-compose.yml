@@ -40,6 +40,7 @@ services:
       - BIND_PASSWORD
       - AUTH_LDAP_SERVER_URI
       - LDAP_CONF
+      - DEBUG
     expose:
       - 8006
     volumes:
