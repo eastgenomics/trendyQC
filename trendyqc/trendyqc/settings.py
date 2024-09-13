@@ -85,7 +85,7 @@ MESSAGE_TAGS = {
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
-VERSION = f"v1.0.0{'_dev' if DEBUG else ''}"
+VERSION = f"v1.1.0{'_dev' if DEBUG else ''}"
 
 ALLOWED_HOSTS = [
     'testserver',
