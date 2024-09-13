@@ -36,14 +36,17 @@ try:
     AUTH_LDAP_SERVER_URI = os.environ['AUTH_LDAP_SERVER_URI']
     LDAP_CONF = os.environ['LDAP_CONF']
 
-    # list of allowed hosts for the web app (get an error when posting forms if the
-    # host is in the ALLOWED_HOSTS variable)
+    # list of allowed hosts for the web app (get an error when posting forms
+    # if the host is in the ALLOWED_HOSTS variable)
     ORIGIN = os.environ.get("HOST")
 
     # name of db and credentials used for setting up the database
     DB_NAME = os.environ.get("DB_NAME")
     DB_USER = os.environ.get("DB_USER")
     DB_PASSWORD = os.environ.get("DB_PASSWORD")
+
+    # SECURITY WARNING: don't run with debug turned on in production!
+    DEBUG = os.environ.get("DEBUG")
 
 except KeyError as e:
     key = e.args[0]
@@ -81,9 +84,6 @@ MESSAGE_TAGS = {
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
 VERSION = f"v1.0.0{'_dev' if DEBUG else ''}"
 
