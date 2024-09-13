@@ -37,6 +37,8 @@ BIND_PASSWORD
 AUTH_LDAP_SERVER_URI
 # search parameters
 LDAP_CONF
+# debug mode boolean (don't run with debug turned on in production)
+DEBUG
 
 # VARIABLES USED IN POSTGRES CONTAINER
 # database username to create
