@@ -1,6 +1,5 @@
 import datetime
 import json
-import random
 from unittest.mock import Mock, patch
 
 from django.test import TestCase
@@ -606,14 +605,12 @@ class TestFormatDataForPlotlyJS(TestCase):
                 "sample_id": ["Sample1", "Sample2", "Sample3", "Sample4"],
                 "date": ["2024-06-24", "2024-06-24", "2024-06-24", "2024-06-24"],
                 "project_name": ["240624_Project1", "240624_Project1", "240624_Project2", "240624_Project2"],
-                "assay": ["Assay1", "Assay1", "Assay2", "Assay2"],
+                "assay": ["Cancer Endocrine Neurology", "Cancer Endocrine Neurology", "TruSight Oncology 500", "TruSight Oncology 500"],
                 "sequencer_id": ["Sequencer1", "Sequencer1", "Sequencer2", "Sequencer2"],
                 "verifybamid_data__freemix": [1, 2, 3, 4]
             }
         )
 
-        # set the seed to get expected results
-        random.seed(0)
         test_output = format_data_for_plotly_js(test_input)
         expected_output = (
             json.dumps([
@@ -623,20 +620,20 @@ class TestFormatDataForPlotlyJS(TestCase):
                         ["240624_Project1", "240624_Project1"]
                     ],
                     "y": [1.0, 2.0],
-                    "name": "Assay1 - Sequencer1",
+                    "name": "Cancer Endocrine Neurology - Sequencer1",
                     "type": "box",
                     "text": ["Sample1", "Sample2"],
                     "boxpoints": "suspectedoutliers",
                     "marker": {
-                        "color": "#6600cc",
+                        "color": "#FF0000",
                     },
                     "line": {
-                        "color": "#6600cc"
+                        "color": "#FF0000"
                     },
-                    "fillcolor": "#6600cc80",
+                    "fillcolor": "#FF000080",
                     "offsetgroup": "",
-                    "legendgroup": "Assay1 - Sequencer1",
-                    "legend": "Assay1 - Sequencer1",
+                    "legendgroup": "Cancer Endocrine Neurology - Sequencer1",
+                    "legend": "Cancer Endocrine Neurology - Sequencer1",
                     "visible": True,
                     "showlegend": True
                 },
@@ -646,20 +643,20 @@ class TestFormatDataForPlotlyJS(TestCase):
                         ["240624_Project2", "240624_Project2"]
                     ],
                     "y": [3.0, 4.0],
-                    "name": "Assay2 - Sequencer2",
+                    "name": "TruSight Oncology 500 - Sequencer2",
                     "type": "box",
                     "text": ["Sample3", "Sample4"],
                     "boxpoints": "suspectedoutliers",
                     "marker": {
-                        "color": "#6ddfff",
+                        "color": "#7D8040",
                     },
                     "line": {
-                        "color": "#6ddfff"
+                        "color": "#7D8040"
                     },
-                    "fillcolor": "#6ddfff80",
+                    "fillcolor": "#7D804080",
                     "offsetgroup": "",
-                    "legendgroup": "Assay2 - Sequencer2",
-                    "legend": "Assay2 - Sequencer2",
+                    "legendgroup": "TruSight Oncology 500 - Sequencer2",
+                    "legend": "TruSight Oncology 500 - Sequencer2",
                     "visible": True,
                     "showlegend": True
                 },
@@ -679,7 +676,7 @@ class TestFormatDataForPlotlyJS(TestCase):
                 "sample_id": ["Sample1", "Sample2", "Sample3", "Sample4", "Sample5"],
                 "date": ["2024-06-24", "2024-06-24", "2024-06-24", "2024-06-24", "2024-06-25"],
                 "project_name": ["240624_Project1", "240624_Project1", "240624_Project2", "240624_Project2", "240625_Project3"],
-                "assay": ["Assay1", "Assay1", "Assay2", "Assay2", "Assay1"],
+                "assay": ["TruSight Oncology 500", "TruSight Oncology 500", "Twist WES", "Twist WES", "TruSight Oncology 500"],
                 "sequencer_id": ["Sequencer1", "Sequencer1", "Sequencer2", "Sequencer2", "Sequencer1"],
                 "fastqc__read_data_1st_lane_R1__lane": ["L001", "L001", "L003", "L003", "L001"],
                 "fastqc__read_data_2nd_lane_R1__lane": ["L002", "L002", "L004", "L004", "L002"],
@@ -690,8 +687,6 @@ class TestFormatDataForPlotlyJS(TestCase):
             }
         )
 
-        # set the seed to get expected results
-        random.seed(0)
         test_output = format_data_for_plotly_js(test_input)
         expected_output = (
             json.dumps([
@@ -702,20 +697,20 @@ class TestFormatDataForPlotlyJS(TestCase):
                         ["240624_Project1", "240624_Project1"]
                     ],
                     "y": [7.0, 8.0],
-                    "name": "Assay1 - Sequencer1",
+                    "name": "TruSight Oncology 500 - Sequencer1",
                     "type": "box",
                     "text": ["Sample1", "Sample2"],
                     "boxpoints": "suspectedoutliers",
                     "marker": {
-                        "color": "#6600cc",
+                        "color": "#7D8040",
                     },
                     "line": {
-                        "color": "#6600cc"
+                        "color": "#7D8040"
                     },
-                    "fillcolor": "#6600cc80",
-                    "offsetgroup": "Assay1 - Sequencer1",
-                    "legendgroup": "Assay1 - Sequencer1",
-                    "legend": "Assay1 - Sequencer1",
+                    "fillcolor": "#7D804080",
+                    "offsetgroup": "TruSight Oncology 500 - Sequencer1",
+                    "legendgroup": "TruSight Oncology 500 - Sequencer1",
+                    "legend": "TruSight Oncology 500 - Sequencer1",
                     "visible": True,
                     "showlegend": True
                 },
@@ -774,20 +769,20 @@ class TestFormatDataForPlotlyJS(TestCase):
                         ["240624_Project2", "240624_Project2"]
                     ],
                     "y": [9.0, 10.0],
-                    "name": "Assay2 - Sequencer2",
+                    "name": "Twist WES - Sequencer2",
                     "type": "box",
                     "text": ["Sample3", "Sample4"],
                     "boxpoints": "suspectedoutliers",
                     "marker": {
-                        "color": "#6ddfff",
+                        "color": "#ff65ff",
                     },
                     "line": {
-                        "color": "#6ddfff"
+                        "color": "#ff65ff"
                     },
-                    "fillcolor": "#6ddfff80",
-                    "offsetgroup": "Assay2 - Sequencer2",
-                    "legendgroup": "Assay2 - Sequencer2",
-                    "legend": "Assay2 - Sequencer2",
+                    "fillcolor": "#ff65ff80",
+                    "offsetgroup": "Twist WES - Sequencer2",
+                    "legendgroup": "Twist WES - Sequencer2",
+                    "legend": "Twist WES - Sequencer2",
                     "visible": True,
                     "showlegend": True
                 },
@@ -846,20 +841,20 @@ class TestFormatDataForPlotlyJS(TestCase):
                         ["240625_Project3"]
                     ],
                     "y": [2.0],
-                    "name": "Assay1 - Sequencer1",
+                    "name": "TruSight Oncology 500 - Sequencer1",
                     "type": "box",
                     "text": ["Sample5"],
                     "boxpoints": "suspectedoutliers",
                     "marker": {
-                        "color": "#6600cc",
+                        "color": "#7D8040",
                     },
                     "line": {
-                        "color": "#6600cc"
+                        "color": "#7D8040"
                     },
-                    "fillcolor": "#6600cc80",
-                    "offsetgroup": "Assay1 - Sequencer1",
-                    "legendgroup": "Assay1 - Sequencer1",
-                    "legend": "Assay1 - Sequencer1",
+                    "fillcolor": "#7D804080",
+                    "offsetgroup": "TruSight Oncology 500 - Sequencer1",
+                    "legendgroup": "TruSight Oncology 500 - Sequencer1",
+                    "legend": "TruSight Oncology 500 - Sequencer1",
                     "visible": True,
                     "showlegend": False
                 },
@@ -952,7 +947,7 @@ class TestCreateTrace(TestCase):
                 "sample_id": ["Sample1", "Sample2", "Sample3"],
                 "date": ["2024-06-25", "2024-06-25", "2024-06-25"],
                 "project_name": ["240625_Project1", "240625_Project1", "240625_Project1"],
-                "assay": ["Assay1", "Assay1", "Assay1"],
+                "assay": ["Myeloid", "Myeloid", "Myeloid"],
                 "sequencer_id": ["Sequencer1", "Sequencer1", "Sequencer1"],
                 "metric": [1, 2, 3]
             }
@@ -963,16 +958,14 @@ class TestCreateTrace(TestCase):
             "data_column": "metric",
             "project_name": "240625_Project1",
             "lane": None,
-            "name": "Assay1 - Project1",
-            "boxplot_color": "#6600cc",
-            "boxplot_line_color": "#6600cc",
+            "name": "Myeloid - Project1",
+            "boxplot_color": "#FF7800",
+            "boxplot_line_color": "#FF7800",
             "offsetgroup": "",
-            "legendgroup": "Assay1 - Project1",
+            "legendgroup": "Myeloid - Project1",
             "showlegend": True
         }
 
-        # set the seed to get expected results
-        random.seed(0)
         test_output = create_trace(**test_input)
 
         expected_output = {
@@ -983,13 +976,13 @@ class TestCreateTrace(TestCase):
             "type": "box",
             "text": ["Sample1", "Sample2", "Sample3"],
             "boxpoints": "suspectedoutliers",
-            "marker": {"color": "#6600cc"},
-            "line": {"color": "#6600cc"},
-            "fillcolor": "#6600cc80",
-            "name": "Assay1 - Project1",
+            "marker": {"color": "#FF7800"},
+            "line": {"color": "#FF7800"},
+            "fillcolor": "#FF780080",
+            "name": "Myeloid - Project1",
             "offsetgroup": "",
-            "legendgroup": "Assay1 - Project1",
-            "legend": "Assay1 - Project1",
+            "legendgroup": "Myeloid - Project1",
+            "legend": "Myeloid - Project1",
             "visible": True,
             "showlegend": True
         }
