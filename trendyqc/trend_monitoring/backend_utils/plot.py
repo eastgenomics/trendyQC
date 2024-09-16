@@ -351,7 +351,7 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
 
     # get groups of assay and sequencer id
     groups = build_groups(plot_data)
-    seen_groups = []
+    seen_groups = {}
 
     # too many groups are possible
     if sum([len(v) for v in colors.values()]) < len(groups):
@@ -376,7 +376,7 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
         if legend_name not in seen_groups:
             assay_colors = colors[assay_name]
             color_assay_sequencer = assay_colors.pop(0)
-            seen_groups.append(legend_name)
+            seen_groups[legend_name] = color_assay_sequencer
             shown_legend = True
         else:
             shown_legend = False
@@ -393,8 +393,8 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
             args["First lane"]["columns"] = plot_data.columns[7:9]
             args["Second lane"]["columns"] = plot_data.columns[9:11]
 
-            args["Combined"]["boxplot_color"] = color_assay_sequencer
-            args["Combined"]["boxplot_line_color"] = color_assay_sequencer
+            args["Combined"]["boxplot_color"] = seen_groups[legend_name]
+            args["Combined"]["boxplot_line_color"] = seen_groups[legend_name]
             args["Combined"]["name"] = legend_name
             args["Combined"]["offsetgroup"] = legend_name
             args["Combined"]["legendgroup"] = legend_name
