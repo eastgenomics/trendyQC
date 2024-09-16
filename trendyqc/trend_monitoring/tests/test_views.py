@@ -4,6 +4,8 @@ from django.test import TestCase
 from unittest.mock import patch
 
 from trend_monitoring.models.filters import Filter
+from trend_monitoring.models.metadata import Report
+from trend_monitoring.tables import ReportTable
 
 
 class TestDashboard(TestCase):
@@ -36,7 +38,7 @@ class TestDashboard(TestCase):
 
         mock_context_data.return_value = {
             "assays": ["CEN", "TSO500"],
-            "tables": [],
+            "tables": [ReportTable(Report.objects.all())],
             "project_names": ["Project1", "Project2"],
             "sequencer_ids": ["Sequencer1", "Sequencer2"],
             "metrics": ["Metric1", "Metric2"]
@@ -127,8 +129,8 @@ class TestDashboard(TestCase):
             self.assertEqual(created_filter_id.content, json.dumps(
                 {
                     'assay_select': ['Cancer Endocrine Neurology'],
-                    'date_start': '2024-08-20',
-                    'date_end': '2024-08-23',
+                    'date_start': ['2024-08-20'],
+                    'date_end': ['2024-08-23'],
                     'metrics_y': ['read_data|avg_length'],
                 }
             ))
