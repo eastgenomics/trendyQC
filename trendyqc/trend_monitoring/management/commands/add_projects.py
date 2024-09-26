@@ -1,4 +1,5 @@
 import datetime
+import json
 import logging
 import sys
 
@@ -109,11 +110,13 @@ class Command(BaseCommand):
                 raise AssertionError(msg)
 
             imported_reports = []
-            all_reports = []
+            project2reports = {}
 
             for project_id in project_ids:
                 for report in setup_report_object(project_id):
-                    all_reports.append(report)
+                    project2reports.setdefault(project_id, []).append(
+                        report.multiqc_json_id
+                    )
 
                     if not options["dry_run"]:
                         has_been_imported = import_multiqc_report(report)
@@ -121,12 +124,19 @@ class Command(BaseCommand):
                         if has_been_imported:
                             imported_reports.append(report.multiqc_json_id)
 
+            all_reports = [
+                report
+                for reports in project2reports.values()
+                for report in reports
+            ]
+
             header_msg += (
                 f"\n\nDetected {len(project_ids)} projects with "
                 f"{len(all_reports)} reports for potential import"
             )
 
             logger.info(header_msg)
+            logger.debug(json.dumps(project2reports, indent=2))
 
             errors = {}
             warnings = {}
