@@ -111,24 +111,20 @@ class Command(BaseCommand):
 
             imported_reports = []
             project2reports = {}
+            all_reports = []
 
             for project_id in project_ids:
                 for report in setup_report_object(project_id):
                     project2reports.setdefault(project_id, []).append(
                         report.multiqc_json_id
                     )
+                    all_reports.append(report)
 
                     if not options["dry_run"]:
                         has_been_imported = import_multiqc_report(report)
 
                         if has_been_imported:
                             imported_reports.append(report.multiqc_json_id)
-
-            all_reports = [
-                report
-                for reports in project2reports.values()
-                for report in reports
-            ]
 
             header_msg += (
                 f"\n\nDetected {len(project_ids)} projects with "
@@ -174,7 +170,7 @@ class Command(BaseCommand):
 
             all_issues = {}
 
-            for k, v in list(errors.items())+list(warnings.items()):
+            for k, v in list(errors.items()) + list(warnings.items()):
                 all_issues.setdefault(k, []).extend(v)
 
             summary_report = build_report(header_msg, final_msg, all_issues)
