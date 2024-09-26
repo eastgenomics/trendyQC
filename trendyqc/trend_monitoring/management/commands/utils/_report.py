@@ -3,7 +3,6 @@ import traceback
 
 from ._dnanexus_utils import search_multiqc_reports, is_archived
 from ._multiqc import MultiQC_report
-from ._notifications import slack_notify
 
 logger = logging.getLogger("basic")
 storing_logger = logging.getLogger("storing")
@@ -28,14 +27,13 @@ def setup_report_object(project_id: list):
 
         # check if the report is archived
         if is_archived(report_object):
-            logger.warning(
-                f"{project_id}:{report_id} is archived"
-            )
+            msg = f"{project_id}:{report_id} is archived"
             multiqc_report = MultiQC_report(
                 multiqc_report_id=report_id,
                 multiqc_project_id=project_id,
                 multiqc_job_id=job_id
             )
+            multiqc_report.add_msg(msg)
         else:
             report_data = report_object.read()
 
@@ -50,13 +48,19 @@ def setup_report_object(project_id: list):
                 )
             except Exception:
                 msg = (
-                    f"TrendyQC - Failed to setup {report_id}\n"
+                    f"Failed to setup the MultiQC report object\n"
 
                     "```"
                     f"{traceback.format_exc()}"
                     "```"
                 )
-                slack_notify(msg)
+                # create a non importatble MultiQC_report object
+                multiqc_report = MultiQC_report(
+                    multiqc_report_id=report_id,
+                    multiqc_project_id=project_id,
+                    multiqc_job_id=job_id,
+                )
+                multiqc_report.add_msg(msg)
 
         yield multiqc_report
 
@@ -76,13 +80,13 @@ def import_multiqc_report(report: MultiQC_report):
             report.import_instances()
         except Exception:
             msg = (
-                f"TrendyQC - Failed to import {report.multiqc_json_id}\n"
+                f"Failed to import\n"
 
                 "```"
                 f"{traceback.format_exc()}"
                 "```"
             )
-            slack_notify(msg)
+            report.add_msg(msg)
             return False
 
         logger.info((
