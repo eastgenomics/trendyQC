@@ -126,6 +126,8 @@ class Command(BaseCommand):
                 f"{len(all_reports)} reports for potential import"
             )
 
+            logger.info(header_msg)
+
             errors = {}
             warnings = {}
 
@@ -141,7 +143,6 @@ class Command(BaseCommand):
 
             if is_automated_update:
                 now = datetime.datetime.now().strftime("%y%m%d|%I:%M")
-                final_msg = ""
 
                 if imported_reports:
                     formatted_reports = "\n".join(imported_reports)
@@ -154,11 +155,12 @@ class Command(BaseCommand):
                         f"Finished update at {now}, no new projects added"
                     )
 
-                logger.info(final_msg)
             else:
                 final_msg = (
                     f"Finished importing {len(imported_reports)} reports"
                 )
+
+            logger.info(final_msg)
 
             all_issues = {}
 
