@@ -24,8 +24,6 @@ from ._utils import clean_value, clean_sample_naming
 BASE_DIR_MANAGEMENT = Path(__file__).resolve().parent.parent.parent
 CONFIG_DIR = BASE_DIR_MANAGEMENT / "configs"
 
-logger = logging.getLogger("basic")
-
 
 class MultiQC_report():
     def __init__(self, **kwargs) -> None:
@@ -110,10 +108,10 @@ class MultiQC_report():
 
         for multiqc_field_in_config, tool_metadata in self.assay_data.items():
             if multiqc_field_in_config not in multiqc_raw_data:
-                logger.warning((
+                self.messages.append(((
                     f"{self.multiqc_json_id}: {multiqc_field_in_config} not "
                     "present in report"
-                ))
+                ), "warning"))
                 continue
 
             # subtool is used to specify for example, HSMetrics or insertSize
@@ -314,10 +312,10 @@ class MultiQC_report():
                 # store the model in the tool object
                 tool.set_model(self.models[matches[0]])
             else:
-                logger.warning((
+                self.messages.append(((
                     f"{self.multiqc_json_id}: {tool.name} matches multiple "
                     f"model names -> {matches}"
-                ))
+                ), "warning"))
 
     def clean_data(self, data: Dict) -> Dict:
         """ Loop through the fields and values for one tool and clean the
@@ -540,9 +538,9 @@ class MultiQC_report():
             # check if lane and read info has been detected and added
             if lane_instances:
                 if len(lane_instances) > 2:
-                    logger.warning(
+                    self.messages.append(((
                         f"{self.multiqc_json_id} contains more than 2 lanes"
-                    )
+                    ), "warning"))
 
                 # order the lanes for addition
                 ordered_lanes = sorted(lane_instances)
