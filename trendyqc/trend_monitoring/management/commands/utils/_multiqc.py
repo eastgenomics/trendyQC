@@ -109,7 +109,7 @@ class MultiQC_report():
         for multiqc_field_in_config, tool_metadata in self.assay_data.items():
             if multiqc_field_in_config not in multiqc_raw_data:
                 self.messages.append(((
-                    f"{self.multiqc_json_id}: {multiqc_field_in_config} not "
+                    f"`{multiqc_field_in_config}` not "
                     "present in report"
                 ), "warning"))
                 continue
@@ -313,7 +313,7 @@ class MultiQC_report():
                 tool.set_model(self.models[matches[0]])
             else:
                 self.messages.append(((
-                    f"{self.multiqc_json_id}: {tool.name} matches multiple "
+                    f"`{tool.name}` matches multiple "
                     f"model names -> {matches}"
                 ), "warning"))
 
@@ -539,7 +539,7 @@ class MultiQC_report():
             if lane_instances:
                 if len(lane_instances) > 2:
                     self.messages.append(((
-                        f"{self.multiqc_json_id} contains more than 2 lanes"
+                        "Contains more than 2 lanes"
                     ), "warning"))
 
                 # order the lanes for addition
@@ -566,8 +566,8 @@ class MultiQC_report():
                 except IntegrityError as e:
                     instance_model_name = type(instance).__name__
                     msg = (
-                        f"{self.multiqc_json_id} could not be imported "
-                        f"because of {instance_model_name}:\n{e}"
+                        "Could not be imported because of "
+                        f"{instance_model_name}:\n{e}"
                     )
                     self.messages.append((msg, "error"))
 
