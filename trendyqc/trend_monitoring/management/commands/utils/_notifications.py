@@ -42,3 +42,27 @@ def slack_notify(message) -> None:
         logger.error(
             f"Error in sending post request for slack notification: {err}"
         )
+
+
+def build_report(cmd_line: str, dict_info: dict):
+    """ Given all the messages that a MultiQC report object possesses, create a
+    summary report of all the messages
+
+    Args:
+        cmd_line (str): Command line to use as header of the summary report
+        dict_info (dict): Dict containing the report file-id and the messages
+        to report
+
+    Returns:
+        msg_report: Summary report string to send to loggers and to Slack
+    """
+
+    msg_report = f"{cmd_line}\n"
+
+    for report_id, msgs in dict_info.items():
+        msg_report += f" - {report_id}\n"
+
+        for msg in msgs:
+            msg_report += f"   - {msg}\n"
+
+    return msg_report
