@@ -3,6 +3,7 @@ from datetime import datetime
 import logging
 import json
 from pathlib import Path
+import traceback
 from typing import Dict, List
 
 import dxpy
@@ -23,8 +24,6 @@ from ._utils import clean_value, clean_sample_naming
 BASE_DIR_MANAGEMENT = Path(__file__).resolve().parent.parent.parent
 CONFIG_DIR = BASE_DIR_MANAGEMENT / "configs"
 
-logger = logging.getLogger("basic")
-
 
 class MultiQC_report():
     def __init__(self, **kwargs) -> None:
@@ -38,6 +37,7 @@ class MultiQC_report():
             - data: Data contained in the MultiQC json file
         """
 
+        self.messages = []
         self.multiqc_json_id = kwargs.get("multiqc_report_id", None)
         self.project_id = kwargs.get("multiqc_project_id", None)
         self.job_id = kwargs.get("multiqc_job_id", None)
@@ -56,17 +56,28 @@ class MultiQC_report():
 
             # skip projects for which we don't have a config subtitle
             if not self.assay:
-                self.is_importable = False
-                logger.warning((
-                    f"{self.multiqc_json_id}: the gathered assay name in "
+                msg = (
+                    "The gathered assay name in "
                     "the MultiQC JSON ('config_subtitle') is not present in "
                     "the trendyqc/trend_monitoring/management/configs/assays.json. "
                     "Skipping.."
-                ))
+                )
+                self.is_importable = False
+                self.messages.append((msg, "warning"))
             else:
                 # load the report's assay tools and the fields they are
                 # associated with
-                self.assay_data = load_assay_config(self.assay, CONFIG_DIR)
+                try:
+                    self.assay_data = load_assay_config(self.assay, CONFIG_DIR)
+                except Exception:
+                    msg = (
+                        f"Failed to load the assay config:\n"
+                        f"```{traceback.format_exc()}```"
+                    )
+                    self.messages.append((msg, "error"))
+                    self.is_importable = False
+                    return
+
                 self.get_metadata()
 
                 # check if the report is already in the database
@@ -75,10 +86,11 @@ class MultiQC_report():
                     dnanexus_file_id=self.multiqc_json_id
                 ):
                     self.is_importable = False
-                    logger.warning((
-                        f"{self.multiqc_json_id} has already been imported in "
+                    msg = (
+                        "Has already been imported in "
                         "the database. Skipping.."
-                    ))
+                    )
+                    self.messages.append((msg, "warning"))
 
         if self.is_importable:
             self.setup_tools()
@@ -96,10 +108,10 @@ class MultiQC_report():
 
         for multiqc_field_in_config, tool_metadata in self.assay_data.items():
             if multiqc_field_in_config not in multiqc_raw_data:
-                logger.warning((
-                    f"{self.multiqc_json_id}: {multiqc_field_in_config} not "
+                self.messages.append(((
+                    f"`{multiqc_field_in_config}` not "
                     "present in report"
-                ))
+                ), "warning"))
                 continue
 
             # subtool is used to specify for example, HSMetrics or insertSize
@@ -300,10 +312,10 @@ class MultiQC_report():
                 # store the model in the tool object
                 tool.set_model(self.models[matches[0]])
             else:
-                logger.warning((
-                    f"{self.multiqc_json_id}: {tool.name} matches multiple "
+                self.messages.append(((
+                    f"`{tool.name}` matches multiple "
                     f"model names -> {matches}"
-                ))
+                ), "warning"))
 
     def clean_data(self, data: Dict) -> Dict:
         """ Loop through the fields and values for one tool and clean the
@@ -526,9 +538,9 @@ class MultiQC_report():
             # check if lane and read info has been detected and added
             if lane_instances:
                 if len(lane_instances) > 2:
-                    logger.warning(
-                        f"{self.multiqc_json_id} contains more than 2 lanes"
-                    )
+                    self.messages.append(((
+                        "Contains more than 2 lanes"
+                    ), "warning"))
 
                 # order the lanes for addition
                 ordered_lanes = sorted(lane_instances)
@@ -553,7 +565,19 @@ class MultiQC_report():
                     instance.save()
                 except IntegrityError as e:
                     instance_model_name = type(instance).__name__
-                    logger.error(
-                        f"{self.multiqc_json_id} could not be imported "
-                        f"because of {instance_model_name}:\n{e}"
+                    msg = (
+                        "Could not be imported because of "
+                        f"{instance_model_name}:\n{e}"
                     )
+                    self.messages.append((msg, "error"))
+
+    def add_msg(self, msg, type_msg="error"):
+        """ Add messages usually error to the report object
+
+        Args:
+            msg (str): Message to store
+            type_msg (str): Type of message for handling later.
+            Defaults "error"
+        """
+
+        self.messages.append((msg, type_msg))

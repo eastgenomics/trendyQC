@@ -66,6 +66,8 @@ SLACK_CHANNEL = os.environ.get("SLACK_CHANNEL")
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+Path(BASE_DIR / "logs").mkdir(parents=True, exist_ok=True)
+
 ERROR_LOG = BASE_DIR / "logs" / "errors.log"
 WARNING_LOG = BASE_DIR / "logs" / "warning.log"
 DEBUG_LOG = BASE_DIR / "logs" / "debug.log"

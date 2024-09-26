@@ -1,4 +1,5 @@
 # trendyQC
+
 Django app for monitoring trends in MultiQC data using Python 3.8. It is comprised of 3 docker containers:
 
 - trendyqc_db: Postgres database for containing the data
@@ -40,7 +41,7 @@ LDAP_CONF
 # debug mode boolean (don't run with debug turned on in production)
 DEBUG
 
-# VARIABLES USED IN POSTGRES CONTAINER
+# VARIABLES USED IN POSTGRES CONTAINER more info: https://hub.docker.com/_/postgres
 # database username to create
 POSTGRES_USER
 # database user password
@@ -65,28 +66,18 @@ Each docker container has a config file. These config files need to be located a
 
 - docker-compose.yml
 - config
-  - db
-    - qc_trends_db_env
   - nginx
     - conf.d
       - local.conf
   - gunicorn
     - conf.py
 
-The `qc_trends_db_env` file contains the database name and the user setup data:
-
-```txt
-POSTGRES_USER=${db_username}
-POSTGRES_PASSWORD=${db_pwd}
-POSTGRES_DB=${db_name}
-```
-
 The `local.conf` file contains the proxy information for proper proxy setup:
 
 ```conf
 upstream trendyqc {
     # name of the app container
-    server trendyqc:${port_to_use};
+    server ${name_of_trendyqc_container_in_docker_compose}:${port_to_use};
 }
 
 server {
@@ -99,7 +90,7 @@ server {
     }
 
     location / {
-        proxy_pass http://trendyqc;
+        proxy_pass http://trendyqc; # name of the upstream server i.e. trendyqc here
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header Host $host;
         proxy_redirect off;
@@ -138,6 +129,9 @@ You can then upload the tar file on DNAnexus. You can use `project-GQ8py884gkQZV
 The next step is to download the tar onto the server and load the image using the following command:
 
 ```bash
+sudo podman load -i trendyqc.tar.gz
+
+# if you get a storage issue
 sudo env "TMPDIR=/appdata/podman/tmp" podman load -i trendyqc.tar.gz --root /appdata/podman/storage
 ```
 
@@ -182,6 +176,10 @@ The initial import step should take at least 20 mins but the duration is variabl
 
 Additionally, reports already present in the database will be skipped (project_id + file_id check)
 
+## Cron job
+
+A cron job is setup to run every day at midnight and gets 002 projects that have been added in the last 48h.
+
 ## Unittesting
 
 Unittesting has been implemented for the TrendyQC app in order to insure the parsing of the MultiQC reports is correct.
@@ -198,96 +196,117 @@ python trendyqc/manage.py test trend_monitoring.tests
 ## Project structure
 
 ```tree
-|- trendyqc
-|  |- logs
-|  |- static
+.
+├── config
+│   ├── gunicorn
+│   │   └── conf.py
+│   └── nginx
+│       └── conf.d
+│           └── local.conf
+├── docker-compose.yml
+├── Dockerfile
+├── LICENSE
+├── README.md
+├── requirements.txt
+├── trendyqc
+│   ├── logs
+│   │   ├── debug.log
+│   │   ├── errors.log
+│   │   └── storing.log
+│   ├── manage.py
+│   ├── static
+│   │   ├── css
+│   │   │   ├── bootstrap.min.css
+│   │   │   ├── bootstrap-select.min.css
+│   │   │   └── style.css
+│   │   ├── fonts
+│   │   │   ├── NunitoSans-Black.ttf
+│   │   │   └── Roboto-Medium.ttf
+│   │   ├── images
+│   │   │   └── exclamation-triangle.svg
+│   │   └── js
+│   │       ├── bootstrap.bundle.min.js
+│   │       ├── bootstrap-select.min.js
+│   │       ├── jquery-3.7.1.min.js
+│   │       ├── plotly-2.26.0.min.js
+│   │       └── popper.min.js
+│   ├── trend_monitoring
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── backend_utils
+│   │   │   ├── filtering.py
+│   │   │   ├── __init__.py
+│   │   │   ├── plot.py
+│   │   │   └── readme.md
+│   │   ├── forms.py
+│   │   ├── management
+│   │   │   ├── commands
+│   │   │   │   ├── add_projects.py
+│   │   │   │   ├── readme.md
+│   │   │   │   └── utils
+│   │   │   │       ├── _check.py
+│   │   │   │       ├── _dnanexus_utils.py
+│   │   │   │       ├── __init__.py
+│   │   │   │       ├── _multiqc.py
+│   │   │   │       ├── _notifications.py
+│   │   │   │       ├── _parsing.py
+│   │   │   │       ├── _report.py
+│   │   │   │       ├── _tool.py
+│   │   │   │       └── _utils.py
+│   │   │   ├── configs
+│   │   │   │   ├── assays.json
+│   │   │   │   ├── config_readme.md
+│   │   │   │   ├── displaying_data.json
+│   │   │   │   ├── sample_read_tools.json
+│   │   │   │   └── tool_configs
+│   │   │   │       ├── bcl2fastq.json
+│   │   │   │       ├── custom_coverage.json
+│   │   │   │       ├── fastqc.json
+│   │   │   │       ├── happy.json
+│   │   │   │       ├── picard.json
+│   │   │   │       ├── samtools.json
+│   │   │   │       ├── somalier.json
+│   │   │   │       ├── sompy.json
+│   │   │   │       ├── vcfqc.json
+│   │   │   │       └── verifybamid.json
+│   │   │   └── __init__.py
+│   │   ├── models
+│   │   │   ├── bam_qc.py
+│   │   │   ├── fastq_qc.py
+│   │   │   ├── filters.py
+│   │   │   ├── __init__.py
+│   │   │   ├── metadata.py
+│   │   │   └── vcf_qc.py
+│   │   ├── tables.py
+│   │   ├── templates
+│   │   │   ├── base.html
+│   │   │   ├── dashboard.html
+│   │   │   ├── login.html
+│   │   │   └── plot.html
+│   │   ├── tests
+│   │   │   ├── custom_tests.py
+│   │   │   ├── __init__.py
+│   │   │   ├── test_data
+│   │   │   │   ├── integration_test_data.json
+│   │   │   │   └── tools.json
+│   │   │   ├── test_filtering.py
+│   │   │   ├── test_integration.py
+│   │   │   ├── test_multiqc.py
+│   │   │   ├── test_plotting.py
+│   │   │   ├── test_reports
+│   │   │   │   └── test_reports.tar.gz
+│   │   │   ├── test_tool.py
+│   │   │   └── test_views.py
+│   │   ├── urls.py
+│   │   └── views.py
+│   └── trendyqc
+│       ├── __init__.py
+│       ├── settings.py
+│       ├── urls.py
+│       └── wsgi.py
+├── trendyqc_cron
+├── trendyqc_grafana.sh
+└── trendyqc.sh
 
-|  |- trend_monitoring
-|  |  |- backend_utils
-|  |  |  |- __init__.py
-|  |  |  |- filtering.py
-|  |  |  |- plot.py
-|  |  |  |- readme.md
-
-|  |  |- management
-|  |  |  |- __init__.py
-
-|  |  |  |- commands
-|  |  |  |  |- utils
-|  |  |  |  |  |- __init__.py
-|  |  |  |  |  |- _check.py
-|  |  |  |  |  |- _dnanexus_utils_.py
-|  |  |  |  |  |- _multiqc.py
-|  |  |  |  |  |- _notifications.py
-|  |  |  |  |  |- _parsing_.py
-|  |  |  |  |  |- _report.py
-|  |  |  |  |  |- _tool.py
-|  |  |  |  |  |- _utils.py
-|  |  |  |  |- add_projects.py
-|  |  |  |  |- readme.md
-
-|  |  |  |- config
-|  |  |  |  |- tool_configs
-|  |  |  |  |  |- bcl2fastq.json
-|  |  |  |  |  |- custom_coverage.json
-|  |  |  |  |  |- fastqc.json
-|  |  |  |  |  |- happy.json
-|  |  |  |  |  |- picard.json
-|  |  |  |  |  |- samtools.json
-|  |  |  |  |  |- somalier.json
-|  |  |  |  |  |- sompy.json
-|  |  |  |  |  |- vcfqc.json
-|  |  |  |  |  |- verifybamid.json
-
-|  |  |  |  |- assays.json
-|  |  |  |  |- displaying_data.json
-|  |  |  |  |- sample_read_tools.json
-|  |  |  |  |- config_readme.md
-
-|  |  |- models
-|  |  |  |- __init__.py
-|  |  |  |- bam_qc.py
-|  |  |  |- fastq_qc.py
-|  |  |  |- filters.py
-|  |  |  |- metadata.py
-|  |  |  |- vcf_qc.py
-
-|  |  |- templates
-|  |  |  |- base.html
-|  |  |  |- dashboard.html
-|  |  |  |- login.html
-|  |  |  |- plot.html
-
-|  |  |- tests
-|  |  |  |- test_data
-|  |  |  |- test_reports
-|  |  |  |- __init__.py
-|  |  |  |- custom_tests.py
-|  |  |  |- test_filtering.py
-|  |  |  |- test_multiqc.py
-|  |  |  |- test_plotting.py
-|  |  |  |- test_tool.py
-|  |  |  |- test_views.py
-
-|  |  |- admin.py
-|  |  |- apps.py
-|  |  |- forms.py
-|  |  |- tables.py
-|  |  |- tests.py
-|  |  |- urls.py
-|  |  |- views.py
-
-|  |- trendyqc
-|  |- manage.py
-
-|- config
-|  |- db
-|  |- gunicorn
-|  |- nginx
-
-|- Dockerfile
-|- docker-compose.yml
-|- requirements.txt
-|- trendyqc_cron
-|- trendyqc.sh
+26 directories, 89 files
 ```
