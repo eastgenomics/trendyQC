@@ -6,6 +6,7 @@ from django.core.management.base import BaseCommand
 
 import regex
 
+from .utils._notifications import slack_notify, build_report
 from .utils._dnanexus_utils import login_to_dnanexus, get_002_projects
 from .utils._report import setup_report_object, import_multiqc_report
 
@@ -53,13 +54,15 @@ class Command(BaseCommand):
         function
         """
 
-        logger.info(f"Command line: {' '.join(sys.argv)}")
+        now = datetime.datetime.now().strftime("%y%m%d|%I:%M")
+        header_msg = (
+            f"[{now}] - TrendyQC - Command line: `{' '.join(sys.argv)}`"
+        )
 
         is_automated_update = options["automated_update"]
 
         if is_automated_update:
-            now = datetime.datetime.now().strftime("%y%m%d|%I:%M")
-            print(
+            header_msg = (
                 f"Starting update to add projects from the last 48h at {now}: "
                 f"{' '.join(sys.argv)}"
             )
@@ -78,18 +81,20 @@ class Command(BaseCommand):
             project_ids = options["project_id"]
 
         if not project_ids:
-            msg = (
+            final_msg = (
                 "No projects found using following command: "
                 f"{' '.join(sys.argv)}"
             )
-            logger.warning(msg)
-            print(msg)
 
             if is_automated_update:
                 now = datetime.datetime.now().strftime("%y%m%d|%I:%M")
-                print(
+                final_msg = (
                     f"Finished update at {now}, no new projects detected"
                 )
+
+            report_msg = build_report(header_msg, final_msg)
+            logger.info(report_msg)
+            slack_notify(report_msg)
 
         else:
             invalid = [
@@ -104,27 +109,63 @@ class Command(BaseCommand):
                 raise AssertionError(msg)
 
             imported_reports = []
+            all_reports = []
 
             for project_id in project_ids:
                 for report in setup_report_object(project_id):
+                    all_reports.append(report)
+
                     if not options["dry_run"]:
                         has_been_imported = import_multiqc_report(report)
 
                         if has_been_imported:
                             imported_reports.append(report.multiqc_json_id)
 
+            errors = {}
+            warnings = {}
+
+            for report in all_reports:
+                for msg, type_msg in report.messages:
+                    if type_msg == "error":
+                        errors.setdefault(
+                            report.multiqc_json_id, []).append(msg)
+
+                    elif type_msg == "warning":
+                        warnings.setdefault(
+                            report.multiqc_json_id, []).append(msg)
+
             if is_automated_update:
                 now = datetime.datetime.now().strftime("%y%m%d|%I:%M")
+                final_msg = ""
 
                 if imported_reports:
                     formatted_reports = "\n".join(imported_reports)
-                    print(
+                    final_msg = (
                         f"Finished update at {now}, new reports:\n"
                         f"{formatted_reports}"
                     )
                 else:
-                    print(
+                    final_msg = (
                         f"Finished update at {now}, no new projects added"
                     )
+
+                logger.info(final_msg)
             else:
-                print(f"Finished importing {len(imported_reports)} reports")
+                final_msg = (
+                    f"Finished importing {len(imported_reports)} reports"
+                )
+
+            if warnings:
+                warning_report = build_report(header_msg, final_msg, warnings)
+                logger.warning(warning_report)
+                slack_notify(warning_report)
+
+            if errors:
+                error_report = build_report(header_msg, final_msg, errors)
+                logger.error(error_report)
+                slack_notify(error_report)
+
+            if not warnings and not errors:
+                report = build_report(header_msg, final_msg)
+                logger.info(report)
+                slack_notify(report)
