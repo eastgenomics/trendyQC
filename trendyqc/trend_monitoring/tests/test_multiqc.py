@@ -289,8 +289,11 @@ class TestMultiqc(TestCase):
             "assays.json file"
         )
 
-        with self.assertRaises(AssertionError, msg=test_msg):
-            MultiQC_report(**test_dict)
+        report = MultiQC_report(**test_dict)
+        assert len(report.messages) == 1
+        assert (
+            "Unknown assay is not present in the assay config file" in report.messages[0][0] and report.messages[0][1] == "error"
+        ), test_msg
 
 
 class TestParsingAndImport(TestCase, CustomTests):
