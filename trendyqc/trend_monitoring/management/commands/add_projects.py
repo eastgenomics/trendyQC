@@ -121,6 +121,11 @@ class Command(BaseCommand):
                         if has_been_imported:
                             imported_reports.append(report.multiqc_json_id)
 
+            header_msg += (
+                f"\n\nDetected {len(project_ids)} projects with "
+                f"{len(all_reports)} reports for potential import"
+            )
+
             errors = {}
             warnings = {}
 
@@ -155,17 +160,19 @@ class Command(BaseCommand):
                     f"Finished importing {len(imported_reports)} reports"
                 )
 
-            if warnings:
-                warning_report = build_report(header_msg, final_msg, warnings)
-                logger.warning(warning_report)
-                slack_notify(warning_report)
+            all_issues = {}
+
+            for k, v in list(errors.items())+list(warnings.items()):
+                all_issues.setdefault(k, []).extend(v)
+
+            summary_report = build_report(header_msg, final_msg, all_issues)
 
             if errors:
                 error_report = build_report(header_msg, final_msg, errors)
                 logger.error(error_report)
-                slack_notify(error_report)
 
-            if not warnings and not errors:
-                report = build_report(header_msg, final_msg)
-                logger.info(report)
-                slack_notify(report)
+            if warnings:
+                warning_report = build_report(header_msg, final_msg, warnings)
+                logger.warning(warning_report)
+
+            slack_notify(summary_report)
