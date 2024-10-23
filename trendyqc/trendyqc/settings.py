@@ -203,8 +203,8 @@ AUTH_LDAP_USER_SEARCH = LDAPSearch(
 
 # otherwise i get an error when passing the data from the dashboard view to the
 # plotting view. However the django docs share some security concerns.
-# https://docs.djangoproject.com/en/4.2/topics/http/sessions/#session-serialization
-SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+# https://docs.djangoproject.com/en/5.1/topics/http/sessions/#session-serialization
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
