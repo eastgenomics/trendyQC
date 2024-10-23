@@ -136,8 +136,8 @@ class FilterForm(forms.Form):
                     )
                 )
             else:
-                cleaned_data["date_start"] = [start_date]
-                cleaned_data["date_end"] = [end_date]
+                cleaned_data["date_start"] = [start_date.strftime('%Y-%m-%d')]
+                cleaned_data["date_end"] = [end_date.strftime('%Y-%m-%d')]
 
         if not cleaned_data.get("metrics_y", None):
             self.add_error("metrics_y", ValidationError("No Y-axis metric selected"))
