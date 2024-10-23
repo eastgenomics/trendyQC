@@ -21,7 +21,7 @@ def slack_notify(message) -> None:
     slack_token = settings.SLACK_TOKEN
 
     http = Session()
-    retries = Retry(total=5, backoff_factor=10, method_whitelist=['POST'])
+    retries = Retry(total=5, backoff_factor=10, allowed_methods=['POST'])
     http.mount("https://", HTTPAdapter(max_retries=retries))
 
     try:

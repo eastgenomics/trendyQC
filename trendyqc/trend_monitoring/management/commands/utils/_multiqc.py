@@ -1,6 +1,5 @@
 from collections import defaultdict
-from datetime import datetime
-import logging
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 import traceback
@@ -13,7 +12,6 @@ from django.apps import apps
 from django.db import transaction
 from django.db.models import Model
 from django.db.utils import IntegrityError
-from django.utils import timezone
 
 from ._check import already_in_db
 from ._parsing import load_assay_config

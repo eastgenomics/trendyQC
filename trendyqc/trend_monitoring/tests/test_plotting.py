@@ -95,7 +95,7 @@ class TestGetSubsetQueryset(TestCase):
         expected_output = Report_Sample.objects.filter(
             assay__in=["Assay1", "Assay2"]
         )
-        self.assertQuerysetEqual(test_output, expected_output, ordered=False)
+        self.assertQuerySetEqual(test_output, expected_output, ordered=False)
 
     def test_get_subset_queryset_run_query(self):
         """ Test the get_subset_queryset function which gets a queryset based
@@ -108,7 +108,7 @@ class TestGetSubsetQueryset(TestCase):
         expected_output = Report_Sample.objects.filter(
             report__project_name__in=["ProjectName1", "ProjectName2"]
         )
-        self.assertQuerysetEqual(test_output, expected_output, ordered=False)
+        self.assertQuerySetEqual(test_output, expected_output, ordered=False)
 
     def test_get_subset_queryset_sequencer_query(self):
         """ Test the get_subset_queryset function which gets a queryset based
@@ -121,7 +121,7 @@ class TestGetSubsetQueryset(TestCase):
         expected_output = Report_Sample.objects.filter(
             report__sequencer_id__in=["Sequencer1", "Sequencer2"]
         )
-        self.assertQuerysetEqual(test_output, expected_output, ordered=False)
+        self.assertQuerySetEqual(test_output, expected_output, ordered=False)
 
     def test_get_subset_queryset_date_query(self):
         """ Test the get_subset_queryset function which gets a queryset based
@@ -129,12 +129,12 @@ class TestGetSubsetQueryset(TestCase):
         - Date filter
         """
 
-        test_input = {"date_start": datetime.date(2022, 1, 1), "date_end": datetime.date.today()}
+        test_input = {"date_start": "2022-01-01", "date_end": datetime.date.today().strftime("%Y-%m-%d")}
         test_output = get_subset_queryset(test_input)
         expected_output = Report_Sample.objects.filter(
             report__date__range=[datetime.date(2022, 1, 1), datetime.date.today()]
         )
-        self.assertQuerysetEqual(test_output, expected_output, ordered=False)
+        self.assertQuerySetEqual(test_output, expected_output, ordered=False)
 
     def test_get_subset_queryset_multiple_query(self):
         """ Test the get_subset_queryset function which gets a queryset based
@@ -149,7 +149,7 @@ class TestGetSubsetQueryset(TestCase):
             assay__in=["CEN"],
             report__sequencer_id__in=["Sequencer2"]
         )
-        self.assertQuerysetEqual(test_output, expected_output, ordered=False)
+        self.assertQuerySetEqual(test_output, expected_output, ordered=False)
 
 
 class TestGetDataForPlotting(TestCase):
