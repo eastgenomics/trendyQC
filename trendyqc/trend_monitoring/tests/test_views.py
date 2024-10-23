@@ -77,7 +77,7 @@ class TestDashboard(TestCase):
             'assay_select': ['Cancer Endocrine Neurology'],
             'date_start': [''],
             'date_end': [''],
-            'metrics_y': ['avg_length'],
+            'metrics_y': ['FastQC|avg_length'],
             # post plot response
             'plot': ['Plot']
         }
@@ -93,7 +93,7 @@ class TestDashboard(TestCase):
             'assay_select': ['Cancer Endocrine Neurology'],
             'date_start': [''],
             'date_end': [''],
-            'metrics_y': ['avg_length'],
+            'metrics_y': ['FastQC|avg_length'],
             # filter use returns the id of the filter to use
             'filter_use': Filter.objects.all()[0].id
         }
