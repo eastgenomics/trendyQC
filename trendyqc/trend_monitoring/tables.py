@@ -17,7 +17,7 @@ class FilterContentColumn(tables.Column):
         super(FilterContentColumn, self).__init__(*args, **kwargs)
 
     def render(self, value):
-        """ Render the cell content using a multilevel list i.e.
+        """Render the cell content using a multilevel list i.e.
         - filter key
             - filter value
             - filter value
@@ -32,9 +32,14 @@ class FilterContentColumn(tables.Column):
         """
 
         order_key = [
-            "assay_select", "run_select", "sequencer_select",
-            "metrics_x", "metrics_y",
-            "date_start", "date_end", "days_back"
+            "assay_select",
+            "run_select",
+            "sequencer_select",
+            "metrics_x",
+            "metrics_y",
+            "date_start",
+            "date_end",
+            "days_back",
         ]
 
         # load data (json dumped data)
@@ -76,7 +81,7 @@ class FilterButton(tables.Column):
 class DeleteFilterButton(tables.Column):
     empty_values = list()
 
-    def render(self, value, record): 
+    def render(self, value, record):
         return mark_safe(
             f'<button value="{record.id}" name="delete_filter" class="btn btn-danger" onclick="confirmDelete(event)">Delete filter</button>'
         )

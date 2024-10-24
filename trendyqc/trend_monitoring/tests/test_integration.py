@@ -4,8 +4,8 @@ from django.test import TestCase
 
 
 class TestIntegration(TestCase):
-    """ Main integration test for the plotting i.e. query database using POST
-    request until the actual Plotly plot """
+    """Main integration test for the plotting i.e. query database using POST
+    request until the actual Plotly plot"""
 
     # fixtures to import in the test database
     fixtures = [
@@ -13,7 +13,7 @@ class TestIntegration(TestCase):
     ]
 
     def test_plot_data(self):
-        """ Test for the plot data from the database to the HTML output.
+        """Test for the plot data from the database to the HTML output.
         This test requires manual check in order to insure that the right
         values are calculated. The trendyqc/trend_monitoring/tests/test_data/test_integration_output.html file
         should be extracted from the Docker container and open in a browser in
@@ -25,7 +25,7 @@ class TestIntegration(TestCase):
             "date_start": [""],
             "date_end": [""],
             "metrics_y": ["Custom coverage|cov_200x"],
-            "plot": ["Plot"]
+            "plot": ["Plot"],
         }
 
         response = self.client.post("/trendyqc/", post_data, follow=True)
@@ -37,10 +37,11 @@ class TestIntegration(TestCase):
         # issues, the JS files used for created for the plot are embedded in
         # HTML output
         with open(
-            "trendyqc/trend_monitoring/tests/test_data/test_integration_output.html", "w"
+            "trendyqc/trend_monitoring/tests/test_data/test_integration_output.html",
+            "w",
         ) as f:
             # look for "script" tags in the head portion of the HTML page
-            for ele in html.head.find_all('script'):
+            for ele in html.head.find_all("script"):
                 # open the src files present in those script tags
                 with open(f'/app/{ele["src"]}') as g:
                     # get the js file content
