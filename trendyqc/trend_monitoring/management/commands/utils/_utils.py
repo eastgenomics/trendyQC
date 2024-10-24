@@ -9,7 +9,7 @@ error_logger = logging.getLogger("error")
 
 
 def clean_value(value: str) -> Any:
-    """ Determine if the value needs its type changed because for example,
+    """Determine if the value needs its type changed because for example,
     Happy returns strings for this numbers. Additionally, return None if an
     empty string is provided.
 
@@ -51,7 +51,7 @@ def clean_value(value: str) -> Any:
 
 
 def clean_sample_naming(data):
-    """ Clean the sample names.
+    """Clean the sample names.
     Issue encountered with old RD runs for NA12878:
     NA12878-NA12878-1-TWE-F-EGG4_S31_L001_R1 for FastQC NA12878_INDEL_ALL
     for Happy.
@@ -101,7 +101,8 @@ def clean_sample_naming(data):
         # string1, string1_string1, string1-string1 -> have string1 as the
         # key for the data for string1_string1 and string1-string1
         overlapping_sample_names = [
-            ele for ele in data_to_add
+            ele
+            for ele in data_to_add
             if sample in ele and len(sample) < len(ele)
         ]
 

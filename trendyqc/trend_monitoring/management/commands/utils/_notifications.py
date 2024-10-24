@@ -10,7 +10,7 @@ logger = logging.getLogger("basic")
 
 
 def slack_notify(message) -> None:
-    """ Notify the channel with the given message
+    """Notify the channel with the given message
 
     Args:
         message (str): Message to send
@@ -21,18 +21,16 @@ def slack_notify(message) -> None:
     slack_token = settings.SLACK_TOKEN
 
     http = Session()
-    retries = Retry(total=5, backoff_factor=10, allowed_methods=['POST'])
+    retries = Retry(total=5, backoff_factor=10, allowed_methods=["POST"])
     http.mount("https://", HTTPAdapter(max_retries=retries))
 
     try:
         response = http.post(
-            'https://slack.com/api/chat.postMessage', {
-                'token': slack_token,
-                'channel': f"#{channel}",
-                'text': message
-            }).json()
+            "https://slack.com/api/chat.postMessage",
+            {"token": slack_token, "channel": f"#{channel}", "text": message},
+        ).json()
 
-        if not response['ok']:
+        if not response["ok"]:
             # error in sending slack notification
             logger.error(
                 f"Error in sending slack notification: {response.get('error')}"
@@ -45,7 +43,7 @@ def slack_notify(message) -> None:
 
 
 def build_report(header: str, final_msg: str, dict_info: dict = {}):
-    """ Given all the messages that a MultiQC report object possesses, create a
+    """Given all the messages that a MultiQC report object possesses, create a
     summary report of all the messages
 
     Args:

@@ -23,7 +23,9 @@ from trend_monitoring.models import bam_qc, fastq_qc, vcf_qc
 from .tables import ReportTable, FilterTable
 from .forms import FilterForm, LoginForm
 from .backend_utils.plot import (
-    get_subset_queryset, get_data_for_plotting, format_data_for_plotly_js
+    get_subset_queryset,
+    get_data_for_plotting,
+    format_data_for_plotly_js,
 )
 from .backend_utils.filtering import import_filter
 
@@ -33,17 +35,13 @@ logger = logging.getLogger("basic")
 class Dashboard(MultiTableMixin, TemplateView):
     template_name = "dashboard.html"
     report_sample_data = Report_Sample.objects.all()
-    tables = [
-        ReportTable(Report.objects.all())
-    ]
+    tables = [ReportTable(Report.objects.all())]
     model = Report
 
-    table_pagination = {
-        "per_page": 10
-    }
+    table_pagination = {"per_page": 10}
 
     def _get_context_data(self):
-        """ Get the basic data that needs to be displayed in the dashboard page
+        """Get the basic data that needs to be displayed in the dashboard page
 
         Returns:
             dict: Dict of report and assay data to be passed to the dashboard
@@ -61,9 +59,8 @@ class Dashboard(MultiTableMixin, TemplateView):
         # to resetup the pagination
         # i have no idea what this code does tbh
         table_counter = count()
-        filter_table.prefix = (
-            filter_table.prefix or
-            self.table_prefix.format(next(table_counter))
+        filter_table.prefix = filter_table.prefix or self.table_prefix.format(
+            next(table_counter)
         )
         RequestConfig(
             self.request, paginate=self.get_table_pagination(filter_table)
@@ -72,20 +69,27 @@ class Dashboard(MultiTableMixin, TemplateView):
         context["tables"].append(filter_table)
 
         # get all the assays and sort them
-        assays = sorted({
-            assay
-            for assay in self.report_sample_data.values_list(
-                "assay", flat=True)
-        })
-        sequencer_ids = sorted({
-            sequencer_id
-            for sequencer_id in self.model.objects.all().values_list(
-                "sequencer_id", flat=True)
-        })
+        assays = sorted(
+            {
+                assay
+                for assay in self.report_sample_data.values_list(
+                    "assay", flat=True
+                )
+            }
+        )
+        sequencer_ids = sorted(
+            {
+                sequencer_id
+                for sequencer_id in self.model.objects.all().values_list(
+                    "sequencer_id", flat=True
+                )
+            }
+        )
         project_names = sorted(
             project_name
             for project_name in self.model.objects.all().values_list(
-                "project_name", flat=True)
+                "project_name", flat=True
+            )
         )
 
         context["project_names"] = project_names
@@ -94,14 +98,14 @@ class Dashboard(MultiTableMixin, TemplateView):
         plotable_metrics = {
             **self._get_plotable_metrics(bam_qc),
             **self._get_plotable_metrics(fastq_qc),
-            **self._get_plotable_metrics(vcf_qc)
+            **self._get_plotable_metrics(vcf_qc),
         }
         context["metrics"] = dict(sorted(plotable_metrics.items()))
         context["version"] = VERSION
         return context
 
     def _get_plotable_metrics(self, module) -> dict:
-        """ Gather all the plotable metrics by model in a dict
+        """Gather all the plotable metrics by model in a dict
 
         Args:
             module (module): Module containing the definition of models
@@ -141,7 +145,7 @@ class Dashboard(MultiTableMixin, TemplateView):
         return plotable_metrics
 
     def get(self, request):
-        """ Handle GET request
+        """Handle GET request
 
         Args:
             request (?): HTML request coming in
@@ -155,7 +159,7 @@ class Dashboard(MultiTableMixin, TemplateView):
         return render(request, self.template_name, context)
 
     def post(self, request):
-        """ Handle POST request
+        """Handle POST request
 
         Args:
             request (?): HTML request coming in
@@ -191,11 +195,12 @@ class Dashboard(MultiTableMixin, TemplateView):
                 filter_obj.delete()
             except Exception as e:
                 messages.add_message(
-                    request, messages.ERROR,
+                    request,
+                    messages.ERROR,
                     (
                         f"Couldn't delete {filter_name}. "
                         "Please contact the bioinformatics team"
-                    )
+                    ),
                 )
                 logger.error(f"Issue with trying to delete {filter_name}: {e}")
             else:
@@ -233,14 +238,14 @@ class Dashboard(MultiTableMixin, TemplateView):
                 if isinstance(form.errors[error_field], list):
                     for error in form.errors[error_field]:
                         messages.add_message(
-                            request, messages.ERROR,
-                            f"{error_field}: {error}"
+                            request, messages.ERROR, f"{error_field}: {error}"
                         )
                 else:
                     messages.add_message(
-                            request, messages.ERROR,
-                            f"{error_field}: {''.join(form.errors[error])}"
-                        )
+                        request,
+                        messages.ERROR,
+                        f"{error_field}: {''.join(form.errors[error])}",
+                    )
 
         return render(request, self.template_name, context)
 
@@ -249,7 +254,7 @@ class Plot(View):
     template_name = "plot.html"
 
     def get(self, request):
-        """ Handle GET request. This should only happen after the form has been
+        """Handle GET request. This should only happen after the form has been
         submitted.
 
         Args:
@@ -272,10 +277,8 @@ class Plot(View):
                 messages.error(request, msg)
                 return render(request, self.template_name)
 
-            (
-                data_dfs, projects_no_metric, samples_no_metric
-            ) = get_data_for_plotting(
-                subset_queryset, form["metrics_y"]
+            (data_dfs, projects_no_metric, samples_no_metric) = (
+                get_data_for_plotting(subset_queryset, form["metrics_y"])
             )
 
             if len(data_dfs) != 1:
@@ -318,12 +321,10 @@ class Plot(View):
                 "skipped_samples": samples_no_metric,
                 "is_grouped": is_grouped,
                 "plot": json_plot_data,
-                "version": VERSION
+                "version": VERSION,
             }
 
-            return render(
-                request, self.template_name, context
-            )
+            return render(request, self.template_name, context)
 
         return render(request, self.template_name)
 
@@ -340,8 +341,9 @@ class Plot(View):
 
             if filter_name != "Save filter":
                 msg, msg_status = import_filter(
-                    filter_name, request.user.username,
-                    request.session.get("form")
+                    filter_name,
+                    request.user.username,
+                    request.session.get("form"),
                 )
                 messages.add_message(request, msg_status, f"Filter: {msg}")
                 logger.info(msg)
@@ -363,8 +365,8 @@ class Login(FormView):
 
         if form.is_valid():
             user = authenticate(
-                username=form.cleaned_data['username'],
-                password=form.cleaned_data['password'],
+                username=form.cleaned_data["username"],
+                password=form.cleaned_data["password"],
             )
 
             if user:
