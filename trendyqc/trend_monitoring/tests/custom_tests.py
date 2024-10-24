@@ -2,12 +2,12 @@ from typing import Any
 
 
 class CustomTests:
-    """ Class that will harbour custom tests to handle the horible things that
+    """Class that will harbour custom tests to handle the horible things that
     can happen when ingesting MultiQC data
     """
 
     def assertKindaEqual(self, value1: Any, value2: Any):
-        """ Assertion test to handle cases where a string was converted into a
+        """Assertion test to handle cases where a string was converted into a
         None and imported as such:
         {
             "125416805-23265R0011-23SNPID19-F_S60_L001_sorted": {
@@ -28,7 +28,11 @@ class CustomTests:
         """
 
         if value1 != value2:
-            if value1 not in ["", "NA", None] and value2 not in ["", "NA", None]:
+            if value1 not in ["", "NA", None] and value2 not in [
+                "",
+                "NA",
+                None,
+            ]:
                 # happy stores data as strings, need conversion to be sure that
                 # the value are really not equal
                 try:

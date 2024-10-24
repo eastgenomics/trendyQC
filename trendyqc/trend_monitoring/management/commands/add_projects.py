@@ -21,37 +21,49 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         type_addition = parser.add_mutually_exclusive_group()
         type_addition.add_argument(
-            "-p_id", "--project_id", nargs="+",
+            "-p_id",
+            "--project_id",
+            nargs="+",
             help=(
                 "Project id(s) from which to import MultiQC reports. Mainly "
                 "for testing purposes"
-            )
+            ),
         )
         type_addition.add_argument(
-            "-t", "--time_back", help=(
+            "-t",
+            "--time_back",
+            help=(
                 "Time back in which to look for projects, use the DNAnexus ",
                 "docs for info (http://autodoc.dnanexus.com/bindings/python/current/dxpy_search.html#dxpy.bindings.search.find_data_objects) "
-                "i.e. -48h looks for projects created 48h ago at the latest"
-            )
+                "i.e. -48h looks for projects created 48h ago at the latest",
+            ),
         )
         type_addition.add_argument(
-            "-a", "--all", action="store_true",
-            help="Scan all 002 projects to import all MultiQC reports"
+            "-a",
+            "--all",
+            action="store_true",
+            help="Scan all 002 projects to import all MultiQC reports",
         )
         parser.add_argument(
-            "-update", "--automated_update", action="store_true",
-            default=False, help=(
+            "-update",
+            "--automated_update",
+            action="store_true",
+            default=False,
+            help=(
                 "Flag to indicate whether this was launched by an automated "
                 "job"
-            )
+            ),
         )
         parser.add_argument(
-            "-d", "--dry_run", action="store_true", default=False,
-            help="Option to not import the data"
+            "-d",
+            "--dry_run",
+            action="store_true",
+            default=False,
+            help="Option to not import the data",
         )
 
     def handle(self, *args, **options):
-        """ Handle options given through the CLI using the add_arguments
+        """Handle options given through the CLI using the add_arguments
         function
         """
 
@@ -140,12 +152,14 @@ class Command(BaseCommand):
             for report in all_reports:
                 for msg, type_msg in report.messages:
                     if type_msg == "error":
-                        errors.setdefault(
-                            report.multiqc_json_id, []).append(msg)
+                        errors.setdefault(report.multiqc_json_id, []).append(
+                            msg
+                        )
 
                     elif type_msg == "warning":
-                        warnings.setdefault(
-                            report.multiqc_json_id, []).append(msg)
+                        warnings.setdefault(report.multiqc_json_id, []).append(
+                            msg
+                        )
 
             if is_automated_update:
                 now = datetime.datetime.now().strftime("%y%m%d|%I:%M")

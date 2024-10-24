@@ -9,7 +9,7 @@ storing_logger = logging.getLogger("storing")
 
 
 def setup_report_object(project_id: list):
-    """ Import all the multiqc reports contained in the list of projects ids
+    """Import all the multiqc reports contained in the list of projects ids
     given
 
     Args:
@@ -31,7 +31,7 @@ def setup_report_object(project_id: list):
             multiqc_report = MultiQC_report(
                 multiqc_report_id=report_id,
                 multiqc_project_id=project_id,
-                multiqc_job_id=job_id
+                multiqc_job_id=job_id,
             )
             multiqc_report.add_msg(msg)
         else:
@@ -44,12 +44,11 @@ def setup_report_object(project_id: list):
                     multiqc_report_id=report_id,
                     multiqc_project_id=project_id,
                     multiqc_job_id=job_id,
-                    data=report_data
+                    data=report_data,
                 )
             except Exception:
                 msg = (
                     f"Failed to setup the MultiQC report object\n"
-
                     "```"
                     f"{traceback.format_exc()}"
                     "```"
@@ -66,7 +65,7 @@ def setup_report_object(project_id: list):
 
 
 def import_multiqc_report(report: MultiQC_report):
-    """ Import the MultiQC report objects in the database
+    """Import the MultiQC report objects in the database
 
     Args:
         report (MultiQC_report): MultiQC report object
@@ -79,20 +78,11 @@ def import_multiqc_report(report: MultiQC_report):
         try:
             report.import_instances()
         except Exception:
-            msg = (
-                f"Failed to import\n"
-
-                "```"
-                f"{traceback.format_exc()}"
-                "```"
-            )
+            msg = f"Failed to import\n" "```" f"{traceback.format_exc()}" "```"
             report.add_msg(msg)
             return False
 
-        logger.info((
-            f"Successfully imported: "
-            f"{report.multiqc_json_id}"
-        ))
+        logger.info((f"Successfully imported: " f"{report.multiqc_json_id}"))
         return True
     else:
         logger.debug(f"{report.multiqc_json_id} is not importable")

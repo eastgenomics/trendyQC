@@ -23,9 +23,9 @@ BASE_DIR_MANAGEMENT = Path(__file__).resolve().parent.parent.parent
 CONFIG_DIR = BASE_DIR_MANAGEMENT / "configs"
 
 
-class MultiQC_report():
+class MultiQC_report:
     def __init__(self, **kwargs) -> None:
-        """ Initialize MultiQC report
+        """Initialize MultiQC report
 
         Args:
             Expected kwargs are:
@@ -80,8 +80,9 @@ class MultiQC_report():
 
                 # check if the report is already in the database
                 if already_in_db(
-                    self.models["report"], name=self.report_name,
-                    dnanexus_file_id=self.multiqc_json_id
+                    self.models["report"],
+                    name=self.report_name,
+                    dnanexus_file_id=self.multiqc_json_id,
                 ):
                     self.is_importable = False
                     msg = (
@@ -98,7 +99,7 @@ class MultiQC_report():
             self.create_all_instances()
 
     def setup_tools(self):
-        """ Create tools for use when parsing the MultiQC data and store them
+        """Create tools for use when parsing the MultiQC data and store them
         in self.tools"""
 
         self.tools = []
@@ -106,10 +107,15 @@ class MultiQC_report():
 
         for multiqc_field_in_config, tool_metadata in self.assay_data.items():
             if multiqc_field_in_config not in multiqc_raw_data:
-                self.messages.append(((
-                    f"`{multiqc_field_in_config}` not "
-                    "present in report"
-                ), "warning"))
+                self.messages.append(
+                    (
+                        (
+                            f"`{multiqc_field_in_config}` not "
+                            "present in report"
+                        ),
+                        "warning",
+                    )
+                )
                 continue
 
             # subtool is used to specify for example, HSMetrics or insertSize
@@ -138,7 +144,7 @@ class MultiQC_report():
                 self.tools.append(tool_obj)
 
     def parse_multiqc_report(self):
-        """ Parse the multiqc report for easy import
+        """Parse the multiqc report for easy import
         Output should look like:
         {
             "sample_id": {
@@ -179,12 +185,12 @@ class MultiQC_report():
                     # look for the order, lane and read using regex
                     match = regex.search(
                         r"_(?P<order>S[0-9]+)_(?P<lane>L[0-9]+)_(?P<read>R[12])",
-                        sample
+                        sample,
                     )
 
                     if match:
                         # use the regex matching to get the sample id
-                        potential_sample_id = sample[:match.start()]
+                        potential_sample_id = sample[: match.start()]
                         # find every component of the sample id
                         matches = regex.findall(
                             r"([a-zA-Z0-9]+)", potential_sample_id
@@ -208,14 +214,15 @@ class MultiQC_report():
 
                     if match:
                         # and get the sample id remaining
-                        potential_sample_id = sample[:match.start()]
+                        potential_sample_id = sample[: match.start()]
                     else:
                         # remove the happy suffixes, they were causing issues
                         # because it had a longer sample name breaking the
                         # merging of data under one sample id
                         sample = regex.sub(
-                            "_INDEL_PASS|_INDEL_ALL|_SNP_PASS|_SNP_ALL", "",
-                            sample
+                            "_INDEL_PASS|_INDEL_ALL|_SNP_PASS|_SNP_ALL",
+                            "",
+                            sample,
                         )
 
                         potential_sample_id = sample
@@ -239,24 +246,24 @@ class MultiQC_report():
                     self.data[sample_id][tool_obj].setdefault(lane_read, {})
                     self.data[sample_id][tool_obj][lane_read] = {
                         **self.data[sample_id][tool_obj][lane_read],
-                        **cleaned_data
+                        **cleaned_data,
                     }
 
                 elif tool_name == "happy":
                     if tool_obj.happy_type in cleaned_data.values():
                         self.data[sample_id][tool_obj] = {
                             **self.data[sample_id][tool_obj],
-                            **cleaned_data
+                            **cleaned_data,
                         }
 
                 else:
                     self.data[sample_id][tool_obj] = {
                         **self.data[sample_id][tool_obj],
-                        **cleaned_data
+                        **cleaned_data,
                     }
 
     def get_metadata(self):
-        """ Get the metadata from the MultiQC DNAnexus object """
+        """Get the metadata from the MultiQC DNAnexus object"""
 
         project_obj = dxpy.DXProject(self.project_id)
         self.project_name = project_obj.name
@@ -269,7 +276,9 @@ class MultiQC_report():
         report_job = dxpy.DXJob(self.job_id)
         # get the file id for the HTML report and save the DXFile object
         html_report = dxpy.DXFile(
-            report_job.describe()["output"]["multiqc_html_report"]["$dnanexus_link"]
+            report_job.describe()["output"]["multiqc_html_report"][
+                "$dnanexus_link"
+            ]
         )
         # get the name of the HTML report
         self.report_name = html_report.describe()["name"]
@@ -282,16 +291,17 @@ class MultiQC_report():
         )
 
         try:
-            self.date = datetime.strptime(
-                project_date, "%y%m%d").replace(tzinfo=timezone.utc)
+            self.date = datetime.strptime(project_date, "%y%m%d").replace(
+                tzinfo=timezone.utc
+            )
         except ValueError:
             # if the format of the date is wrong, use the job date as the date
             # of the run
             self.date = self.datetime_job
 
     def map_models_to_tools(self):
-        """ Map Django models to tools. Store that info in the appropriate
-        tool object """
+        """Map Django models to tools. Store that info in the appropriate
+        tool object"""
 
         # loop through the tools that we have for this MultiQC report
         for tool in self.tools:
@@ -310,13 +320,18 @@ class MultiQC_report():
                 # store the model in the tool object
                 tool.set_model(self.models[matches[0]])
             else:
-                self.messages.append(((
-                    f"`{tool.name}` matches multiple "
-                    f"model names -> {matches}"
-                ), "warning"))
+                self.messages.append(
+                    (
+                        (
+                            f"`{tool.name}` matches multiple "
+                            f"model names -> {matches}"
+                        ),
+                        "warning",
+                    )
+                )
 
     def clean_data(self, data: Dict) -> Dict:
-        """ Loop through the fields and values for one tool and clean the
+        """Loop through the fields and values for one tool and clean the
         values
 
         Args:
@@ -326,12 +341,10 @@ class MultiQC_report():
             Dict: Dict with cleaned data
         """
 
-        return {
-            field: clean_value(value) for field, value in data.items()
-        }
+        return {field: clean_value(value) for field, value in data.items()}
 
     def create_all_instances(self):
-        """ Create instances for everything that needs to get imported
+        """Create instances for everything that needs to get imported
 
         Creates:
             - self.all_instances: Dict containing the sample as keys and the
@@ -380,8 +393,10 @@ class MultiQC_report():
 
             self.all_instances[sample].append(report_sample_instance)
 
-    def create_tool_data_instance(self, tool_obj: Tool, tool_data: dict) -> List:
-        """ Create tool data instance. Uses the tool data structure to check
+    def create_tool_data_instance(
+        self, tool_obj: Tool, tool_data: dict
+    ) -> List:
+        """Create tool data instance. Uses the tool data structure to check
         how to create model instances.
 
         Args:
@@ -408,25 +423,31 @@ class MultiQC_report():
                 model_instance = model(**data)
                 # store the fastqc instances using their parent table i.e.
                 # fastqc as key
-                self.instances_per_sample[tool_obj.parent].append(model_instance)
+                self.instances_per_sample[tool_obj.parent].append(
+                    model_instance
+                )
                 instances_to_return.append(model_instance)
         else:
             model_instance = model(**tool_data)
 
             if tool_obj.parent:
                 # store these tools using their parent table name as key
-                self.instances_per_sample[tool_obj.parent].append(model_instance)
+                self.instances_per_sample[tool_obj.parent].append(
+                    model_instance
+                )
             else:
                 # if they have no parent that means that their parent is
                 # directly the report sample table so use that as the key
-                self.instances_per_sample["report_sample"].append(model_instance)
+                self.instances_per_sample["report_sample"].append(
+                    model_instance
+                )
 
             instances_to_return.append(model_instance)
 
         return instances_to_return
 
     def create_sample_instance(self, sample_id: str) -> Model:
-        """ Create the sample instance.
+        """Create the sample instance.
 
         Args:
             sample (str): Sample id
@@ -441,7 +462,7 @@ class MultiQC_report():
         return sample_instance
 
     def create_report_instance(self) -> Model:
-        """ Create the report instance using data gathered when initialising
+        """Create the report instance using data gathered when initialising
         the report
 
         Returns:
@@ -450,15 +471,18 @@ class MultiQC_report():
 
         report = self.models["report"]
         report_instance = report(
-            name=self.report_name, project_name=self.project_name,
-            project_id=self.project_id, date=self.date,
-            sequencer_id=self.sequencer_id, job_date=self.datetime_job,
-            dnanexus_file_id=self.multiqc_json_id
+            name=self.report_name,
+            project_name=self.project_name,
+            project_id=self.project_id,
+            date=self.date,
+            sequencer_id=self.sequencer_id,
+            job_date=self.datetime_job,
+            dnanexus_file_id=self.multiqc_json_id,
         )
         return report_instance
 
     def create_link_table_instance(self, type_table: str) -> Model:
-        """ Create the instances for the tables that have foreign keys i.e.
+        """Create the instances for the tables that have foreign keys i.e.
         picard, happy, fastqc
 
         Args:
@@ -478,14 +502,16 @@ class MultiQC_report():
             link_table_instance = model(**instances)
             # all those tables are linked to the report sample table to store
             # them accordingly
-            self.instances_per_sample["report_sample"].append(link_table_instance)
+            self.instances_per_sample["report_sample"].append(
+                link_table_instance
+            )
 
             return link_table_instance
         else:
             return
 
     def gather_instances_for(self, type_table: str) -> Dict:
-        """ Gather the instances for the given type table using the
+        """Gather the instances for the given type table using the
         self.instances_per_sample keys
 
         Args:
@@ -511,7 +537,8 @@ class MultiQC_report():
                     # a requirement for models that have data divided by lane
                     # and read
                     tool_with_subtool = [
-                        tool for tool in self.tools
+                        tool
+                        for tool in self.tools
                         if model_name == tool.subtool
                     ]
 
@@ -523,7 +550,9 @@ class MultiQC_report():
                         # requires the creation of 4 distinct instances
                         if tool.divided_by_lane_read:
                             lane = instance.lane
-                            lane_instances.setdefault(lane, []).append([tool.subtool, instance])
+                            lane_instances.setdefault(lane, []).append(
+                                [tool.subtool, instance]
+                            )
 
                         else:
                             # i.e. picard_hs_metrics has a picard parent but is
@@ -536,9 +565,9 @@ class MultiQC_report():
             # check if lane and read info has been detected and added
             if lane_instances:
                 if len(lane_instances) > 2:
-                    self.messages.append(((
-                        "Contains more than 2 lanes"
-                    ), "warning"))
+                    self.messages.append(
+                        (("Contains more than 2 lanes"), "warning")
+                    )
 
                 # order the lanes for addition
                 ordered_lanes = sorted(lane_instances)
@@ -549,13 +578,15 @@ class MultiQC_report():
 
                     for subtool, instance in lane_instances[lane]:
                         read = instance.sample_read
-                        instance_type_tables[f"{subtool}_{lane_in_model}_{read}"] = instance
+                        instance_type_tables[
+                            f"{subtool}_{lane_in_model}_{read}"
+                        ] = instance
 
         return instance_type_tables
 
     @transaction.atomic
     def import_instances(self):
-        """ Loop through all the samples and their instances to import them """
+        """Loop through all the samples and their instances to import them"""
 
         for sample, instances in self.all_instances.items():
             for instance in instances:
@@ -570,7 +601,7 @@ class MultiQC_report():
                     self.messages.append((msg, "error"))
 
     def add_msg(self, msg, type_msg="error"):
-        """ Add messages usually error to the report object
+        """Add messages usually error to the report object
 
         Args:
             msg (str): Message to store

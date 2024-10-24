@@ -9,7 +9,7 @@ from ._notifications import slack_notify
 
 
 def login_to_dnanexus(verbose=False):
-    """ Login to DNAnexus using a auth token present in the environment """
+    """Login to DNAnexus using a auth token present in the environment"""
 
     DX_SECURITY_CONTEXT = {
         "auth_token_type": "Bearer",
@@ -28,7 +28,6 @@ def login_to_dnanexus(verbose=False):
         traceback.print_exc()
         msg = (
             "TrendyQC - Failed DNAnexus login, token may be expired.\n"
-
             "```"
             f"{traceback.format_exc()}"
             "```"
@@ -38,7 +37,7 @@ def login_to_dnanexus(verbose=False):
 
 
 def search_multiqc_reports(project_id: str) -> List:
-    """ Look for the MultiQC reports in the given project ID
+    """Look for the MultiQC reports in the given project ID
 
     Args:
         project_id (str): DNAnexus project ID
@@ -56,7 +55,7 @@ def search_multiqc_reports(project_id: str) -> List:
 
 
 def get_002_projects(**kwargs) -> List:
-    """ Get the 002 projects in DNAnexus
+    """Get the 002 projects in DNAnexus
 
     Args:
         kwargs (dict): Dict of args that find_projects can accept
@@ -71,7 +70,7 @@ def get_002_projects(**kwargs) -> List:
 
 
 def is_archived(dnanexus_object: dxpy.DXFile) -> bool:
-    """ Check if the given dnanexus object is archived
+    """Check if the given dnanexus object is archived
 
     Args:
         dnanexus_object (dxpy.DXFile): Generic Dnanexus DXFile

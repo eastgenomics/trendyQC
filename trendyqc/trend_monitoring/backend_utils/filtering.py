@@ -8,7 +8,7 @@ from trend_monitoring.models.filters import Filter
 
 
 def import_filter(filter_name: str, username: str, data: dict) -> str:
-    """ Import filter data
+    """Import filter data
 
     Args:
         filter_name (str): Name of the filter
@@ -32,8 +32,9 @@ def import_filter(filter_name: str, username: str, data: dict) -> str:
         return f"Filter {filter_name} already exists", messages.ERROR
 
     filter_obj = Filter(
-        name=filter_name, user=username,
-        content=json.dumps(data, default=serialize_date)
+        name=filter_name,
+        user=username,
+        content=json.dumps(data, default=serialize_date),
     )
     filter_obj.save()
 
@@ -41,7 +42,7 @@ def import_filter(filter_name: str, username: str, data: dict) -> str:
 
 
 def serialize_date(obj):
-    """ Serialize the given obj for import in the database
+    """Serialize the given obj for import in the database
 
     Args:
         obj (dict): Dict containing the data that needs to be imported in the
