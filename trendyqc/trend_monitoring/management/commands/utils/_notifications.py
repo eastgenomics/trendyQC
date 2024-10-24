@@ -42,7 +42,7 @@ def slack_notify(message) -> None:
         )
 
 
-def build_report(header: str, final_msg: str, dict_info: dict = {}):
+def build_report_for_slack(header: str, final_msg: str, dict_info: dict = {}):
     """Given all the messages that a MultiQC report object possesses, create a
     summary report of all the messages
 
@@ -58,11 +58,19 @@ def build_report(header: str, final_msg: str, dict_info: dict = {}):
 
     msg_report = f"{header}\n\n"
 
-    for report_id, msgs in dict_info.items():
-        msg_report += f" - {report_id}\n"
+    for i, info in enumerate(dict_info.items()):
+        report_id, msgs = info
+        msg_report += f" - `{report_id}`\n"
 
         for msg in msgs:
             msg_report += f"   - {msg}\n"
+
+        if i == 4 and len(dict_info) != 5:
+            msg_report += (
+                f"\nThere are {len(dict_info)-5} issues or warnings left. "
+                "Please consult the TrendyQC logs for more information."
+            )
+            break
 
     msg_report += f"\n{final_msg}"
 
