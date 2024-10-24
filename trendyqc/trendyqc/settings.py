@@ -307,6 +307,7 @@ LOG_VIEWER_PATTERNS = ["INFO", "DEBUG", "WARNING", "ERROR", "CRITICAL"]
 LOG_VIEWER_EXCLUDE_TEXT_PATTERN = (
     None  # String regex expression to exclude the log from line
 )
+LOG_VIEWER_FILE_LIST_STYLES = "/" + STATIC_URL + "css/fix_dark_mode.css"
 
 INTERNAL_IPS = ["127.0.0.1", HOST]
 
