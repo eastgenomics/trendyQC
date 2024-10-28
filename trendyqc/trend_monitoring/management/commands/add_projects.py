@@ -3,6 +3,7 @@ import json
 import logging
 import sys
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 import regex
@@ -188,4 +189,9 @@ class Command(BaseCommand):
                         logger.error(msg)
 
             if is_automated_update:
-                slack_notify(summary_report)
+                if errors:
+                    channel = settings.SLACK_ALERT_CHANNEL
+                else:
+                    channel = settings.SLACK_LOG_CHANNEL
+
+                slack_notify(summary_report, channel)
