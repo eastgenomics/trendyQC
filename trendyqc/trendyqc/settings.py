@@ -59,7 +59,8 @@ except KeyError as e:
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 SLACK_TOKEN = os.environ.get("SLACK_TOKEN")
-SLACK_CHANNEL = os.environ.get("SLACK_CHANNEL")
+SLACK_LOG_CHANNEL = os.environ.get("SLACK_LOG_CHANNEL")
+SLACK_ALERT_CHANNEL = os.environ.get("SLACK_ALERT_CHANNEL")
 
 ###
 
