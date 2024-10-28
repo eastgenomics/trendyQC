@@ -9,14 +9,14 @@ from urllib3.util import Retry
 logger = logging.getLogger("basic")
 
 
-def slack_notify(message) -> None:
+def slack_notify(message, channel) -> None:
     """Notify the channel with the given message
 
     Args:
         message (str): Message to send
+        channel (str): Channel to send the message to
     """
 
-    channel = settings.SLACK_CHANNEL
     logger.info(f"Sending message to {channel}")
     slack_token = settings.SLACK_TOKEN
 
