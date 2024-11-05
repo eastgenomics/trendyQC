@@ -58,20 +58,14 @@ def build_report_for_slack(header: str, final_msg: str, dict_info: dict = {}):
 
     msg_report = f"{header}\n\n"
 
-    for i, info in enumerate(dict_info.items()):
-        report_id, msgs = info
-        msg_report += f" - `{report_id}`\n"
+    if dict_info:
+        msg_report += (
+            f":rotating_light: There were {len(dict_info)} issues or warnings "
+            "detected. Please consult the TrendyQC logs for more information."
+        )
+    else:
+        msg_report += ":white_check_mark: No issues or warnings were detected"
 
-        for msg in msgs:
-            msg_report += f"   - {msg}\n"
-
-        if i == 4 and len(dict_info) != 5:
-            msg_report += (
-                f"\nThere are {len(dict_info)-5} issues or warnings left. "
-                "Please consult the TrendyQC logs for more information."
-            )
-            break
-
-    msg_report += f"\n{final_msg}"
+    msg_report += f"\n\n{final_msg}"
 
     return msg_report
