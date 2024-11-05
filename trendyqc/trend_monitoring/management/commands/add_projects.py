@@ -186,7 +186,7 @@ class Command(BaseCommand):
                 for report_id, msgs in warnings.items():
                     for msg in msgs:
                         msg = f"{report_id}: {msg}"
-                        logger.error(msg)
+                        logger.warning(msg)
 
             if is_automated_update:
                 if errors:
