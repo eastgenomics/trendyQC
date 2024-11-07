@@ -82,5 +82,8 @@
         "multiqc_sentieon_AlignmentSummaryMetrics": ["picard", "alignment_summary_metrics"],
         "multiqc_sentieon_insertSize": ["picard", "insert_size_metrics"],
         "multiqc_verifybamid": ["verifybamid", null]
+    },
+    "PanCan": {
+        
     }
 }
