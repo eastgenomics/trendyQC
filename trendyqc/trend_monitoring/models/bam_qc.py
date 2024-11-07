@@ -57,8 +57,12 @@ class Samtools_data(models.Model):
     singletons_failed_pct = models.FloatField(null=True)
     with_mate_mapped_to_a_different_chr_passed = models.IntegerField(null=True)
     with_mate_mapped_to_a_different_chr_failed = models.IntegerField(null=True)
-    with_mate_mapped_to_a_different_chr_mapQ_over_5_passed = models.IntegerField(null=True)
-    with_mate_mapped_to_a_different_chr_mapQ_over_5_failed = models.IntegerField(null=True)
+    with_mate_mapped_to_a_different_chr_mapQ_over_5_passed = (
+        models.IntegerField(null=True)
+    )
+    with_mate_mapped_to_a_different_chr_mapQ_over_5_failed = (
+        models.IntegerField(null=True)
+    )
     flagstat_total = models.IntegerField(null=True)
 
     class Meta:
@@ -84,48 +88,62 @@ class Picard(models.Model):
         "HS_metrics", on_delete=models.DO_NOTHING, blank=True, null=True
     )
     alignment_summary_metrics = models.ForeignKey(
-        "Alignment_summary_metrics", on_delete=models.DO_NOTHING,
-        blank=True, null=True
+        "Alignment_summary_metrics",
+        on_delete=models.DO_NOTHING,
+        blank=True,
+        null=True,
     )
     base_distribution_by_cycle_metrics_1st_lane_R1 = models.ForeignKey(
         "Base_distribution_by_cycle_metrics",
         related_name="base_distribution_by_cycle_metrics_1st_lane_R1",
-        on_delete=models.DO_NOTHING, blank=True, null=True
+        on_delete=models.DO_NOTHING,
+        blank=True,
+        null=True,
     )
     base_distribution_by_cycle_metrics_1st_lane_R2 = models.ForeignKey(
         "Base_distribution_by_cycle_metrics",
         related_name="base_distribution_by_cycle_metrics_1st_lane_R2",
-        on_delete=models.DO_NOTHING, blank=True, null=True
+        on_delete=models.DO_NOTHING,
+        blank=True,
+        null=True,
     )
     base_distribution_by_cycle_metrics_2nd_lane_R1 = models.ForeignKey(
         "Base_distribution_by_cycle_metrics",
         related_name="base_distribution_by_cycle_metrics_2nd_lane_R1",
-        on_delete=models.DO_NOTHING, blank=True, null=True
+        on_delete=models.DO_NOTHING,
+        blank=True,
+        null=True,
     )
     base_distribution_by_cycle_metrics_2nd_lane_R2 = models.ForeignKey(
         "Base_distribution_by_cycle_metrics",
         related_name="base_distribution_by_cycle_metrics_2nd_lane_R2",
-        on_delete=models.DO_NOTHING, blank=True, null=True
+        on_delete=models.DO_NOTHING,
+        blank=True,
+        null=True,
     )
     gc_bias_metrics = models.ForeignKey(
-        "GC_bias_metrics", on_delete=models.DO_NOTHING, blank=True,
-        null=True
+        "GC_bias_metrics", on_delete=models.DO_NOTHING, blank=True, null=True
     )
     insert_size_metrics = models.ForeignKey(
-        "Insert_size_metrics", on_delete=models.DO_NOTHING, blank=True,
-        null=True
+        "Insert_size_metrics",
+        on_delete=models.DO_NOTHING,
+        blank=True,
+        null=True,
     )
     quality_yield_metrics = models.ForeignKey(
-        "Quality_yield_metrics", on_delete=models.DO_NOTHING,
-        blank=True, null=True
+        "Quality_yield_metrics",
+        on_delete=models.DO_NOTHING,
+        blank=True,
+        null=True,
     )
     pcr_metrics = models.ForeignKey(
-        "PCR_metrics", on_delete=models.DO_NOTHING, blank=True,
-        null=True
+        "PCR_metrics", on_delete=models.DO_NOTHING, blank=True, null=True
     )
     duplication_metrics = models.ForeignKey(
-        "Duplication_metrics", on_delete=models.DO_NOTHING, blank=True,
-        null=True
+        "Duplication_metrics",
+        on_delete=models.DO_NOTHING,
+        blank=True,
+        null=True,
     )
 
     class Meta:
