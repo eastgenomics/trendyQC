@@ -84,6 +84,9 @@
         "multiqc_verifybamid": ["verifybamid", null]
     },
     "PanCan": {
-        
+        "multiqc_fastqc": ["fastqc", "read_data"],
+        "multiqc_general_stats": ["custom_coverage", null],
+        "multiqc_picard_RnaSeqMetrics": ["picard", "multiqc_picard_RnaSeqMetrics"],
+        "rna_seqc": ["rna_seqc", null]
     }
 }
