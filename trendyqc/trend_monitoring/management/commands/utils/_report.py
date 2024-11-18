@@ -60,6 +60,7 @@ def setup_report_object(project_id: list):
                     multiqc_job_id=job_id,
                 )
                 multiqc_report.add_msg(msg)
+                print(traceback.format_exc())
 
         yield multiqc_report
 
@@ -78,7 +79,7 @@ def import_multiqc_report(report: MultiQC_report):
         try:
             report.import_instances()
         except Exception:
-            msg = f"Failed to import\n" "```" f"{traceback.format_exc()}" "```"
+            msg = f"Failed to import\n```{traceback.format_exc()}```"
             report.add_msg(msg)
             return False
 
