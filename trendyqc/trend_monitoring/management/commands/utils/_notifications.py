@@ -59,7 +59,7 @@ def build_report(header: str, final_msg: str, dict_info: dict = {}):
     msg_report = f"{header}\n\n"
 
     for report_id, msgs in dict_info.items():
-        msg_report += f" - {report_id}\n"
+        msg_report += f" - `{report_id}`\n"
 
         for msg in msgs:
             msg_report += f"   - {msg}\n"
