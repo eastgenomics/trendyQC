@@ -414,7 +414,7 @@ class Duplication_metrics(models.Model):
 class RNAseq_metrics(models.Model):
     pf_bases = models.FloatField()
     pf_aligned_bases = models.FloatField()
-    ribosomal_bases = models.FloatField()
+    ribosomal_bases = models.FloatField(null=True)
     coding_bases = models.FloatField()
     utr_bases = models.FloatField()
     intronic_bases = models.FloatField()
@@ -427,7 +427,7 @@ class RNAseq_metrics(models.Model):
     num_unexplained_reads = models.FloatField()
     pct_r1_transcript_strand_reads = models.FloatField()
     pct_r2_transcript_strand_reads = models.FloatField()
-    pct_ribosomal_bases = models.FloatField()
+    pct_ribosomal_bases = models.FloatField(null=True)
     pct_coding_bases = models.FloatField()
     pct_utr_bases = models.FloatField()
     pct_intronic_bases = models.FloatField()
@@ -439,17 +439,14 @@ class RNAseq_metrics(models.Model):
     median_5prime_bias = models.FloatField()
     median_3prime_bias = models.FloatField()
     median_5prime_to_3prime_bias = models.FloatField()
-    sample = models.FloatField()
-    library = models.FloatField()
-    read_group = models.FloatField()
     pf_not_aligned_bases = models.FloatField()
 
     class Meta:
         app_label = "trend_monitoring"
-        db_table = "multiqc_picard_RnaSeqMetrics"
+        db_table = "rnaseq_metrics"
+
 
 class RNA_seqc(models.Model):
-    sample = models.CharField()
     mapping_rate = models.FloatField()
     unique_rate_of_mapped = models.FloatField()
     duplicate_rate_of_mapped = models.FloatField()
@@ -514,13 +511,13 @@ class RNA_seqc(models.Model):
     read_length = models.FloatField()
     genes_detected = models.FloatField()
     estimated_library_complexity = models.FloatField()
-    genes_used_in_3_prime_bias = models.FloatField()
-    mean_3_prime_bias = models.FloatField()
-    median_3_prime_bias = models.FloatField()
-    3_prime_bias_std = models.FloatField()
-    3_prime_bias_mad_std = models.FloatField()
-    3_prime_bias_25th_percentile = models.FloatField()
-    3_prime_bias_25th_percentile = models.FloatField()
+    genes_used_in_three_prime_bias = models.FloatField()
+    mean_three_prime_bias = models.FloatField()
+    median_three_prime_bias = models.FloatField()
+    three_prime_bias_std = models.FloatField()
+    three_prime_bias_mad_std = models.FloatField()
+    three_prime_bias_25th_percentile = models.FloatField()
+    three_prime_bias_25th_percentile = models.FloatField()
     average_fragment_length = models.FloatField()
     fragment_length_median = models.FloatField()
     fragment_length_std = models.FloatField()
