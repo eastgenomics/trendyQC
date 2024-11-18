@@ -596,9 +596,10 @@ class MultiQC_report:
                     instance_model_name = type(instance).__name__
                     msg = (
                         "Could not be imported because of "
-                        f"{instance_model_name}:\n{e}"
+                        f"`{instance_model_name}`:\n```{e}```"
                     )
                     self.messages.append((msg, "error"))
+                    print(traceback.format_exc())
 
     def add_msg(self, msg, type_msg="error"):
         """Add messages usually error to the report object
