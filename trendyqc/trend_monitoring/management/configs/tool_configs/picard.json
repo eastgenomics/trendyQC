@@ -214,7 +214,7 @@
         "READS_IN_DUPLICATE_UNPAIRED": "reads_in_duplicate_unpaired",
         "READS_UNMAPPED": "reads_unmapped"
     },
-    "multiqc_picard_RnaSeqMetrics": {
+    "RNAseq_metrics": {
         "PF_BASES": "pf_bases",
         "PF_ALIGNED_BASES": "pf_aligned_bases",
         "RIBOSOMAL_BASES": "ribosomal_bases",
@@ -242,9 +242,6 @@
         "MEDIAN_5PRIME_BIAS": "median_5prime_bias",
         "MEDIAN_3PRIME_BIAS": "median_3prime_bias",
         "MEDIAN_5PRIME_TO_3PRIME_BIAS": "median_5prime_to_3prime_bias",
-        "SAMPLE": "sample",
-        "LIBRARY": "library",
-        "READ_GROUP": "read_group",
         "PF_NOT_ALIGNED_BASES": "pf_not_aligned_bases"
     }
 }
