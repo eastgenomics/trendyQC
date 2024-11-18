@@ -8,6 +8,7 @@ from dateutil.relativedelta import relativedelta
 import pandas as pd
 
 from django.apps import apps
+from django.conf import settings
 from django.core.exceptions import FieldError
 from django.db.models.query import QuerySet
 from trend_monitoring.models.metadata import Report_Sample
@@ -300,32 +301,7 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
         list: List of lists of the traces that need to be plotted
     """
 
-    colors = {
-        "Cancer Endocrine Neurology": [
-            "#FF0000",  # red
-            "#FFBABA",  # pinkish
-            "#A04D4D",  # brown
-            "#B30000",  # maroon
-        ],
-        "Myeloid": [
-            "#FF7800",  # orange
-            "#B69300",  # ugly yellow
-            "#000000",  # black
-            "#969696",  # grey
-        ],
-        "TruSight Oncology 500": [
-            "#7D8040",  # olive
-            "#00cc99",  # turquoise
-            "#00a600",  # green
-            "#00FF00",  # bright green
-        ],
-        "Twist WES": [
-            "#ff65ff",  # fushia
-            "#6600cc",  # purple
-            "#1c6dff",  # blue
-            "#6ddfff",  # light blue
-        ],
-    }
+    colors = settings.PLOTTING_COLORS
 
     # args dict for configuring the traces for combined, first, second lane
     args = {
