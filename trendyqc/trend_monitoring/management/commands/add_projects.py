@@ -198,3 +198,5 @@ class Command(BaseCommand):
                 logger.warning(warning_report)
 
             slack_notify(summary_report)
+
+        print(final_msg)
