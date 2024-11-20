@@ -450,6 +450,7 @@ class RNA_seqc(models.Model):
     mapping_rate = models.FloatField()
     unique_rate_of_mapped = models.FloatField()
     duplicate_rate_of_mapped = models.FloatField()
+    duplicate_rate_of_mapped_exclusing_globins = models.FloatField()
     base_mismatch = models.FloatField()
     end_1_mapping_rate = models.FloatField()
     end_2_mapping_rate = models.FloatField()
@@ -517,7 +518,7 @@ class RNA_seqc(models.Model):
     three_prime_bias_std = models.FloatField()
     three_prime_bias_mad_std = models.FloatField()
     three_prime_bias_25th_percentile = models.FloatField()
-    three_prime_bias_25th_percentile = models.FloatField()
+    three_prime_bias_75th_percentile = models.FloatField()
     average_fragment_length = models.FloatField()
     fragment_length_median = models.FloatField()
     fragment_length_std = models.FloatField()
@@ -527,6 +528,7 @@ class RNA_seqc(models.Model):
     median_of_transcript_coverage_cv = models.FloatField()
     median_exon_cv = models.FloatField()
     exon_cv_mad = models.FloatField()
+    sample = models.CharField()
 
     class Meta:
         app_label = "trend_monitoring"
