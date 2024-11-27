@@ -9,14 +9,14 @@ from urllib3.util import Retry
 logger = logging.getLogger("basic")
 
 
-def slack_notify(message) -> None:
+def slack_notify(message, channel) -> None:
     """Notify the channel with the given message
 
     Args:
         message (str): Message to send
+        channel (str): Channel to send the message to
     """
 
-    channel = settings.SLACK_CHANNEL
     logger.info(f"Sending message to {channel}")
     slack_token = settings.SLACK_TOKEN
 
@@ -42,7 +42,7 @@ def slack_notify(message) -> None:
         )
 
 
-def build_report(header: str, final_msg: str, dict_info: dict = {}):
+def build_report_for_slack(header: str, final_msg: str, dict_info: dict = {}):
     """Given all the messages that a MultiQC report object possesses, create a
     summary report of all the messages
 
@@ -58,12 +58,14 @@ def build_report(header: str, final_msg: str, dict_info: dict = {}):
 
     msg_report = f"{header}\n\n"
 
-    for report_id, msgs in dict_info.items():
-        msg_report += f" - {report_id}\n"
+    if dict_info:
+        msg_report += (
+            f":rotating_light: There were {len(dict_info)} issues or warnings "
+            "detected. Please consult the TrendyQC logs for more information."
+        )
+    else:
+        msg_report += ":white_check_mark: No issues or warnings were detected"
 
-        for msg in msgs:
-            msg_report += f"   - {msg}\n"
-
-    msg_report += f"\n{final_msg}"
+    msg_report += f"\n\n{final_msg}"
 
     return msg_report

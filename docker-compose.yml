@@ -37,7 +37,8 @@ services:
       - DB_PASSWORD
       - HOST
       - SLACK_TOKEN
-      - SLACK_CHANNEL
+      - SLACK_LOG_CHANNEL
+      - SLACK_ALERT_CHANNEL
       - BIND_DN
       - BIND_PASSWORD
       - AUTH_LDAP_SERVER_URI

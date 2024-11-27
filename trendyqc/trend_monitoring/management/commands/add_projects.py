@@ -3,11 +3,12 @@ import json
 import logging
 import sys
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 import regex
 
-from .utils._notifications import slack_notify, build_report
+from .utils._notifications import slack_notify, build_report_for_slack
 from .utils._dnanexus_utils import login_to_dnanexus, get_002_projects
 from .utils._report import setup_report_object, import_multiqc_report
 
@@ -67,17 +68,17 @@ class Command(BaseCommand):
         function
         """
 
-        now = datetime.datetime.now().strftime("%y%m%d|%I:%M")
-        header_msg = (
-            f"[{now}] - TrendyQC - Command line: `{' '.join(sys.argv)}`"
-        )
+        now = datetime.datetime.now().strftime("%y%m%d | %H:%M:%S")
+        header_msg = f"{now} - Command line: `{' '.join(sys.argv)}`"
+
+        logger.info(header_msg)
 
         is_automated_update = options["automated_update"]
 
         if is_automated_update:
             header_msg = (
-                f"Starting update to add projects from the last 48h at {now}: "
-                f"{' '.join(sys.argv)}"
+                f":trends: TrendyQC report :trends:\n\nUpdating to add "
+                f"projects from the last 48h at {now}: `{' '.join(sys.argv)}`"
             )
 
         project_ids = None
@@ -94,19 +95,12 @@ class Command(BaseCommand):
             project_ids = options["project_id"]
 
         if not project_ids:
-            final_msg = (
-                "No projects found using following command: "
-                f"{' '.join(sys.argv)}"
-            )
+            now = datetime.datetime.now().strftime("%y%m%d | %H:%M:%S")
+            final_msg = f"Finished update at {now}, no new projects detected"
 
-            if is_automated_update:
-                now = datetime.datetime.now().strftime("%y%m%d|%I:%M")
-                final_msg = (
-                    f"Finished update at {now}, no new projects detected"
-                )
+            logger.info(final_msg)
 
-            report_msg = build_report(header_msg, final_msg)
-            logger.info(report_msg)
+            report_msg = build_report_for_slack(header_msg, final_msg)
             slack_notify(report_msg)
 
         else:
@@ -161,24 +155,15 @@ class Command(BaseCommand):
                             msg
                         )
 
-            if is_automated_update:
-                now = datetime.datetime.now().strftime("%y%m%d|%I:%M")
+            now = datetime.datetime.now().strftime("%y%m%d | %H:%M:%S")
 
-                if imported_reports:
-                    formatted_reports = "\n".join(imported_reports)
-                    final_msg = (
-                        f"Finished update at {now}, new reports:\n"
-                        f"{formatted_reports}"
-                    )
-                else:
-                    final_msg = (
-                        f"Finished update at {now}, no new projects added"
-                    )
-
-            else:
+            if imported_reports:
                 final_msg = (
-                    f"Finished importing {len(imported_reports)} reports"
+                    f"Finished update at {now}, {len(imported_reports)} new "
+                    "reports have been imported\n"
                 )
+            else:
+                final_msg = f"Finished update at {now}, no new projects added"
 
             logger.info(final_msg)
 
@@ -187,14 +172,26 @@ class Command(BaseCommand):
             for k, v in list(errors.items()) + list(warnings.items()):
                 all_issues.setdefault(k, []).extend(v)
 
-            summary_report = build_report(header_msg, final_msg, all_issues)
+            summary_report = build_report_for_slack(
+                header_msg, final_msg, all_issues
+            )
 
             if errors:
-                error_report = build_report(header_msg, final_msg, errors)
-                logger.error(error_report)
+                for report_id, msgs in errors.items():
+                    for msg in msgs:
+                        msg = f"{report_id}: {msg}"
+                        logger.error(msg)
 
             if warnings:
-                warning_report = build_report(header_msg, final_msg, warnings)
-                logger.warning(warning_report)
+                for report_id, msgs in warnings.items():
+                    for msg in msgs:
+                        msg = f"{report_id}: {msg}"
+                        logger.warning(msg)
 
-            slack_notify(summary_report)
+            if is_automated_update:
+                if errors:
+                    channel = settings.SLACK_ALERT_CHANNEL
+                else:
+                    channel = settings.SLACK_LOG_CHANNEL
+
+                slack_notify(summary_report, channel)
