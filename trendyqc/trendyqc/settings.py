@@ -48,6 +48,8 @@ try:
     # SECURITY WARNING: don't run with debug turned on in production!
     DEBUG = os.environ.get("DEBUG")
 
+    VERSION = os.environ.get("VERSION")
+
 except KeyError as e:
     key = e.args[0]
     raise KeyError(
@@ -93,7 +95,7 @@ MESSAGE_TAGS = {
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
-VERSION = f"v1.1.1{'_dev' if DEBUG else ''}"
+VERSION = f"v{VERSION}{'_dev' if DEBUG else ''}"
 
 ALLOWED_HOSTS = ["testserver", "localhost", HOST]
 

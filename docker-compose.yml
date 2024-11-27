@@ -14,6 +14,7 @@ services:
   db:
     container_name: trendyqc_db
     image: postgres:15.2
+    restart: always
     volumes:
       - db:/var/lib/postgresql/data/
     environment:
@@ -25,7 +26,8 @@ services:
   trendyqc:
     container_name: trendyqc
     build: .
-    image: trendyqc:1.0
+    image: trendyqc:1.2.0
+    restart: always
     environment:
       - DJANGO_SETTINGS_MODULE
       - DNANEXUS_TOKEN
@@ -41,6 +43,7 @@ services:
       - AUTH_LDAP_SERVER_URI
       - LDAP_CONF
       - DEBUG
+      - VERSION
     expose:
       - 8006
     volumes:
@@ -52,9 +55,10 @@ services:
   # reverse proxy container (nginx)
   nginx:
     container_name: trendyqc_proxy
+    image: nginx:1.23
+    restart: always
     ports:
       - 8008:80
-    image: nginx:1.23
     volumes:
       - ./config/nginx/conf.d:/etc/nginx/conf.d
       - static:/staticfiles/
@@ -68,9 +72,11 @@ services:
 
 networks:
   default:
-    name: nginx_default
+    name: nginx-default
     external: true
 
 volumes:
   db:
+    name: trendyqc_db
   static:
+    name: trendyqc_static
