@@ -13,7 +13,7 @@
     "Chimeric Reads": "chimeric_reads",
     "Discard Rate": "discard_rate",
     "Duplicate Rate of Mapped": "duplicate_rate_of_mapped",
-    "Duplicate Rate of Mapped, excluding Globins": "duplicate_rate_of_mapped_exclusing_globins",
+    "Duplicate Rate of Mapped, excluding Globins": "duplicate_rate_of_mapped_excluding_globins",
     "Duplicate Reads": "duplicate_reads",
     "End 1 Antisense": "end_1_antisense",
     "End 1 Bases": "end_1_bases",

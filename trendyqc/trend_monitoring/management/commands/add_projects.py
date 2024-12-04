@@ -199,4 +199,4 @@ class Command(BaseCommand):
 
             slack_notify(summary_report)
 
-        print(final_msg)
+        self.stdout.write(self.style.SUCCESS(final_msg))

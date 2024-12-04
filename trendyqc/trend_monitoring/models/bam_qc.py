@@ -122,7 +122,7 @@ class Picard(models.Model):
         null=True,
     )
     gc_bias_metrics = models.ForeignKey(
-        "GC_bias_metrics", on_delete=models.DO_NOTHING, blank=True, null=True
+        "GC_bias_metrics", on_delete=models.DO_NOTHING, blank=True, null=True,
     )
     insert_size_metrics = models.ForeignKey(
         "Insert_size_metrics",
@@ -137,7 +137,7 @@ class Picard(models.Model):
         null=True,
     )
     pcr_metrics = models.ForeignKey(
-        "PCR_metrics", on_delete=models.DO_NOTHING, blank=True, null=True
+        "PCR_metrics", on_delete=models.DO_NOTHING, blank=True, null=True,
     )
     duplication_metrics = models.ForeignKey(
         "Duplication_metrics",
@@ -146,7 +146,7 @@ class Picard(models.Model):
         null=True,
     )
     rnaseq_metrics = models.ForeignKey(
-        "RNAseq_metrics", on_delete=models.DO_NOTHING, blank=True, null=True
+        "RNAseq_metrics", on_delete=models.DO_NOTHING, blank=True, null=True,
     )
 
     class Meta:
@@ -450,7 +450,7 @@ class RNA_seqc(models.Model):
     mapping_rate = models.FloatField()
     unique_rate_of_mapped = models.FloatField()
     duplicate_rate_of_mapped = models.FloatField()
-    duplicate_rate_of_mapped_exclusing_globins = models.FloatField()
+    duplicate_rate_of_mapped_excluding_globins = models.FloatField()
     base_mismatch = models.FloatField()
     end_1_mapping_rate = models.FloatField()
     end_2_mapping_rate = models.FloatField()

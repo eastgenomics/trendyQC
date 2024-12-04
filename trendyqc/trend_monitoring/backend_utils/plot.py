@@ -11,6 +11,7 @@ from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import FieldError
 from django.db.models.query import QuerySet
+from django.core.exceptions import ImproperlyConfigured
 from trend_monitoring.models.metadata import Report_Sample
 
 
@@ -301,7 +302,17 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
         list: List of lists of the traces that need to be plotted
     """
 
-    colors = settings.PLOTTING_COLORS
+    try:
+        colors = settings.PLOTTING_COLORS
+    except AttributeError:
+        raise ImproperlyConfigured(
+            "PLOTTING_COLORS setting is missing. Please define it in your settings file."
+        )
+
+    if not isinstance(colors, dict):
+        raise ImproperlyConfigured(
+            "PLOTTING_COLORS must be a dictionary mapping assay names to colour lists."
+        )
 
     # args dict for configuring the traces for combined, first, second lane
     args = {
