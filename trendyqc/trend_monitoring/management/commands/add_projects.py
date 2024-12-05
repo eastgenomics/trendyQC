@@ -193,7 +193,6 @@ class Command(BaseCommand):
                     channel = settings.SLACK_ALERT_CHANNEL
                 else:
                     channel = settings.SLACK_LOG_CHANNEL
-
-            slack_notify(summary_report)
+                slack_notify(summary_report, channel)
 
         self.stdout.write(self.style.SUCCESS(final_msg))
