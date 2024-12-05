@@ -58,13 +58,11 @@ def build_report_for_slack(header: str, final_msg: str, dict_info: dict = {}):
 
     msg_report = f"{header}\n\n"
 
-    if dict_info:
-        msg_report += (
-            f":rotating_light: There were {len(dict_info)} issues or warnings "
-            "detected. Please consult the TrendyQC logs for more information."
-        )
-    else:
-        msg_report += ":white_check_mark: No issues or warnings were detected"
+    for report_id, msgs in dict_info.items():
+        msg_report += f" - `{report_id}`\n"
+
+        for msg in msgs:
+            msg_report += f"   - {msg}\n"
 
     msg_report += f"\n\n{final_msg}"
 

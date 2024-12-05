@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import traceback
 from typing import Dict, List
+import logging
 
 import dxpy
 import regex
@@ -596,9 +597,11 @@ class MultiQC_report:
                     instance_model_name = type(instance).__name__
                     msg = (
                         "Could not be imported because of "
-                        f"{instance_model_name}:\n{e}"
+                        f"`{instance_model_name}`:\n```{e}```"
                     )
                     self.messages.append((msg, "error"))
+                    logger = logging.getLogger(__name__)
+                    logger.error("Failed to import instance: %s", traceback.format_exc())
 
     def add_msg(self, msg, type_msg="error"):
         """Add messages usually error to the report object

@@ -82,5 +82,11 @@
         "multiqc_sentieon_AlignmentSummaryMetrics": ["picard", "alignment_summary_metrics"],
         "multiqc_sentieon_insertSize": ["picard", "insert_size_metrics"],
         "multiqc_verifybamid": ["verifybamid", null]
+    },
+    "PanCancer": {
+        "multiqc_fastqc": ["fastqc", "read_data"],
+        "multiqc_general_stats": ["custom_coverage", null],
+        "multiqc_picard_RnaSeqMetrics": ["picard", "RNAseq_metrics"],
+        "multiqc_rna_seqc": ["rna_seqc", null]
     }
 }

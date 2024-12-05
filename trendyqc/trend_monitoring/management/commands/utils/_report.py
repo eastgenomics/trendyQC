@@ -78,7 +78,7 @@ def import_multiqc_report(report: MultiQC_report):
         try:
             report.import_instances()
         except Exception:
-            msg = f"Failed to import\n" "```" f"{traceback.format_exc()}" "```"
+            msg = f"Failed to import\n```{traceback.format_exc()}```"
             report.add_msg(msg)
             return False
 

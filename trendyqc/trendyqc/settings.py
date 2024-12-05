@@ -315,3 +315,37 @@ LOG_VIEWER_FILE_LIST_STYLES = "/" + STATIC_URL + "css/fix_dark_mode.css"
 INTERNAL_IPS = ["127.0.0.1", HOST]
 
 DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": lambda request: DEBUG}
+
+# colors to be used in the plotting
+PLOTTING_COLORS = {
+    "Cancer Endocrine Neurology": [
+        "#FF0000",  # red
+        "#FFBABA",  # pinkish
+        "#A04D4D",  # brown
+        "#B30000",  # maroon
+    ],
+    "Myeloid": [
+        "#FF7800",  # orange
+        "#B69300",  # ugly yellow
+        "#000000",  # black
+        "#969696",  # grey
+    ],
+    "TruSight Oncology 500": [
+        "#7D8040",  # olive
+        "#00cc99",  # turquoise
+        "#00a600",  # green
+        "#00FF00",  # bright green
+    ],
+    "Twist WES": [
+        "#ff65ff",  # fushia
+        "#6600cc",  # purple
+        "#1c6dff",  # blue
+        "#6ddfff",  # light blue
+    ],
+    "PanCancer": [
+        "#a7cecb",  # light blue
+        "#f2f230",  # yellow
+        "#8447ff",  # purple
+        "#2b4141",  # dark green
+    ],
+}
