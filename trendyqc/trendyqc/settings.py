@@ -48,6 +48,8 @@ try:
     # SECURITY WARNING: don't run with debug turned on in production!
     DEBUG = os.environ.get("DEBUG")
 
+    VERSION = os.environ.get("VERSION")
+
 except KeyError as e:
     key = e.args[0]
     raise KeyError(
@@ -59,7 +61,8 @@ except KeyError as e:
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 SLACK_TOKEN = os.environ.get("SLACK_TOKEN")
-SLACK_CHANNEL = os.environ.get("SLACK_CHANNEL")
+SLACK_LOG_CHANNEL = os.environ.get("SLACK_LOG_CHANNEL")
+SLACK_ALERT_CHANNEL = os.environ.get("SLACK_ALERT_CHANNEL")
 
 ###
 
@@ -93,7 +96,7 @@ MESSAGE_TAGS = {
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
-VERSION = f"v1.1.1{'_dev' if DEBUG else ''}"
+VERSION = f"v{VERSION}{'_dev' if DEBUG else ''}"
 
 ALLOWED_HOSTS = ["testserver", "localhost", HOST]
 
@@ -307,6 +310,7 @@ LOG_VIEWER_PATTERNS = ["INFO", "DEBUG", "WARNING", "ERROR", "CRITICAL"]
 LOG_VIEWER_EXCLUDE_TEXT_PATTERN = (
     None  # String regex expression to exclude the log from line
 )
+LOG_VIEWER_FILE_LIST_STYLES = "/" + STATIC_URL + "css/fix_dark_mode.css"
 
 INTERNAL_IPS = ["127.0.0.1", HOST]
 
