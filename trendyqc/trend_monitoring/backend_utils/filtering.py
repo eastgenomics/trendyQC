@@ -31,10 +31,25 @@ def import_filter(filter_name: str, username: str, data: dict) -> str:
     else:
         return f"Filter {filter_name} already exists", messages.ERROR
 
+    subset = {}
+    date = {}
+
+    for k, v in data.items():
+        if "select" in k:
+            subset[k] = v
+
+        elif "metrics_y" in k:
+            metrics = {k: v}
+
+        else:
+            date[k] = v
+
     filter_obj = Filter(
         name=filter_name,
         user=username,
-        content=json.dumps(data, default=serialize_date),
+        subset=json.dumps(subset),
+        metric=json.dumps(metrics),
+        date=json.dumps(date, default=serialize_date),
     )
     filter_obj.save()
 

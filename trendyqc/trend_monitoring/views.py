@@ -66,6 +66,8 @@ class Dashboard(MultiTableMixin, TemplateView):
             self.request, paginate=self.get_table_pagination(filter_table)
         ).configure(filter_table)
 
+        filter_table.exclude = ("id", "user")
+
         context["tables"].append(filter_table)
 
         # get all the assays and sort them
@@ -178,8 +180,14 @@ class Dashboard(MultiTableMixin, TemplateView):
             filter_id = request.POST["filter_use"]
             # get the filter obj in the database
             filter_obj = Filter.objects.get(id=filter_id)
+            # combine the fields into a dict
+            form_data = (
+                json.loads(filter_obj.subset)
+                | json.loads(filter_obj.date)
+                | json.loads(filter_obj.metric)
+            )
             # deserialize the filter content for use in the Plot page
-            request.session["form"] = json.loads(filter_obj.content)
+            request.session["form"] = form_data
             return redirect("Plot")
 
         # Delete filter button in the filter table has been clicked
@@ -250,8 +258,10 @@ class Dashboard(MultiTableMixin, TemplateView):
         return render(request, self.template_name, context)
 
 
-class Plot(View):
+class Plot(MultiTableMixin, TemplateView):
     template_name = "plot.html"
+
+    table_pagination = {"per_page": 1}
 
     def get(self, request):
         """Handle GET request. This should only happen after the form has been
@@ -265,6 +275,24 @@ class Plot(View):
         """
 
         form = request.session.get("form")
+
+        # setup the filter table
+        filter_table = FilterTable(Filter.objects.all())
+
+        # so moving the FilterTable away from the class init "breaks" the
+        # default pagination for the filter table. I reused the code in the
+        # django-tables2 code (https://github.com/jieter/django-tables2/blob/master/django_tables2/views.py#L235)
+        # to resetup the pagination
+        # i have no idea what this code does tbh
+        table_counter = count()
+        filter_table.prefix = filter_table.prefix or self.table_prefix.format(
+            next(table_counter)
+        )
+        RequestConfig(
+            self.request, paginate=self.get_table_pagination(filter_table)
+        ).configure(filter_table)
+
+        filter_table.exclude = ("id", "user")
 
         # check if we have the form data in the session request
         if form:
@@ -322,6 +350,7 @@ class Plot(View):
                 "is_grouped": is_grouped,
                 "plot": json_plot_data,
                 "version": VERSION,
+                "filter_table": filter_table,
             }
 
             return render(request, self.template_name, context)

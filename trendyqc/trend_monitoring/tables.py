@@ -53,15 +53,15 @@ class FilterContentColumn(tables.Column):
         formatted_data = []
 
         for key, values in FilterForm.clean_form_for_user(filter_data).items():
-            data = f"<ul><li><b>{key}</b>: <ul>"
+            data = f"<ul><li><b>{key}</b>: "
 
             if isinstance(values, list):
                 for value in values:
-                    data += f"<li>{value}</li>"
+                    data += f"{value}"
             else:
-                data += f"<li>{values}</li>"
+                data += f"{values}"
 
-            data += "</ul></li></ul>"
+            data += "</li></ul>"
 
             formatted_data.append(data)
 
@@ -74,7 +74,7 @@ class FilterButton(tables.Column):
 
     def render(self, value, record):
         return mark_safe(
-            f'<button value="{record.id}" name="filter_use" class="btn btn-primary" onclick="submitFilterUse()">Use filter</button>'
+            f'<button value="{record.id}" name="filter_use" class="btn btn-primary" onclick="submitFilterUse()">Use</button>'
         )
 
 
@@ -83,7 +83,7 @@ class DeleteFilterButton(tables.Column):
 
     def render(self, value, record):
         return mark_safe(
-            f'<button value="{record.id}" name="delete_filter" class="btn btn-danger" onclick="confirmDelete(event)">Delete filter</button>'
+            f'<button value="{record.id}" name="delete_filter" class="btn btn-danger" onclick="confirmDelete(event)">Delete</button>'
         )
 
 
@@ -101,7 +101,9 @@ class ReportTable(tables.Table):
 
 class FilterTable(tables.Table):
     name = tables.Column()
-    content = FilterContentColumn(classname="custom_column")
+    subset = FilterContentColumn()
+    date = FilterContentColumn()
+    metric = FilterContentColumn()
     apply_filter = FilterButton()
     delete_filter = DeleteFilterButton()
 

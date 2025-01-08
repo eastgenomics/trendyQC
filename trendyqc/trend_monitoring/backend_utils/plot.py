@@ -50,7 +50,7 @@ def get_subset_queryset(data: Dict) -> QuerySet:
         # the results will be different
         today = datetime.date.today()
         filter_dict["report__date__range"] = (
-            today + relativedelta(days=-int(days_back[0])),
+            today - relativedelta(days=int(days_back[0])),
             today,
         )
     else:
