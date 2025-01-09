@@ -601,7 +601,9 @@ class MultiQC_report:
                     )
                     self.messages.append((msg, "error"))
                     logger = logging.getLogger(__name__)
-                    logger.error("Failed to import instance: %s", traceback.format_exc())
+                    logger.error(
+                        "Failed to import instance: %s", traceback.format_exc()
+                    )
 
     def add_msg(self, msg, type_msg="error"):
         """Add messages usually error to the report object
