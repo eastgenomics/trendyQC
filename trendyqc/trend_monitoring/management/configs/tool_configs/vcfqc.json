@@ -2,6 +2,10 @@
     "mean het ratio": "mean_het_ratio",
     "mean homo ratio": "mean_hom_ratio",
     "het:homo ratio": "het_hom_ratio",
-    "X homo:het ratio": "x_hom_het_ratio",
+    "X homo:het ratio": "x_het_hom_ratio",
+    "mean_het": "mean_het_ratio",
+    "mean_hom": "mean_hom_ratio",
+    "het_hom_ratio": "het_hom_ratio",
+    "x_het_hom_ratio": "x_het_hom_ratio",
     "gender": "gender"
 }
