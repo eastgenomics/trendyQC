@@ -99,8 +99,8 @@ class Vcfqc_data(models.Model):
     mean_het_ratio = models.FloatField()
     mean_hom_ratio = models.FloatField()
     het_hom_ratio = models.FloatField()
-    x_hom_het_ratio = models.FloatField()
-    gender = models.CharField(max_length=10)
+    x_het_hom_ratio = models.FloatField()
+    gender = models.CharField(max_length=10, null=True)
 
     class Meta:
         app_label = "trend_monitoring"
