@@ -1,4 +1,5 @@
 import calendar
+from copy import deepcopy
 import datetime
 import json
 import re
@@ -314,6 +315,8 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
             "PLOTTING_COLORS must be a dictionary mapping assay names to colour lists."
         )
 
+    colors_copy = deepcopy(colors)
+
     # args dict for configuring the traces for combined, first, second lane
     args = {
         "Combined": {
@@ -376,7 +379,7 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
         legend_name = f"{assay_name} - {sequencer_id}"
 
         if legend_name not in seen_groups:
-            assay_colors = colors[assay_name]
+            assay_colors = colors_copy[assay_name]
             color_assay_sequencer = assay_colors.pop(0)
             seen_groups[legend_name] = color_assay_sequencer
             shown_legend = True
