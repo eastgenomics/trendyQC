@@ -6,7 +6,7 @@ from trendyqc.settings import BASE_DIR
 
 
 class TestTool(unittest.TestCase):
-    """ Test class for the tools.
+    """Test class for the tools.
 
     Setup:
     - get the configuration directory for use when setting up the tool
@@ -17,6 +17,7 @@ class TestTool(unittest.TestCase):
     - Check that the fields for a given Tool object match the ones gathered in
     the configuration files
     """
+
     def setUp(self):
         # config directory path
         self.config_dir = (
@@ -24,8 +25,11 @@ class TestTool(unittest.TestCase):
         )
 
         test_tool_data_file = (
-            BASE_DIR / "trend_monitoring" / "tests" / "test_data" / 
-            "tools.json"
+            BASE_DIR
+            / "trend_monitoring"
+            / "tests"
+            / "test_data"
+            / "tools.json"
         )
 
         with open(test_tool_data_file) as f:
@@ -34,7 +38,7 @@ class TestTool(unittest.TestCase):
             self.tools = json.loads(f.read())
 
     def test_tools(self):
-        """ Check the fields that the tools objects extract from the config
+        """Check the fields that the tools objects extract from the config
         JSON files. This will catch changes in the configuration files that
         might occur in the future
         """

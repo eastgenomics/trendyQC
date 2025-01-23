@@ -1,21 +1,23 @@
 import calendar
+from copy import deepcopy
 import datetime
 import json
 import re
-import random
 from typing import Dict
 
 from dateutil.relativedelta import relativedelta
 import pandas as pd
 
 from django.apps import apps
+from django.conf import settings
 from django.core.exceptions import FieldError
 from django.db.models.query import QuerySet
+from django.core.exceptions import ImproperlyConfigured
 from trend_monitoring.models.metadata import Report_Sample
 
 
 def get_subset_queryset(data: Dict) -> QuerySet:
-    """ Get all the Report_sample objects that belong to the subset that the
+    """Get all the Report_sample objects that belong to the subset that the
     user inputted
 
     Args:
@@ -50,10 +52,10 @@ def get_subset_queryset(data: Dict) -> QuerySet:
         # and is used at the beginning of the month or at the end of the month,
         # the results will be different
         today = datetime.date.today()
-        filter_dict["report__date__range"] = ((
+        filter_dict["report__date__range"] = (
             today + relativedelta(days=-int(days_back[0])),
-            today
-        ))
+            today,
+        )
     else:
         if date_start and date_end:
             if isinstance(date_start, list):
@@ -61,6 +63,9 @@ def get_subset_queryset(data: Dict) -> QuerySet:
 
             if isinstance(date_end, list):
                 date_end = date_end[0]
+
+            date_start = datetime.datetime.strptime(date_start, "%Y-%m-%d")
+            date_end = datetime.datetime.strptime(date_end, "%Y-%m-%d")
 
             filter_dict["report__date__range"] = (date_start, date_end)
 
@@ -71,7 +76,7 @@ def get_subset_queryset(data: Dict) -> QuerySet:
 def get_data_for_plotting(
     report_sample_queryset: QuerySet, metrics: list
 ) -> list:
-    """ Get the data from the queryset in a Pandas dataframe. Find projects and
+    """Get the data from the queryset in a Pandas dataframe. Find projects and
     samples for which the metric is not present or empty
 
     Args:
@@ -125,14 +130,22 @@ def get_data_for_plotting(
 
         df = pd.DataFrame(
             report_sample_queryset.values(
-                "sample__sample_id", "report__date", "report__project_name",
-                "assay", "report__sequencer_id", *metric_filter
+                "sample__sample_id",
+                "report__date",
+                "report__project_name",
+                "assay",
+                "report__sequencer_id",
+                *metric_filter,
             )
         )
 
         df.columns = [
-            "sample_id", "date", "project_name", "assay", "sequencer_id",
-            *metric_filter
+            "sample_id",
+            "date",
+            "project_name",
+            "assay",
+            "sequencer_id",
+            *metric_filter,
         ]
 
         for project_name in df["project_name"].unique():
@@ -145,14 +158,18 @@ def get_data_for_plotting(
             for series_name, series in metric_df.items():
                 # if all values are None/NaN
                 if series.isnull().all():
-                    projects_no_metrics.setdefault(metric, set()).add(project_name)
+                    projects_no_metrics.setdefault(metric, set()).add(
+                        project_name
+                    )
 
                 # if one value is None/NaN
                 elif series.isnull().any():
                     samples_no_metric.setdefault(metric, {})
 
                     for values in data_one_run.loc[series.isna()].values:
-                        samples_no_metric[metric].setdefault(project_name, set())
+                        samples_no_metric[metric].setdefault(
+                            project_name, set()
+                        )
                         # extract sample name
                         data = [value for value in values][0]
                         samples_no_metric[metric][project_name].add(data)
@@ -166,7 +183,7 @@ def get_data_for_plotting(
 
 
 def get_metric_filter(form_model: str, form_metric: str) -> str:
-    """ Get the metric filter needed to extract the metric data from the
+    """Get the metric filter needed to extract the metric data from the
     queryset
 
     Args:
@@ -202,8 +219,10 @@ def get_metric_filter(form_model: str, form_metric: str) -> str:
         metric_filter = [
             f"fastqc__{lane_read}__{original_metric_filter.split('__')[-1]}"
             for lane_read in [
-                "read_data_1st_lane_R1", "read_data_1st_lane_R2",
-                "read_data_2nd_lane_R1", "read_data_2nd_lane_R2"
+                "read_data_1st_lane_R1",
+                "read_data_1st_lane_R2",
+                "read_data_2nd_lane_R1",
+                "read_data_2nd_lane_R2",
             ]
         ]
         metric_filter.insert(0, "fastqc__read_data_2nd_lane_R1__lane")
@@ -217,7 +236,7 @@ def get_metric_filter(form_model: str, form_metric: str) -> str:
                 "base_distribution_by_cycle_metrics_1st_lane_R1",
                 "base_distribution_by_cycle_metrics_1st_lane_R2",
                 "base_distribution_by_cycle_metrics_2nd_lane_R1",
-                "base_distribution_by_cycle_metrics_2nd_lane_R2"
+                "base_distribution_by_cycle_metrics_2nd_lane_R2",
             ]
         ]
         metric_filter.insert(
@@ -254,7 +273,7 @@ def get_metric_filter(form_model: str, form_metric: str) -> str:
 
 
 def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
-    """ Format the dataframe data for Plotly JS.
+    """Format the dataframe data for Plotly JS.
 
     Args:
         plot_data (pd.DataFrame): Pandas Dataframe containing the data to plot
@@ -284,33 +303,19 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
         list: List of lists of the traces that need to be plotted
     """
 
-    colors = {
-        "Cancer Endocrine Neurology": [
-            "#FF0000",   # red
-            "#FFBABA",   # pinkish
-            "#A04D4D",   # brown
-            "#B30000",   # maroon
-        ],
-        "Myeloid": [
-            "#FF7800",   # orange
-            "#B69300",   # ugly yellow
-            "#000000",   # black
-            "#969696",   # grey
-        ],
-        "TruSight Oncology 500": [
-            "#7D8040",   # olive
-            "#00cc99",  # turquoise
-            "#00a600",  # green
-            "#00FF00",   # bright green
+    try:
+        colors = settings.PLOTTING_COLORS
+    except AttributeError:
+        raise ImproperlyConfigured(
+            "PLOTTING_COLORS setting is missing. Please define it in your settings file."
+        )
 
-        ],
-        "Twist WES": [
-            "#ff65ff",   # fushia
-            "#6600cc",   # purple
-            "#1c6dff",   # blue
-            "#6ddfff",   # light blue
-        ]
-    }
+    if not isinstance(colors, dict):
+        raise ImproperlyConfigured(
+            "PLOTTING_COLORS must be a dictionary mapping assay names to colour lists."
+        )
+
+    colors_copy = deepcopy(colors)
 
     # args dict for configuring the traces for combined, first, second lane
     args = {
@@ -337,7 +342,7 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
             "name": "Second lane",
             "offsetgroup": "Second lane",
             "legendgroup": "Second lane",
-        }
+        },
     }
 
     # Bool to indicate whether legend needs to be displayed
@@ -369,12 +374,12 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
             plot_data["project_name"] == project_name
         ].copy()
 
-        assay_name = data_one_run['assay'].unique()[0]
-        sequencer_id = data_one_run['sequencer_id'].unique()[0]
+        assay_name = data_one_run["assay"].unique()[0]
+        sequencer_id = data_one_run["sequencer_id"].unique()[0]
         legend_name = f"{assay_name} - {sequencer_id}"
 
         if legend_name not in seen_groups:
-            assay_colors = colors[assay_name]
+            assay_colors = colors_copy[assay_name]
             color_assay_sequencer = assay_colors.pop(0)
             seen_groups[legend_name] = color_assay_sequencer
             shown_legend = True
@@ -404,7 +409,9 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
 
             for name, sub_dict in args.items():
                 # calculate mean across appropriate columns
-                data_one_run[name] = data_one_run.loc[:, sub_dict["columns"]].mean(axis=1)
+                data_one_run[name] = data_one_run.loc[
+                    :, sub_dict["columns"]
+                ].mean(axis=1)
 
                 if name == "First lane" and seen_first_lane:
                     shown_legend = False
@@ -423,7 +430,7 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
                     "boxplot_line_color": sub_dict["boxplot_line_color"],
                     "offsetgroup": sub_dict["offsetgroup"],
                     "legendgroup": sub_dict["legendgroup"],
-                    "showlegend": shown_legend
+                    "showlegend": shown_legend,
                 }
 
                 if name == "First lane":
@@ -451,11 +458,11 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
                     "project_name": project_name,
                     "lane": None,
                     "offsetgroup": "",
-                    "boxplot_color": color_assay_sequencer,
-                    "boxplot_line_color": color_assay_sequencer,
-                    "showlegend": shown_legend
+                    "boxplot_color": seen_groups[legend_name],
+                    "boxplot_line_color": seen_groups[legend_name],
+                    "showlegend": shown_legend,
                 },
-                **legend_args
+                **legend_args,
             }
 
             traces.append(create_trace(**trace_args))
@@ -465,7 +472,7 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
 
 
 def create_trace(**kwargs):
-    """ Setup the trace according to given data
+    """Setup the trace according to given data
 
     Args:
         data (pd.DataFrame): Dataframe containing the data for that boxplot
@@ -475,9 +482,9 @@ def create_trace(**kwargs):
         dict: Dict containing the data needed for Plotly
     """
 
-    sub_df = kwargs["data"].sort_values(
-        kwargs["data_column"]
-    )[["sample_id", kwargs["data_column"]]]
+    sub_df = kwargs["data"].sort_values(kwargs["data_column"])[
+        ["sample_id", kwargs["data_column"]]
+    ]
 
     # convert values to native python types for JSON serialisation
     data_values = [
@@ -498,7 +505,8 @@ def create_trace(**kwargs):
     # setup each boxplot with the appropriate annotation and data points
     trace = {
         "x": [
-            [date]*len(data_values), [kwargs["project_name"]]*len(data_values)
+            [date] * len(data_values),
+            [kwargs["project_name"]] * len(data_values),
         ],
         "y": data_values,
         "name": kwargs["name"],
@@ -512,25 +520,23 @@ def create_trace(**kwargs):
             "color": kwargs["boxplot_color"],
         },
         # coloring of edges of box
-        "line": {
-            "color": kwargs.get("boxplot_line_color", "#444")
-        },
+        "line": {"color": kwargs.get("boxplot_line_color", "#444")},
         # +80 adds transparency
-        "fillcolor": kwargs["boxplot_color"]+"80",
+        "fillcolor": kwargs["boxplot_color"] + "80",
         # grouping of boxes
         "offsetgroup": kwargs["offsetgroup"],
         # name of group in the legend
         "legendgroup": kwargs.get("legendgroup", ""),
         "legend": kwargs.get("legendgroup", ""),
         "visible": kwargs.get("visible", True),
-        "showlegend": kwargs["showlegend"]
+        "showlegend": kwargs["showlegend"],
     }
 
     return trace
 
 
 def get_date_from_project_name(project_name):
-    """ Get a date formatted for reading i.e. 2405 -> May 2024
+    """Get a date formatted for reading i.e. 2405 -> May 2024
 
     Args:
         project_name (str): Project name in which to look for the date in
@@ -558,9 +564,9 @@ def get_date_from_project_name(project_name):
             else:
                 check.append(True)
 
-        assert not all(check), (
-            f"Multiple date looking objects have been found in {project_name}"
-        )
+        assert not all(
+            check
+        ), f"Multiple date looking objects have been found in {project_name}"
 
     month_abbr = calendar.month_abbr[int(matches[0][2:4])]
 
@@ -568,7 +574,7 @@ def get_date_from_project_name(project_name):
 
 
 def build_groups(df):
-    """ Get the groups of assay and sequencer id combinaisons for the grouping
+    """Get the groups of assay and sequencer id combinaisons for the grouping
     of traces
 
     Args:
@@ -582,15 +588,16 @@ def build_groups(df):
     # count number of occurences of these combos
     # add the first column back
     # name the count column
-    df = df \
-        .groupby(['assay', 'sequencer_id']) \
-        .size() \
-        .reset_index() \
-        .rename(columns={0: 'count'})
+    df = (
+        df.groupby(["assay", "sequencer_id"])
+        .size()
+        .reset_index()
+        .rename(columns={0: "count"})
+    )
 
     # get the list of combos and format it for displaying in legend
     return list(
-        df[df["count"] != 0].agg(
-            lambda x: f"{x['assay']} - {x['sequencer_id']}", axis=1
-        ).values
+        df[df["count"] != 0]
+        .agg(lambda x: f"{x['assay']} - {x['sequencer_id']}", axis=1)
+        .values
     )

@@ -59,6 +59,9 @@ class Report_Sample(models.Model):
     picard = models.ForeignKey(
         "Picard", on_delete=models.DO_NOTHING, blank=True, null=True
     )
+    rna_seqc = models.ForeignKey(
+        "RNA_seqc", on_delete=models.DO_NOTHING, blank=True, null=True
+    )
     # vcf level qc
     somalier_data = models.ForeignKey(
         "Somalier_data", on_delete=models.DO_NOTHING, blank=True, null=True

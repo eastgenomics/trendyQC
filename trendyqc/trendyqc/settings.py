@@ -31,10 +31,10 @@ try:
     HOST = os.environ.get("HOST")
 
     # list of variables for the user management using LDAP
-    AUTH_LDAP_BIND_DN = os.environ['BIND_DN']
-    AUTH_LDAP_BIND_PASSWORD = os.environ['BIND_PASSWORD']
-    AUTH_LDAP_SERVER_URI = os.environ['AUTH_LDAP_SERVER_URI']
-    LDAP_CONF = os.environ['LDAP_CONF']
+    AUTH_LDAP_BIND_DN = os.environ["BIND_DN"]
+    AUTH_LDAP_BIND_PASSWORD = os.environ["BIND_PASSWORD"]
+    AUTH_LDAP_SERVER_URI = os.environ["AUTH_LDAP_SERVER_URI"]
+    LDAP_CONF = os.environ["LDAP_CONF"]
 
     # list of allowed hosts for the web app (get an error when posting forms
     # if the host is in the ALLOWED_HOSTS variable)
@@ -48,18 +48,21 @@ try:
     # SECURITY WARNING: don't run with debug turned on in production!
     DEBUG = os.environ.get("DEBUG")
 
+    VERSION = os.environ.get("VERSION")
+
 except KeyError as e:
     key = e.args[0]
     raise KeyError(
-        f'Unable to import {key} from environment, is an .env file '
-        'present or env variables set?'
+        f"Unable to import {key} from environment, is an .env file "
+        "present or env variables set?"
     )
 
 # Django crispy forms bootstrap configuration
-CRISPY_TEMPLATE_PACK = 'bootstrap5'
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 SLACK_TOKEN = os.environ.get("SLACK_TOKEN")
-SLACK_CHANNEL = os.environ.get("SLACK_CHANNEL")
+SLACK_LOG_CHANNEL = os.environ.get("SLACK_LOG_CHANNEL")
+SLACK_ALERT_CHANNEL = os.environ.get("SLACK_ALERT_CHANNEL")
 
 ###
 
@@ -73,7 +76,13 @@ WARNING_LOG = BASE_DIR / "logs" / "warning.log"
 DEBUG_LOG = BASE_DIR / "logs" / "debug.log"
 STORING_LOG = BASE_DIR / "logs" / "storing.log"
 
-with open(BASE_DIR / "trend_monitoring" / "management" / "configs" / "displaying_data.json") as f:
+with open(
+    BASE_DIR
+    / "trend_monitoring"
+    / "management"
+    / "configs"
+    / "displaying_data.json"
+) as f:
     DISPLAY_DATA_JSON = json.loads(f.read())
 
 ###
@@ -81,81 +90,77 @@ with open(BASE_DIR / "trend_monitoring" / "management" / "configs" / "displaying
 DJANGO_TABLES2_TEMPLATE = "django_tables2/bootstrap5.html"
 
 MESSAGE_TAGS = {
-    messages.ERROR: 'danger',
+    messages.ERROR: "danger",
 }
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
-VERSION = f"v1.1.1{'_dev' if DEBUG else ''}"
+VERSION = f"v{VERSION}{'_dev' if DEBUG else ''}"
 
-ALLOWED_HOSTS = [
-    'testserver',
-    'localhost',
-    HOST
-]
+ALLOWED_HOSTS = ["testserver", "localhost", HOST]
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'trend_monitoring',
-    'crispy_forms',
-    'crispy_bootstrap5',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "trend_monitoring",
+    "crispy_forms",
+    "crispy_bootstrap5",
     "django_tables2",
     "debug_toolbar",
     "log_viewer",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
-ROOT_URLCONF = 'trendyqc.urls'
+ROOT_URLCONF = "trendyqc.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'trend_monitoring', 'templates')],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [os.path.join(BASE_DIR, "trend_monitoring", "templates")],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'trendyqc.wsgi.application'
+WSGI_APPLICATION = "trendyqc.wsgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': DB_NAME,
-        'USER': DB_USER,
-        'PASSWORD': DB_PASSWORD,
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": DB_NAME,
+        "USER": DB_USER,
+        "PASSWORD": DB_PASSWORD,
         # this should be the name of the db service in the docker compose file
-        'HOST': 'db',
-        'PORT': '5432',
+        "HOST": "db",
+        "PORT": "5432",
     }
 }
 
@@ -165,16 +170,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -182,36 +187,31 @@ AUTH_PASSWORD_VALIDATORS = [
 # TO-DO: put the host in the environment file + change to match the host on the
 # prod server
 # https://docs.djangoproject.com/en/4.2/ref/settings/#csrf-trusted-origins
-CSRF_TRUSTED_ORIGINS = [
-    f"https://{ORIGIN}",
-    f"http://{ORIGIN}:8008"
-]
+CSRF_TRUSTED_ORIGINS = [f"https://{ORIGIN}", f"http://{ORIGIN}:8008"]
 
 # Authentication Configuration
 AUTHENTICATION_BACKENDS = [
     "django_auth_ldap.backend.LDAPBackend",
-    "django.contrib.auth.backends.ModelBackend"
+    "django.contrib.auth.backends.ModelBackend",
 ]
 
 AUTH_LDAP_CONNECTION_OPTIONS = {ldap.OPT_REFERRALS: 0}
 
 AUTH_LDAP_USER_SEARCH = LDAPSearch(
-    LDAP_CONF,
-    ldap.SCOPE_SUBTREE,
-    "(samaccountname=%(user)s)"
+    LDAP_CONF, ldap.SCOPE_SUBTREE, "(samaccountname=%(user)s)"
 )
 
 # otherwise i get an error when passing the data from the dashboard view to the
 # plotting view. However the django docs share some security concerns.
-# https://docs.djangoproject.com/en/4.2/topics/http/sessions/#session-serialization
-SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+# https://docs.djangoproject.com/en/5.1/topics/http/sessions/#session-serialization
+SESSION_SERIALIZER = "django.contrib.sessions.serializers.JSONSerializer"
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -228,7 +228,7 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGGING = {
     "version": 1,
@@ -238,10 +238,7 @@ LOGGING = {
             "format": "{levelname}|{asctime}|{module}|{process:d}|{thread:d}|{message}",
             "style": "{",
         },
-        "storing": {
-            "format": "{levelname}|{asctime}|{message}",
-            "style": "{"
-        },
+        "storing": {"format": "{levelname}|{asctime}|{message}", "style": "{"},
         "simple": {
             "format": "{levelname}|{asctime}|{message}",
             "style": "{",
@@ -292,26 +289,63 @@ LOGGING = {
             "handlers": ["storing-log"],
             "level": "INFO",
             "propagate": False,
-        }
+        },
     },
 }
 
 LOG_VIEWER_FILES = [
-    str(ERROR_LOG), str(STORING_LOG), str(DEBUG_LOG), str(WARNING_LOG)
+    str(ERROR_LOG),
+    str(STORING_LOG),
+    str(DEBUG_LOG),
+    str(WARNING_LOG),
 ]
-LOG_VIEWER_FILES_PATTERN = '*.log*'
+LOG_VIEWER_FILES_PATTERN = "*.log*"
 LOG_VIEWER_FILES_DIR = str(BASE_DIR / "logs")
-LOG_VIEWER_PAGE_LENGTH = 25       # total log lines per-page
+LOG_VIEWER_PAGE_LENGTH = 25  # total log lines per-page
 LOG_VIEWER_MAX_READ_LINES = 1000  # total log lines will be read
-LOG_VIEWER_FILE_LIST_MAX_ITEMS_PER_PAGE = 25 # Max log files loaded in Datatable per page
-LOG_VIEWER_PATTERNS = ['INFO', 'DEBUG', 'WARNING', 'ERROR', 'CRITICAL']
-LOG_VIEWER_EXCLUDE_TEXT_PATTERN = None  # String regex expression to exclude the log from line
+LOG_VIEWER_FILE_LIST_MAX_ITEMS_PER_PAGE = (
+    25  # Max log files loaded in Datatable per page
+)
+LOG_VIEWER_PATTERNS = ["INFO", "DEBUG", "WARNING", "ERROR", "CRITICAL"]
+LOG_VIEWER_EXCLUDE_TEXT_PATTERN = (
+    None  # String regex expression to exclude the log from line
+)
+LOG_VIEWER_FILE_LIST_STYLES = "/" + STATIC_URL + "css/fix_dark_mode.css"
 
-INTERNAL_IPS = [
-    "127.0.0.1",
-    HOST
-]
+INTERNAL_IPS = ["127.0.0.1", HOST]
 
-DEBUG_TOOLBAR_CONFIG = {
-    'SHOW_TOOLBAR_CALLBACK': lambda request: DEBUG
+DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": lambda request: DEBUG}
+
+# colors to be used in the plotting
+PLOTTING_COLORS = {
+    "Cancer Endocrine Neurology": [
+        "#FF0000",  # red
+        "#FFBABA",  # pinkish
+        "#A04D4D",  # brown
+        "#B30000",  # maroon
+    ],
+    "Myeloid": [
+        "#FF7800",  # orange
+        "#B69300",  # ugly yellow
+        "#000000",  # black
+        "#969696",  # grey
+    ],
+    "TruSight Oncology 500": [
+        "#7D8040",  # olive
+        "#00cc99",  # turquoise
+        "#00a600",  # green
+        "#00FF00",  # bright green
+    ],
+    "Twist WES": [
+        "#ff65ff",  # fushia
+        "#6600cc",  # purple
+        "#1c6dff",  # blue
+        "#6ddfff",  # light blue
+    ],
+    "PanCancer": [
+        "#a7cecb",  # light blue
+        "#f2f230",  # yellow
+        "#8447ff",  # purple
+        "#2b4141",  # dark green
+    ],
 }

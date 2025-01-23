@@ -2,7 +2,7 @@ from django.db.models import Model
 
 
 def already_in_db(model: Model, **kwargs) -> bool:
-    """ Check in the database if the given kwargs match an instance for the
+    """Check in the database if the given kwargs match an instance for the
     given model
 
     Args:

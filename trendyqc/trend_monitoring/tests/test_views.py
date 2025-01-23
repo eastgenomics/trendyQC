@@ -9,27 +9,25 @@ from trend_monitoring.tables import ReportTable
 
 
 class TestDashboard(TestCase):
-    """ Suite of tests to test the backend functionality """
+    """Suite of tests to test the backend functionality"""
 
     def setUp(self):
-        """ Create a test filter to be used in the tests """
+        """Create a test filter to be used in the tests"""
         json_dict = {
             "assay_select": "Cancer Endocrine Neurology",
             "metrics_y": "avg_length",
             "date_start": "2024-08-20",
-            "date_end": "2024-08-23"
+            "date_end": "2024-08-23",
         }
 
         filter_obj = Filter.objects.create(
-            name="Filter1",
-            user="User1",
-            content=json.dumps(json_dict)
+            name="Filter1", user="User1", content=json.dumps(json_dict)
         )
         filter_obj.save()
 
     @patch("trend_monitoring.views.Dashboard._get_context_data")
     def test_dashboard_get(self, mock_context_data):
-        """ Test dashboard get request.
+        """Test dashboard get request.
         Check whether the scrolling menus contain the appropriate data.
 
         Args:
@@ -41,7 +39,7 @@ class TestDashboard(TestCase):
             "tables": [ReportTable(Report.objects.all())],
             "project_names": ["Project1", "Project2"],
             "sequencer_ids": ["Sequencer1", "Sequencer2"],
-            "metrics": ["Metric1", "Metric2"]
+            "metrics": ["Metric1", "Metric2"],
         }
         response = self.client.get("/trendyqc/")
         self.assertEqual(response.status_code, 200)
@@ -69,50 +67,50 @@ class TestDashboard(TestCase):
             self.assertEqual(context["metrics"], ["Metric1", "Metric2"])
 
     def test_dashboard_post_plot(self):
-        """ Test dashboard post request for plotting.
+        """Test dashboard post request for plotting.
         Check if a plotting request redirects to the plot URL.
         """
 
         post_data = {
-            'assay_select': ['Cancer Endocrine Neurology'],
-            'date_start': [''],
-            'date_end': [''],
-            'metrics_y': ['avg_length'],
+            "assay_select": ["Cancer Endocrine Neurology"],
+            "date_start": [""],
+            "date_end": [""],
+            "metrics_y": ["FastQC|avg_length"],
             # post plot response
-            'plot': ['Plot']
+            "plot": ["Plot"],
         }
         response = self.client.post("/trendyqc/", post_data)
         self.assertRedirects(response, "/trendyqc/plot/")
 
     def test_dashboard_post_plot_filter(self):
-        """ Test dashboard post request for plotting using filter.
+        """Test dashboard post request for plotting using filter.
         Check if a plotting request using a filter redirects to the plot URL.
         """
 
         post_data = {
-            'assay_select': ['Cancer Endocrine Neurology'],
-            'date_start': [''],
-            'date_end': [''],
-            'metrics_y': ['avg_length'],
+            "assay_select": ["Cancer Endocrine Neurology"],
+            "date_start": [""],
+            "date_end": [""],
+            "metrics_y": ["FastQC|avg_length"],
             # filter use returns the id of the filter to use
-            'filter_use': Filter.objects.all()[0].id
+            "filter_use": Filter.objects.all()[0].id,
         }
         response = self.client.post("/trendyqc/", post_data)
         self.assertRedirects(response, "/trendyqc/plot/")
 
     def test_dashboard_post_save_filter(self):
-        """ Test dashboard post request for saving filter.
+        """Test dashboard post request for saving filter.
         Check if a save filter request using a filter redirects to the
         dashboard and correctly saves the filter.
         """
 
         post_data = {
-            'assay_select': ['Cancer Endocrine Neurology'],
-            'date_start': ['2024-08-20'],
-            'date_end': ['2024-08-23'],
-            'metrics_y': ['FastQC|avg_length'],
+            "assay_select": ["Cancer Endocrine Neurology"],
+            "date_start": ["2024-08-20"],
+            "date_end": ["2024-08-23"],
+            "metrics_y": ["FastQC|avg_length"],
             # filter use returns the id of the filter to use
-            'save_filter': "Name of filter"
+            "save_filter": "Name of filter",
         }
         response = self.client.post("/trendyqc/", post_data)
 
@@ -126,27 +124,30 @@ class TestDashboard(TestCase):
         with self.subTest("Failed saving of filter"):
             self.assertEqual(created_filter_id.name, "Name of filter")
             self.assertEqual(created_filter_id.user, "")
-            self.assertEqual(created_filter_id.content, json.dumps(
-                {
-                    'assay_select': ['Cancer Endocrine Neurology'],
-                    'date_start': ['2024-08-20'],
-                    'date_end': ['2024-08-23'],
-                    'metrics_y': ['read_data|avg_length'],
-                }
-            ))
+            self.assertEqual(
+                created_filter_id.content,
+                json.dumps(
+                    {
+                        "assay_select": ["Cancer Endocrine Neurology"],
+                        "date_start": ["2024-08-20"],
+                        "date_end": ["2024-08-23"],
+                        "metrics_y": ["read_data|avg_length"],
+                    }
+                ),
+            )
 
     def test_dashboard_post_delete_filter(self):
-        """ Test dashboard post request for deleting filter """
+        """Test dashboard post request for deleting filter"""
 
         filter_id_to_delete = Filter.objects.all()[0].id
 
         post_data = {
-            'assay_select': [''],
-            'date_start': [''],
-            'date_end': [''],
-            'metrics_y': [''],
+            "assay_select": [""],
+            "date_start": [""],
+            "date_end": [""],
+            "metrics_y": [""],
             # filter use returns the id of the filter to delete
-            'delete_filter': filter_id_to_delete
+            "delete_filter": filter_id_to_delete,
         }
         response = self.client.post("/trendyqc/", post_data)
 
@@ -161,7 +162,7 @@ class TestDashboard(TestCase):
 
 
 class TestPlot(TestCase):
-    """ Suite of tests for the Plot view """
+    """Suite of tests for the Plot view"""
 
     def setUp(self):
         self.expected_keys = [
@@ -170,19 +171,16 @@ class TestPlot(TestCase):
             "is_grouped",
             "y_axis",
             "skipped_projects",
-            "skipped_samples"
+            "skipped_samples",
         ]
 
     @patch("trend_monitoring.views.format_data_for_plotly_js")
     @patch("trend_monitoring.views.get_data_for_plotting")
     @patch("trend_monitoring.views.get_subset_queryset")
     def test_plot_get_with_filled_form_end_to_end(
-        self,
-        mock_queryset,
-        mock_plotting_data,
-        mock_plotly_js
+        self, mock_queryset, mock_plotting_data, mock_plotly_js
     ):
-        """ Test for GET request in Plot class view.
+        """Test for GET request in Plot class view.
         This test contains a correct filled form to reach the final render
         return.
         The context data contains 2 identical elements for some reason and
@@ -204,11 +202,7 @@ class TestPlot(TestCase):
         session.save()
 
         mock_queryset.return_value = "not None"
-        mock_plotting_data.return_value = (
-            ["mock dataframe"],
-            {},
-            {}
-        )
+        mock_plotting_data.return_value = (["mock dataframe"], {}, {})
         mock_plotly_js.return_value = (
             [
                 {
@@ -220,7 +214,7 @@ class TestPlot(TestCase):
                     "boxpoints": "suspectedoutliers",
                     "marker": {
                         "color": "ff1c4d",
-                    }
+                    },
                 },
                 {
                     "x0": "project2",
@@ -231,40 +225,41 @@ class TestPlot(TestCase):
                     "boxpoints": "suspectedoutliers",
                     "marker": {
                         "color": "ff1c4d",
-                    }
-                }
+                    },
+                },
             ],
-            False
+            False,
         )
 
         expected_context = {
-            'form': {
-                'Assay(s) selected': ['v1'], 'Metric for the Y-axis': ['v2']
+            "form": {
+                "Assay(s) selected": ["v1"],
+                "Metric for the Y-axis": ["v2"],
             },
-            'plot': [
+            "plot": [
                 {
-                    'x0': 'project1',
-                    'y': ['value1', 'value2'],
-                    'name': '230523',
-                    'type': 'box',
-                    'text': ['sample1', 'sample2'],
-                    'boxpoints': 'suspectedoutliers',
-                    'marker': {'color': 'ff1c4d'}
+                    "x0": "project1",
+                    "y": ["value1", "value2"],
+                    "name": "230523",
+                    "type": "box",
+                    "text": ["sample1", "sample2"],
+                    "boxpoints": "suspectedoutliers",
+                    "marker": {"color": "ff1c4d"},
                 },
                 {
-                    'x0': 'project2',
-                    'y': ['value1', 'value2'],
-                    'name': '220523',
-                    'type': 'box',
-                    'text': ['sample3', 'sample4'],
-                    'boxpoints': 'suspectedoutliers',
-                    'marker': {'color': 'ff1c4d'}
-                }
+                    "x0": "project2",
+                    "y": ["value1", "value2"],
+                    "name": "220523",
+                    "type": "box",
+                    "text": ["sample3", "sample4"],
+                    "boxpoints": "suspectedoutliers",
+                    "marker": {"color": "ff1c4d"},
+                },
             ],
-            'is_grouped': False,
-            'y_axis': 'v2',
-            'skipped_projects': {},
-            'skipped_samples': {}
+            "is_grouped": False,
+            "y_axis": "v2",
+            "skipped_projects": {},
+            "skipped_samples": {},
         }
 
         response = self.client.get("/trendyqc/plot/", follow=True)
@@ -282,10 +277,16 @@ class TestPlot(TestCase):
                     if isinstance(info, dict):
                         # check if all the expected keys are present in the
                         # element
-                        if all([
-                            True if info.get(key, None) is not None else False
-                            for key in self.expected_keys
-                        ]):
+                        if all(
+                            [
+                                (
+                                    True
+                                    if info.get(key, None) is not None
+                                    else False
+                                )
+                                for key in self.expected_keys
+                            ]
+                        ):
                             found_expected_dict = True
 
                             for key in self.expected_keys:
@@ -296,12 +297,12 @@ class TestPlot(TestCase):
                 self.assertEqual(
                     found_expected_dict,
                     True,
-                    "Didn't find the dict containing all the expected keys"
+                    "Didn't find the dict containing all the expected keys",
                 )
                 break
 
     def test_plot_get_with_empty_form(self):
-        """ Test for GET request in Plot class view.
+        """Test for GET request in Plot class view.
         This test contains a empty form to reach the render return without
         context data.
         """
@@ -325,10 +326,16 @@ class TestPlot(TestCase):
                     if isinstance(info, dict):
                         # check if all the expected keys are present in the
                         # element
-                        if all([
-                            True if info.get(key, None) is not None else False
-                            for key in self.expected_keys
-                        ]):
+                        if all(
+                            [
+                                (
+                                    True
+                                    if info.get(key, None) is not None
+                                    else False
+                                )
+                                for key in self.expected_keys
+                            ]
+                        ):
                             flag_to_test_presence = True
 
             self.assertEqual(flag_to_test_presence, False)

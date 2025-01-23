@@ -23,7 +23,7 @@ class FilterForm(forms.Form):
 
     @staticmethod
     def clean_form_for_user(form_data: dict):
-        """ Clean the form info for the ease of comprehension for the user
+        """Clean the form info for the ease of comprehension for the user
 
         Args:
             form_data (dict): Dict containing the form data used to filter the
@@ -92,19 +92,19 @@ class FilterForm(forms.Form):
             cleaned_data.get("sequencer_select", None),
             cleaned_data.get("date_start", None),
             cleaned_data.get("date_end", None),
-            cleaned_data.get("days_back", None)
+            cleaned_data.get("days_back", None),
         ]
 
         if not any(run_subset):
-            self.add_error(
-                None, ValidationError("No subset of runs selected")
-            )
+            self.add_error(None, ValidationError("No subset of runs selected"))
 
         start_date = cleaned_data.get("date_start", None)
         end_date = cleaned_data.get("date_end", None)
 
         # if the days_back or runs are not selected, get a default date range
-        if not cleaned_data.get("days_back", None) and not cleaned_data.get("run_select", None):
+        if not cleaned_data.get("days_back", None) and not cleaned_data.get(
+            "run_select", None
+        ):
             if start_date:
                 # clean was converting the type automatically, i need to do it
                 # manually now
@@ -128,30 +128,35 @@ class FilterForm(forms.Form):
             # basic check if the start date is later than the end date
             if end_date < start_date:
                 self.add_error(
-                    "date_start", ValidationError(
+                    "date_start",
+                    ValidationError(
                         (
                             "Date end cannot be smaller than date start: "
                             f"{start_date} - {end_date}"
                         )
-                    )
+                    ),
                 )
             else:
-                cleaned_data["date_start"] = [start_date]
-                cleaned_data["date_end"] = [end_date]
+                cleaned_data["date_start"] = [start_date.strftime("%Y-%m-%d")]
+                cleaned_data["date_end"] = [end_date.strftime("%Y-%m-%d")]
 
         if not cleaned_data.get("metrics_y", None):
-            self.add_error("metrics_y", ValidationError("No Y-axis metric selected"))
+            self.add_error(
+                "metrics_y", ValidationError("No Y-axis metric selected")
+            )
         else:
             metrics = []
 
             # for each metric passed, replace the display name by the actual
             # model name
             for ele in cleaned_data["metrics_y"]:
-                metrics.extend([
-                    f"{model_name}|{ele.split('|')[1]}".lower()
-                    for model_name, display_name in DISPLAY_DATA_JSON.items()
-                    if ele.split("|")[0] == display_name
-                ])
+                metrics.extend(
+                    [
+                        f"{model_name}|{ele.split('|')[1]}".lower()
+                        for model_name, display_name in DISPLAY_DATA_JSON.items()
+                        if ele.split("|")[0] == display_name
+                    ]
+                )
 
             cleaned_data["metrics_y"] = metrics
 
@@ -160,15 +165,15 @@ class FilterForm(forms.Form):
 
 class LoginForm(forms.Form):
     username = forms.CharField(
-        label='Username',
+        label="Username",
         widget=forms.TextInput(
-            attrs={'class': 'form-input', 'placeholder': 'Enter username'}
-        )
+            attrs={"class": "form-input", "placeholder": "Enter username"}
+        ),
     )
 
     password = forms.CharField(
-        label='Password',
+        label="Password",
         widget=forms.PasswordInput(
-            attrs={'class': 'form-input', 'placeholder': 'Enter password'}
-        )
+            attrs={"class": "form-input", "placeholder": "Enter password"}
+        ),
     )

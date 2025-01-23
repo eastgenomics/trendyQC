@@ -21,7 +21,7 @@
     ],
     "vcfqc": [
         {"tool_name": "vcfqc", "multiqc_field": "multiqc_het-hom_analysis", "subtool": null},
-        {"mean het ratio": "mean_het_ratio", "mean homo ratio": "mean_hom_ratio", "het:homo ratio": "het_hom_ratio", "X homo:het ratio": "x_hom_het_ratio", "gender": "gender"}
+        {"mean het ratio": "mean_het_ratio", "mean homo ratio": "mean_hom_ratio", "het:homo ratio": "het_hom_ratio", "X homo:het ratio": "x_het_hom_ratio", "gender": "gender", "mean_het": "mean_het_ratio", "mean_hom": "mean_hom_ratio", "het_hom_ratio": "het_hom_ratio", "x_het_hom_ratio": "x_het_hom_ratio"}
     ],
     "picard_alignment_summary_metrics": [
         {"tool_name": "picard", "multiqc_field": "multiqc_picard_AlignmentSummaryMetrics", "subtool": "alignment_summary_metrics"},
