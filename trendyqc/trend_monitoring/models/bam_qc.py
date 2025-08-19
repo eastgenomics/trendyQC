@@ -148,6 +148,12 @@ class Picard(models.Model):
     rnaseq_metrics = models.ForeignKey(
         "RNAseq_metrics", on_delete=models.DO_NOTHING, blank=True, null=True,
     )
+    variant_calling_metrics = models.ForeignKey(
+        "Variant_calling_metrics",
+        on_delete=models.DO_NOTHING,
+        blank=True,
+        null=True,
+    )
 
     class Meta:
         app_label = "trend_monitoring"
@@ -519,7 +525,7 @@ class RNA_seqc(models.Model):
     three_prime_bias_mad_std = models.FloatField()
     three_prime_bias_25th_percentile = models.FloatField()
     three_prime_bias_75th_percentile = models.FloatField()
-    average_fragment_length = models.FloatField()
+    average_fragment_length = models.FloatField(null=True)
     fragment_length_median = models.FloatField()
     fragment_length_std = models.FloatField()
     fragment_length_mad_std = models.FloatField()
@@ -528,8 +534,42 @@ class RNA_seqc(models.Model):
     median_of_transcript_coverage_cv = models.FloatField()
     median_exon_cv = models.FloatField()
     exon_cv_mad = models.FloatField()
-    sample = models.CharField()
+    sample = models.CharField(max_length=100)
 
     class Meta:
         app_label = "trend_monitoring"
         db_table = "rna_seqc"
+
+
+class Variant_calling_metrics(models.Model):
+    het_hom_variant_ratio = models.FloatField(null=True)
+    pct_gq0_variants = models.FloatField()
+    total_gq0_variants = models.IntegerField()
+    total_het_depth = models.IntegerField()
+    total_snps = models.IntegerField()
+    num_in_db_snp = models.IntegerField()
+    novel_snps = models.IntegerField()
+    filtered_snps = models.IntegerField()
+    pct_dbsnp = models.FloatField()
+    dbsnp_titv = models.FloatField()
+    novel_titv = models.FloatField()
+    total_indels = models.IntegerField()
+    novel_indels = models.IntegerField()
+    filtered_indels = models.IntegerField()
+    pct_dbsnp_indels = models.FloatField()
+    num_in_db_snp_indels = models.IntegerField()
+    dbsnp_ins_del_ratio = models.FloatField()
+    novel_ins_del_ratio = models.FloatField()
+    total_multiallelic_snps = models.IntegerField()
+    num_in_db_snp_multiallelic = models.IntegerField()
+    total_complex_indels = models.IntegerField()
+    num_in_db_snp_complex_indels = models.IntegerField()
+    snp_reference_bias = models.FloatField()
+    num_singletons = models.IntegerField()
+    total_called_variants = models.IntegerField()
+    total_called_variants_known = models.IntegerField()
+    total_called_variants_novel = models.IntegerField()
+
+    class Meta:
+        app_label = "trend_monitoring"
+        db_table = "variant_calling_metrics"

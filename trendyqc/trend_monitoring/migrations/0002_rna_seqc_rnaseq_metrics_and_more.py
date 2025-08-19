@@ -96,7 +96,7 @@ class Migration(migrations.Migration):
                 ('median_of_transcript_coverage_cv', models.FloatField()),
                 ('median_exon_cv', models.FloatField()),
                 ('exon_cv_mad', models.FloatField()),
-                ('sample', models.CharField()),
+                ('sample', models.CharField(max_length=100)),
             ],
             options={
                 'db_table': 'rna_seqc',

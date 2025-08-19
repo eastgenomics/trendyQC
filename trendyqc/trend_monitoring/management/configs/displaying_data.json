@@ -11,6 +11,7 @@
     "PCR_metrics": "Picard - PCR metrics",
     "Duplication_metrics": "Picard - Duplication metrics",
     "RNAseq_metrics": "Picard - RNAseq metrics",
+    "Variant_calling_metrics": "Picard - Variant calling metrics",
     "RNA_seqc": "RNA-SeQC",
 
     "Read_data": "FastQC",

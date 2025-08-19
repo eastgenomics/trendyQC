@@ -9,7 +9,11 @@ from .bam_qc import (
     GC_bias_metrics,
     Insert_size_metrics,
     Quality_yield_metrics,
-    PCR_metrics
+    PCR_metrics,
+    RNA_seqc,
+    Duplication_metrics,
+    RNAseq_metrics,
+    Variant_calling_metrics,
 )
 from .fastq_qc import (
     Fastqc,

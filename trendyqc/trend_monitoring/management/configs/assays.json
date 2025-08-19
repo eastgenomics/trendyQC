@@ -10,7 +10,8 @@
         "multiqc_somalier_sex_check": ["somalier", null],
         "multiqc_somalier_table": ["somalier", null],
         "multiqc_sompy": ["sompy", null],
-        "multiqc_verifybamid": ["verifybamid", null]
+        "multiqc_verifybamid": ["verifybamid", null],
+        "multiqc_picard_VariantCallingMetrics": ["picard", "variant_calling_metrics"]
     },
     "Cancer Endocrine Neurology": {
         "multiqc_bcl2fastq_bysample": ["bcl2fastq", null],
@@ -25,7 +26,8 @@
         "multiqc_sentieon_insertSize": ["picard", "insert_size_metrics"],
         "multiqc_somalier_sex_check": ["somalier", null],
         "multiqc_somalier_table": ["somalier", null],
-        "multiqc_verifybamid": ["verifybamid", null]
+        "multiqc_verifybamid": ["verifybamid", null],
+        "multiqc_picard_VariantCallingMetrics": ["picard", "variant_calling_metrics"]
     },
     "Twist WES": {
         "multiqc_bcl2fastq_bysample": ["bcl2fastq", null],
@@ -40,7 +42,8 @@
         "multiqc_sentieon_insertSize": ["picard", "insert_size_metrics"],
         "multiqc_somalier_sex_check": ["somalier", null],
         "multiqc_somalier_table": ["somalier", null],
-        "multiqc_verifybamid": ["verifybamid", null]
+        "multiqc_verifybamid": ["verifybamid", null],
+        "multiqc_picard_VariantCallingMetrics": ["picard", "variant_calling_metrics"]
     },
     "TruSight Oncology 500": {
         "multiqc_fastqc": ["fastqc", "read_data"]
@@ -87,6 +90,7 @@
         "multiqc_fastqc": ["fastqc", "read_data"],
         "multiqc_general_stats": ["custom_coverage", null],
         "multiqc_picard_RnaSeqMetrics": ["picard", "RNAseq_metrics"],
-        "multiqc_rna_seqc": ["rna_seqc", null]
+        "multiqc_rna_seqc": ["rna_seqc", null],
+        "multiqc_picard_VariantCallingMetrics": ["picard", "variant_calling_metrics"]
     }
 }
