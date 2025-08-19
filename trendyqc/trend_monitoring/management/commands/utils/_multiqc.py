@@ -108,15 +108,22 @@ class MultiQC_report:
 
         for multiqc_field_in_config, tool_metadata in self.assay_data.items():
             if multiqc_field_in_config not in multiqc_raw_data:
-                self.messages.append(
-                    (
-                        (
-                            f"`{multiqc_field_in_config}` not "
-                            "present in report"
-                        ),
-                        "warning",
-                    )
+                # Check if any other field with same tool_metadata exists
+                alias_exists = any(
+                    metadata == tool_metadata
+                    for field, metadata in self.assay_data.items()
+                    if field != multiqc_field_in_config and field in multiqc_raw_data
                 )
+                if not alias_exists:
+                    self.messages.append(
+                        (
+                            (
+                                f"`{multiqc_field_in_config}` not "
+                                "present in report"
+                            ),
+                            "warning",
+                        )
+                    )
                 continue
 
             # subtool is used to specify for example, HSMetrics or insertSize
