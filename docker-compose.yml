@@ -26,7 +26,7 @@ services:
   trendyqc:
     container_name: trendyqc
     build: .
-    image: trendyqc:1.2.0
+    image: trendyqc:1.3.0
     restart: always
     environment:
       - DJANGO_SETTINGS_MODULE

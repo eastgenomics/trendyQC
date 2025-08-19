@@ -169,7 +169,7 @@ python trendyqc/manage.py add_projects -a
 # add specific projects
 python trendyqc/manage.py add_projects -p_id ${project_id} [${project_id} ${project_id}]
 # import new projects (created 48h ago at the latest)
-python trendyqc/manage.oy add_projects -t=-48h
+python trendyqc/manage.py add_projects -t=-48h
 ```
 
 The initial import step should take at least 20 mins but the duration is variable and depends on the number of MultiQC reports the code found and are eligible to be imported.
