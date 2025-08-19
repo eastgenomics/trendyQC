@@ -101,7 +101,7 @@ class Command(BaseCommand):
             logger.info(final_msg)
 
             report_msg = build_report_for_slack(header_msg, final_msg)
-            slack_notify(report_msg)
+            slack_notify(report_msg, settings.SLACK_LOG_CHANNEL)
 
         else:
             invalid = [
