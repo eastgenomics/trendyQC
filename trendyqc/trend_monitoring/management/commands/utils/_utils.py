@@ -32,7 +32,7 @@ def clean_value(value: str) -> Any:
         # some picard tool can return "?", why i do not know but i wanna
         # find those people and have a talk with them
         # other tools have NA, so handle those cases
-        if value == "?" or value == "NA":
+        if value in ["?", "NA", "None"]:
             return None
 
         # Probably str
