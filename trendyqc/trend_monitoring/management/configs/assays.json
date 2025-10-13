@@ -90,8 +90,7 @@
         "multiqc_fastqc": ["fastqc", "read_data"],
         "multiqc_general_stats": ["custom_coverage", null],
         "multiqc_picard_RnaSeqMetrics": ["picard", "RNAseq_metrics"],
-        "multiqc_rna_seqc": ["rna_seqc", null],
-        "multiqc_picard_VariantCallingMetrics": ["picard", "variant_calling_metrics"]
+        "multiqc_rna_seqc": ["rna_seqc", null]
     },
     "HRD": {
         "multiqc_bcl2fastq_bysample": ["bcl2fastq", null],
