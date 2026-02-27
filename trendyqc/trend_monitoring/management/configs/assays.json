@@ -1,5 +1,5 @@
 {
-    "Myeloid": {
+    "Haemonc": {
         "multiqc_bcl2fastq_bysample": ["bcl2fastq", null],
         "multiqc_fastqc": ["fastqc", "read_data"],
         "multiqc_general_stats": ["custom_coverage", null],
