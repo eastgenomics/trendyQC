@@ -6,7 +6,12 @@
 {% block dashboard %}
 
 <div style="width:90%; margin: auto; padding: 10px;">
-<p>There are <b>{{ project_names|length }}</b> projects currently in TrendyQC.</p>
+<p>There are <b>{{ total_nb_projects }}</b> reports currently in TrendyQC.</p>
+<ul>
+{% for assay, projects in projects_per_assay.items %}
+    <li>{{ assay }}: <b>{{ projects|length }}</b></li>
+{% endfor %}
+</ul>
 </div>
 
 
