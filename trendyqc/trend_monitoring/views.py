@@ -85,14 +85,17 @@ class Dashboard(MultiTableMixin, TemplateView):
                 )
             }
         )
-        project_names = sorted(
-            project_name
-            for project_name in self.model.objects.all().values_list(
-                "project_name", flat=True
-            )
-        )
+        projects = self.model.objects.all()
+        project_assays = {}
 
-        context["project_names"] = project_names
+        for assay in assays:
+            project_assays[assay] = [
+                project.name
+                for project in set(projects.filter(report_sample__assay=assay))
+            ]
+
+        context["total_nb_projects"] = len(project_assays.values())
+        context["projects_per_assay"] = project_assays
         context["assays"] = assays
         context["sequencer_ids"] = sequencer_ids
         plotable_metrics = {
