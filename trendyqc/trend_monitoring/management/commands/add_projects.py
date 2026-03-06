@@ -120,7 +120,9 @@ class Command(BaseCommand):
             all_reports = []
 
             for project_id in project_ids:
-                for report in setup_report_object(project_id):
+                for report in setup_report_object(
+                    project_id, options["dry_run"]
+                ):
                     project2reports.setdefault(project_id, []).append(
                         report.multiqc_json_id
                     )

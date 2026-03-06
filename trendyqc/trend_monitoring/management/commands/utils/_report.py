@@ -8,12 +8,13 @@ logger = logging.getLogger("basic")
 storing_logger = logging.getLogger("storing")
 
 
-def setup_report_object(project_id: list):
+def setup_report_object(project_id: str, dry_run):
     """Import all the multiqc reports contained in the list of projects ids
     given
 
     Args:
         project_id (str): Project id to look for MultiQC reports in
+        dry_run (bool): Bool indicating if this is a dry run
     """
 
     report_objects = search_multiqc_reports(project_id)
@@ -45,6 +46,7 @@ def setup_report_object(project_id: list):
                     multiqc_project_id=project_id,
                     multiqc_job_id=job_id,
                     data=report_data,
+                    dry_run=dry_run,
                 )
             except Exception:
                 msg = (

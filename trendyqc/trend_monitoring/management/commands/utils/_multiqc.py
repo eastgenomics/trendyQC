@@ -96,6 +96,10 @@ class MultiQC_report:
             self.setup_tools()
             self.map_models_to_tools()
             self.parse_multiqc_report()
+
+            if kwargs.get("dry_run"):
+                self.write_parsed_data()
+
             self.data = clean_sample_naming(self.data)
             self.create_all_instances()
 
@@ -615,3 +619,10 @@ class MultiQC_report:
         """
 
         self.messages.append((msg, type_msg))
+
+    def write_parsed_data(self):
+        trend_monitoring_folder = BASE_DIR_MANAGEMENT.parent
+        output_file = f"{self.multiqc_json_id}_parsed_data.json"
+
+        with open(f"{trend_monitoring_folder}/{output_file}", "w") as f:
+            json.dump(self.data, f)
