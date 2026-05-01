@@ -1,5 +1,5 @@
 import dash_mantine_components as dmc
-from dash import dcc
+
 from trend_monitoring.models import bam_qc, fastq_qc, vcf_qc
 from trend_monitoring.models.metadata import Report_Sample
 
@@ -58,7 +58,10 @@ def get_metrics():
             {
                 "group": tool[0],
                 "items": [
-                    {"value": f"{tool[1]}|{field}", "label": field}
+                    {
+                        "value": f"{tool[1]}|{field}",
+                        "label": f"{tool[1]} | {field}",
+                    }
                     for field in fields
                 ],
             }
@@ -72,5 +75,44 @@ def get_metrics():
             clearable=True,
             nothingFoundMessage="Nothing found...",
             data=setup_metrics,
+        )
+    ]
+
+
+def get_date_picker():
+    presets = {
+        "Past month": "-30",
+        "Last 3 months": "-90",
+        "Last 6 months": "-180",
+        "Past year": "-365",
+    }
+
+    return [
+        dmc.Stack(
+            children=[
+                dmc.Group(
+                    children=[
+                        dmc.ChipGroup(
+                            [
+                                dmc.Chip(label, value=value)
+                                for label, value in presets.items()
+                            ],
+                            multiple=False,
+                            value="-180",
+                            id="radio-date",
+                        ),
+                    ],
+                    justify="center",
+                ),
+                dmc.DatePickerInput(
+                    id="date-picker",
+                    type="range",
+                    label="",
+                    placeholder="Select date range",
+                    clearable=True,
+                ),
+            ],
+            justify="center",
+            gap="md",
         )
     ]
