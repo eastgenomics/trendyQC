@@ -12,13 +12,20 @@ import plotly.express as px
 from dash import dcc, html
 from django_plotly_dash import DjangoDash
 from trend_monitoring.dash_app.get_data.filtering import (
-    get_data_for_plotting, get_subset_queryset)
-from trend_monitoring.dash_app.setup_dash_elements.dropdowns import \
-    get_metric_over_time_dropdowns
+    get_data_for_plotting,
+    get_subset_queryset,
+)
+from trend_monitoring.dash_app.setup_dash_elements.dropdowns import (
+    get_metric_over_time_dropdowns,
+)
 from trend_monitoring.dash_app.setup_dash_elements.individual_dropdowns import (
-    get_assay, get_metrics)
+    get_assay,
+    get_metrics,
+)
 from trend_monitoring.dash_app.setup_dash_elements.tabs import (
-    get_metric_over_time_tab_content, get_tabs)
+    get_metric_over_time_tab_content,
+    get_tabs,
+)
 
 app = DjangoDash("Plot", external_stylesheets=[dbc.themes.BOOTSTRAP])
 
@@ -29,6 +36,7 @@ app.layout = dmc.MantineProvider(
             get_metrics(),
             dcc.Graph(id="output-graph"),
         ],
+        style={"padding": "10px"},
     )
 )
 
@@ -51,7 +59,7 @@ def callback_graph(assays, metrics):
     metric_col = df.columns[5]
     fig = px.box(
         df,
-        x="date",
+        x="project_name",
         y=metric_col,
     )
     return fig
