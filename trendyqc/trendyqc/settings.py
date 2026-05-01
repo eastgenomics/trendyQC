@@ -14,11 +14,10 @@ import json
 import os
 from pathlib import Path
 
+import ldap
 from django.contrib.messages import constants as messages
 from django_auth_ldap.config import LDAPSearch
-
 from dotenv import load_dotenv
-import ldap
 
 load_dotenv()
 
@@ -112,9 +111,12 @@ INSTALLED_APPS = [
     "trend_monitoring",
     "crispy_forms",
     "crispy_bootstrap5",
+    "django_bootstrap5",
     "django_tables2",
+    "django_plotly_dash.apps.DjangoPlotlyDashConfig",
     "debug_toolbar",
     "log_viewer",
+    "dpd_static_support",
 ]
 
 MIDDLEWARE = [
@@ -126,6 +128,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "django_plotly_dash.middleware.BaseMiddleware",
+    "django_plotly_dash.middleware.ExternalRedirectionMiddleware",
 ]
 
 ROOT_URLCONF = "trendyqc.urls"
@@ -349,3 +353,28 @@ PLOTTING_COLORS = {
         "#2b4141",  # dark green
     ],
 }
+
+# Dash config
+
+X_FRAME_OPTIONS = "SAMEORIGIN"
+
+STATICFILES_FINDERS = [
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+    "django_plotly_dash.finders.DashAssetFinder",
+    "django_plotly_dash.finders.DashComponentFinder",
+    "django_plotly_dash.finders.DashAppDirectoryFinder",
+]
+PLOTLY_COMPONENTS = [
+    # Common components (ie within dash itself) are automatically added
+    # django-plotly-dash components
+    "dpd_components",
+    # static support if serving local assets
+    "dpd_static_support",
+    # Other components, as needed
+    "dash_bootstrap_components",
+]
+
+import mimetypes
+
+mimetypes.add_type("application/javascript", ".js", True)
