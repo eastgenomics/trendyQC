@@ -29,7 +29,6 @@ def get_subset_queryset(data: Dict) -> QuerySet:
 
     assays = data.get("assay", [])
     runs = data.get("run", [])
-    sequencer_ids = data.get("sequencer", [])
     date_start = data.get("date_start")
     date_end = data.get("date_end")
     days_back = data.get("days_back")
@@ -40,31 +39,28 @@ def get_subset_queryset(data: Dict) -> QuerySet:
     if runs:
         filter_dict["report__project_name__in"] = runs
 
-    if sequencer_ids:
-        filter_dict["report__sequencer_id__in"] = sequencer_ids
+    if date_start and date_end:
+        if isinstance(date_start, list):
+            date_start = date_start[0]
 
-    if days_back:
-        # calculate the date range at the filtering level in order to keep the
-        # days back option dynamic i.e. if a filter is saved with 30 days back
-        # and is used at the beginning of the month or at the end of the month,
-        # the results will be different
-        today = datetime.date.today()
-        filter_dict["report__date__range"] = (
-            today + relativedelta(days=-int(days_back[0])),
-            today,
-        )
+        if isinstance(date_end, list):
+            date_end = date_end[0]
+
+        date_start = datetime.datetime.strptime(date_start, "%Y-%m-%d")
+        date_end = datetime.datetime.strptime(date_end, "%Y-%m-%d")
+
+        filter_dict["report__date__range"] = (date_start, date_end)
     else:
-        if date_start and date_end:
-            if isinstance(date_start, list):
-                date_start = date_start[0]
-
-            if isinstance(date_end, list):
-                date_end = date_end[0]
-
-            date_start = datetime.datetime.strptime(date_start, "%Y-%m-%d")
-            date_end = datetime.datetime.strptime(date_end, "%Y-%m-%d")
-
-            filter_dict["report__date__range"] = (date_start, date_end)
+        if days_back:
+            # calculate the date range at the filtering level in order to keep the
+            # days back option dynamic i.e. if a filter is saved with 30 days back
+            # and is used at the beginning of the month or at the end of the month,
+            # the results will be different
+            today = datetime.date.today()
+            filter_dict["report__date__range"] = (
+                today + relativedelta(days=int(days_back)),
+                today,
+            )
 
     # combine all the data passed through the form to build the final queryset
     return Report_Sample.objects.filter(**filter_dict).prefetch_related()
