@@ -175,7 +175,11 @@ def get_data_for_plotting(
     # filter out the None/NaN values in the metric column(s)
     pd_data_no_none = df[df[metric_filters].notna().any(axis=1)]
 
-    return pd_data_no_none, projects_no_metrics, samples_no_metric
+    return (
+        pd_data_no_none.sort_values(by=["project_name"]),
+        projects_no_metrics,
+        samples_no_metric,
+    )
 
 
 def get_metric_filter(form_model: str, form_metric: str) -> str:
