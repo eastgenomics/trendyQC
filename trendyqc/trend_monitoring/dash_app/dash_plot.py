@@ -36,7 +36,7 @@ app = DjangoDash("Plot", external_stylesheets=[dbc.themes.BOOTSTRAP])
     ],
 )
 def callback_graph(assays, metrics, days_back, date_range):
-    if metrics is None:
+    if not metrics:
         return dash.no_update
 
     data = get_subset_queryset(
