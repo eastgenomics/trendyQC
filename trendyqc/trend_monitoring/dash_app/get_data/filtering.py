@@ -343,6 +343,8 @@ def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
     # Bool to indicate whether legend needs to be displayed
     shown_legend = True
 
+    is_grouped = False
+
     # get the column names for the metrics: either 6 columns when there is data
     # for lanes or 1 column if the data is not separated by lane
     metrics = plot_data.columns[5:]
