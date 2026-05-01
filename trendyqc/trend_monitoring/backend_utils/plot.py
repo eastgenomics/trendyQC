@@ -5,14 +5,13 @@ import json
 import re
 from typing import Dict
 
-from dateutil.relativedelta import relativedelta
 import pandas as pd
-
+from dateutil.relativedelta import relativedelta
 from django.apps import apps
 from django.conf import settings
-from django.core.exceptions import FieldError
+from django.core.exceptions import FieldError, ImproperlyConfigured
 from django.db.models.query import QuerySet
-from django.core.exceptions import ImproperlyConfigured
+
 from trend_monitoring.models.metadata import Report_Sample
 
 
