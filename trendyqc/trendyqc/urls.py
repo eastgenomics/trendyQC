@@ -1,7 +1,7 @@
 # trend_app URL Configuration
 
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
 
 urlpatterns = [
     path("trendyqc/admin/", admin.site.urls),
