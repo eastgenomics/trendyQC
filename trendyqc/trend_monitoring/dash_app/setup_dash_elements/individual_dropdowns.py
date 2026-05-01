@@ -15,12 +15,14 @@ def get_assay():
             .distinct()
         }
     )
-    return dmc.MultiSelect(
-        data=assays,
-        id="dropdown-assay",
-        clearable=True,
-        placeholder="Select assay(s)...",
-    )
+    return [
+        dmc.MultiSelect(
+            data=assays,
+            id="dropdown-assay",
+            clearable=True,
+            placeholder="Select assay(s)...",
+        )
+    ]
 
 
 def get_metrics():
@@ -62,11 +64,13 @@ def get_metrics():
             }
         )
 
-    return dmc.MultiSelect(
-        placeholder="Select a metric...",
-        id="dropdown-metric",
-        searchable=True,
-        clearable=True,
-        nothingFoundMessage="Nothing found...",
-        data=setup_metrics,
-    )
+    return [
+        dmc.MultiSelect(
+            placeholder="Select a metric...",
+            id="dropdown-metric",
+            searchable=True,
+            clearable=True,
+            nothingFoundMessage="Nothing found...",
+            data=setup_metrics,
+        )
+    ]
