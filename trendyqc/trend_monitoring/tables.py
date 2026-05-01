@@ -3,12 +3,11 @@ import json
 
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
-
 import django_tables2 as tables
 
 from trend_monitoring.forms import FilterForm
 
-from .models import Report, Filter
+from .models import Filter, Report
 
 
 class FilterContentColumn(tables.Column):
