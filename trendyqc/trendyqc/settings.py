@@ -331,7 +331,7 @@ PLOTTING_COLORS = {
     "Myeloid": [
         "#FF7800",  # orange
         "#B69300",  # ugly yellow
-        "#000000",  # black
+        "#155947",  # weird cyan
         "#969696",  # grey
     ],
     "TruSight Oncology 500": [
