@@ -375,6 +375,12 @@ PLOTLY_COMPONENTS = [
     "dash_bootstrap_components",
 ]
 
+PLOTLY_DASH = {
+    "ws_route": None,
+    "insert_demo_viewer": False,
+    "cache_arguments": True,
+}
+
 import mimetypes
 
 mimetypes.add_type("application/javascript", ".js", True)
