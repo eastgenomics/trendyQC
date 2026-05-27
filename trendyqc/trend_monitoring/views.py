@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views import View
 from django.views.generic.base import TemplateView
@@ -18,9 +19,6 @@ from trend_monitoring.models.metadata import Report, Report_Sample
 
 from trendyqc.settings import VERSION
 
-from .backend_utils.filtering import import_filter
-from .backend_utils.plot import (format_data_for_plotly_js,
-                                 get_data_for_plotting, get_subset_queryset)
 from .dash_app import dash_plot
 from .forms import FilterForm, LoginForm
 from .tables import FilterTable, ReportTable
@@ -176,3 +174,7 @@ class Logout(View):
         msg = "Successfully logged out!"
         messages.add_message(request, messages.SUCCESS, msg)
         return redirect("Dashboard")
+
+
+def auth_status(request):
+    return JsonResponse({"is_authenticated": request.user.is_authenticated})
