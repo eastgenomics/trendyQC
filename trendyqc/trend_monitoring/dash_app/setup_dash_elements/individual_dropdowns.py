@@ -2,6 +2,10 @@ import dash_mantine_components as dmc
 
 from trend_monitoring.models import bam_qc, fastq_qc, vcf_qc
 from trend_monitoring.models.metadata import Report_Sample
+from trend_monitoring.models.filters import Filter
+from trend_monitoring.dash_app.setup_dash_elements.utils import (
+    build_filter_text,
+)
 
 from trendyqc.settings import DISPLAY_DATA_JSON
 
@@ -115,4 +119,66 @@ def get_date_picker():
             justify="center",
             gap="md",
         )
+    ]
+
+
+def get_filter_table():
+    filters = Filter.objects.all()
+
+    if not filters:
+        rows = dmc.TableTr(
+            [
+                dmc.TableTd("No filters in the database"),
+                dmc.TableTd(),
+                dmc.TableTd(),
+                dmc.TableTd(),
+            ]
+        )
+    else:
+        rows = [
+            dmc.TableTr(
+                [
+                    dmc.TableTd(f.name),
+                    dmc.TableTd(build_filter_text(f.content)),
+                    dmc.TableTd(
+                        dmc.Button(
+                            "Use",
+                            id={"type": "use-filter-btn", "index": f.id},
+                            size="xs",
+                        )
+                    ),
+                    dmc.TableTd(
+                        dmc.Button(
+                            "Delete",
+                            id={"type": "delete-filter-btn", "index": f.id},
+                            size="xs",
+                            color="red",
+                        )
+                    ),
+                ]
+            )
+            for f in filters
+        ]
+
+    return [
+        dmc.TableScrollContainer(
+            dmc.Table(
+                [
+                    dmc.TableThead(
+                        dmc.TableTr(
+                            [
+                                dmc.TableTh("Name"),
+                                dmc.TableTh("Content"),
+                                dmc.TableTh(""),
+                                dmc.TableTh(""),
+                            ]
+                        )
+                    ),
+                    dmc.TableTbody(rows),
+                ]
+            ),
+            maxHeight=300,
+            minWidth=600,
+            id="filter-table",
+        ),
     ]
