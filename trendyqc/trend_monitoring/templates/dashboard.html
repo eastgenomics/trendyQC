@@ -6,20 +6,6 @@
 
 {% block dashboard %}
 
-<div style="width:90%; margin: auto; padding: 10px;">
-    {% render_table tables.0 %}
-</div>
-
-{% if user.is_authenticated %}
-    <br>
-
-    <form action="{% url 'Dashboard' %}" method="post" id="filter_use"> {% csrf_token %}
-        <div style="width:90%; margin: auto; padding: 10px;">
-            {% render_table tables.1 %}
-        </div>
-    </form>
-{% endif %}
-
 <br>
 
 {% plotly_app_bootstrap name="Plot" aspect="16by9" %}
