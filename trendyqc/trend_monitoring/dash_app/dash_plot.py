@@ -3,7 +3,6 @@ import json
 import os
 
 import django
-from django.contrib import messages
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "trendyqc.settings")
 django.setup()
@@ -40,6 +39,8 @@ app = DjangoDash("Plot", external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 def define_layout(**kwargs):
     return dmc.MantineProvider(
+        dcc.Store(id="message-store"),
+        dmc.Alert(id="alert-message", duration=5000, hide=True),
         dmc.Stack(
             [
                 dmc.Modal(
@@ -98,7 +99,7 @@ def define_layout(**kwargs):
             justify="center",
             gap="sm",
             style={"padding": "10px"},
-        )
+        ),
     )
 
 
@@ -128,6 +129,11 @@ def toggle_save_button(is_authenticated):
         return {"display": "flex"}, {"display": "flex"}
 
     return {"display": "none"}, {"display": "none"}
+
+
+@app.callback(Output("alert-message", "style"), Input("message-store", "data"))
+def update_message(data):
+    return data
 
 
 @app.callback(
@@ -173,6 +179,7 @@ def update_filter_store(
 
 @app.callback(
     Output("filter-store", "data"),
+    Output("message-store", "data"),
     Input({"type": "delete-filter-btn", "index": ALL}, "n_clicks"),
     State("filter-store", "data"),
     prevent_initial_call=True,
@@ -184,13 +191,27 @@ def delete_filter(n_clicks, current, *args, **kwargs):
     triggered = kwargs.get("callback_context").triggered[0]["prop_id"]
     filter_id = json.loads(triggered.split(".")[0])["index"]
 
-    Filter.objects.filter(id=filter_id).delete()
+    filter_to_delete = Filter.objects.filter(id=filter_id)
+    filter_name = filter_to_delete.name
+    delete_msg = Filter.objects.filter(id=filter_id).delete()
 
-    return current + 1  # increment to trigger refresh
+    msg = f"Filter '{filter_name}' has been successfully deleted"
+    msg_data = {
+        "attributes": {
+            "label": "Filter deleted",
+            "message": msg,
+        },
+        "color": "green",
+        "hide": False,
+    }
+    logger.info(f"{msg}: {delete_msg}")
+
+    return (current + 1, msg_data)  # increment to trigger refresh
 
 
 @app.callback(
     Output("filter-name-modal", "opened"),
+    Output("message-store", "data"),
     Input("save-filter-btn", "n_clicks"),
     Input("submit-filter_name", "n_clicks"),
     State("filter-name", "value"),
@@ -217,8 +238,10 @@ def save_filter(
         kwargs.get("callback_context").triggered[0]["prop_id"].split(".")[0]
     )
 
+    msg_data = {}
+
     if triggered == "save-filter-btn":
-        return True
+        return True, msg_data
 
     if triggered == "submit-filter_name":
         form_data = {
@@ -234,12 +257,19 @@ def save_filter(
             msg, msg_status = import_filter(
                 filter_name, request.user.username, form_data
             )
-            messages.add_message(request, msg_status, f"{msg}")
+            msg_data = {
+                "attributes": {
+                    "label": "Filter saved",
+                    "message": msg,
+                },
+                "color": "green",
+                "hide": False,
+            }
             logger.info(msg)
 
-        return False
+        return False, msg_data
 
-    return opened
+    return opened, msg_data
 
 
 @app.callback(
