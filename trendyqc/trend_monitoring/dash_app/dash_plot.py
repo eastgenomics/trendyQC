@@ -105,7 +105,14 @@ def define_layout(**kwargs):
                     ),
                     html.Div(
                         [
-                            html.H3("", id="graph-title"),
+                            html.H5(
+                                "",
+                                id="graph-title",
+                                style={
+                                    "padding": "10px",
+                                    "text-align": "center",
+                                },
+                            ),
                             dcc.Graph(
                                 id="output-graph", style={"height": "75vh"}
                             ),
