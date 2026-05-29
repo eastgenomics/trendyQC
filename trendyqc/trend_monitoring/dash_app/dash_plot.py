@@ -11,7 +11,7 @@ import dash
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 import plotly.graph_objects as go
-from dash import dcc, html, Output, Input, State, ALL
+from dash import dcc, Output, Input, State, ALL
 from django_plotly_dash import DjangoDash
 
 from trend_monitoring.dash_app.get_data.filtering import (
@@ -20,11 +20,9 @@ from trend_monitoring.dash_app.get_data.filtering import (
     format_data_for_plotly_js,
 )
 from trend_monitoring.dash_app.setup_dash_elements.individual_dropdowns import (
-    get_assay,
-    get_metrics,
-    get_date_picker,
     get_filter_table,
 )
+from trend_monitoring.dash_app.setup_dash_elements.tabs import get_tabs
 from trend_monitoring.dash_app.setup_dash_elements.utils import (
     build_filter_text,
 )
@@ -49,81 +47,7 @@ def define_layout(**kwargs):
                 hide=True,
                 style={"padding": "10px"},
             ),
-            dmc.Stack(
-                [
-                    dmc.Modal(
-                        id="filter-name-modal",
-                        children=[
-                            dmc.TextInput(
-                                id="filter-name", label="Your filter:"
-                            ),
-                            dmc.Group(
-                                mt="lg",
-                                justify="flex-end",
-                                children=[
-                                    dmc.Button(
-                                        "Submit", id="submit-filter_name"
-                                    ),
-                                ],
-                            ),
-                        ],
-                    ),
-                    dcc.Store(id="auth-store"),
-                    dcc.Store(id="filter-store", data=0),
-                    dcc.Store(id="filter-saved-store", data=0),
-                    dcc.Store(id="applied-filter-store", data=None),
-                    dcc.Interval(
-                        id="auth-interval",
-                        interval=500,
-                        n_intervals=0,
-                        max_intervals=1,
-                    ),
-                    dmc.Stack(
-                        [
-                            dmc.Group(
-                                get_assay()
-                                + get_metrics()
-                                + get_date_picker(),
-                                justify="center",
-                                gap="md",
-                                grow=True,
-                            ),
-                            dmc.Button(
-                                "Save filter",
-                                id="save-filter-btn",
-                                justify="center",
-                            ),
-                        ]
-                        + [
-                            html.Div(
-                                get_filter_table(), id="filter-table-container"
-                            )
-                        ],
-                        align="stretch",
-                        justify="center",
-                        gap="sm",
-                    ),
-                    html.Div(
-                        [
-                            html.H5(
-                                "",
-                                id="graph-title",
-                                style={
-                                    "padding": "10px",
-                                    "text-align": "center",
-                                },
-                            ),
-                            dcc.Graph(
-                                id="output-graph", style={"height": "75vh"}
-                            ),
-                        ]
-                    ),
-                ],
-                align="stretch",
-                justify="center",
-                gap="sm",
-                style={"padding": "10px"},
-            ),
+            get_tabs(),
         ]
     )
 
@@ -165,7 +89,12 @@ def update_message_store(save_msg, delete_msg):
     Input("delete-message-store", "data"),
 )
 def show_alert(save_msg, delete_msg, *args, **kwargs):
-    triggered = kwargs.get("callback_context").triggered[0]["prop_id"]
+    triggered_list = kwargs.get("callback_context").triggered
+
+    if not triggered_list:
+        raise dash.exceptions.PreventUpdate
+
+    triggered = triggered_list[0]["prop_id"]
     msg_data = save_msg if "save" in triggered else delete_msg
 
     if not msg_data:
@@ -330,8 +259,8 @@ def update_filter_store(
 
 
 @app.callback(
-    Output("output-graph", "figure"),
-    Output("graph-title", "children"),
+    Output("metric-over-time-graph", "figure"),
+    Output("metric-over-time-graph-title", "children"),
     Input("applied-filter-store", "data"),
     prevent_initial_call=True,
 )
