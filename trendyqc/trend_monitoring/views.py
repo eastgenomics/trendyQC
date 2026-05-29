@@ -153,12 +153,7 @@ class Login(FormView):
 
             if user:
                 auth_login(request, user)
-                msg = "Successfully logged in!"
-                messages.add_message(request, messages.SUCCESS, msg)
                 return redirect("Dashboard")
-
-        msg = "Login failed!"
-        messages.add_message(request, messages.ERROR, msg)
 
         context = super().get_context_data()
         context["version"] = VERSION
@@ -171,8 +166,6 @@ class Logout(View):
 
     def get(self, request):
         auth_logout(request)
-        msg = "Successfully logged out!"
-        messages.add_message(request, messages.SUCCESS, msg)
         return redirect("Dashboard")
 
 

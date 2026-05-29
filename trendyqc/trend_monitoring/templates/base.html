@@ -39,16 +39,6 @@
 
     <br>
 
-    {% if messages %}
-        <div id="messages_div">
-            <ul class="messages">
-                {% for message in messages %}
-                    <li{% if message.tags %} class="alert alert-{{ message.tags }}"{% endif %}>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-    {% endif %}
-
     <div id="dashboard">
         {% block dashboard %}{% endblock %}
     </div>
@@ -63,8 +53,5 @@
 
     <br>
 
-<script>
-    $('#messages_div').delay(15000).fadeOut(800);
-</script>
 </body>
 </html>
