@@ -1,39 +1,6 @@
 from django.db import models
 
 
-class Somalier_data(models.Model):
-    paternal_id = models.CharField(max_length=50)
-    maternal_id = models.CharField(max_length=50)
-    family_id = models.CharField(max_length=100)
-    sex = models.FloatField()
-    phenotype = models.FloatField()
-    original_pedigree_sex = models.CharField(max_length=10)
-    gt_depth_mean = models.FloatField()
-    gt_depth_sd = models.FloatField(null=True)
-    depth_mean = models.FloatField()
-    depth_sd = models.FloatField()
-    ab_mean = models.FloatField()
-    ab_std = models.FloatField(null=True)
-    nb_hom_ref = models.FloatField()
-    nb_het = models.FloatField()
-    nb_hom_alt = models.FloatField()
-    nb_unknown = models.FloatField()
-    p_middling_ab = models.FloatField()
-    x_depth_mean = models.FloatField()
-    x_nb = models.FloatField()
-    x_hom_ref = models.FloatField()
-    x_het = models.FloatField()
-    x_hom_alt = models.FloatField()
-    y_depth_mean = models.FloatField()
-    y_nb = models.FloatField()
-    predicted_sex = models.CharField(max_length=10)
-    match_sexes = models.CharField(max_length=5, null=True)
-
-    class Meta:
-        app_label = "trend_monitoring"
-        db_table = "somalier_data"
-
-
 class Sompy_data(models.Model):
     indels_total_truth = models.FloatField()
     indels_total_query = models.FloatField()

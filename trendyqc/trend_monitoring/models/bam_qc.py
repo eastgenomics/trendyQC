@@ -122,7 +122,10 @@ class Picard(models.Model):
         null=True,
     )
     gc_bias_metrics = models.ForeignKey(
-        "GC_bias_metrics", on_delete=models.DO_NOTHING, blank=True, null=True,
+        "GC_bias_metrics",
+        on_delete=models.DO_NOTHING,
+        blank=True,
+        null=True,
     )
     insert_size_metrics = models.ForeignKey(
         "Insert_size_metrics",
@@ -137,7 +140,10 @@ class Picard(models.Model):
         null=True,
     )
     pcr_metrics = models.ForeignKey(
-        "PCR_metrics", on_delete=models.DO_NOTHING, blank=True, null=True,
+        "PCR_metrics",
+        on_delete=models.DO_NOTHING,
+        blank=True,
+        null=True,
     )
     duplication_metrics = models.ForeignKey(
         "Duplication_metrics",
@@ -146,7 +152,10 @@ class Picard(models.Model):
         null=True,
     )
     rnaseq_metrics = models.ForeignKey(
-        "RNAseq_metrics", on_delete=models.DO_NOTHING, blank=True, null=True,
+        "RNAseq_metrics",
+        on_delete=models.DO_NOTHING,
+        blank=True,
+        null=True,
     )
 
     class Meta:
@@ -533,3 +542,16 @@ class RNA_seqc(models.Model):
     class Meta:
         app_label = "trend_monitoring"
         db_table = "rna_seqc"
+
+
+class Sex_check(models.Model):
+    matched = models.BooleanField(null=True)
+    reported_sex = models.CharField(max_length=5)
+    predicted_sex = models.CharField(max_length=5)
+    score = models.FloatField()
+    mapped_chrY = models.FloatField()
+    mapped_chr1 = models.FloatField()
+
+    class Meta:
+        app_label = "trend_monitoring"
+        db_table = "sex_check"
