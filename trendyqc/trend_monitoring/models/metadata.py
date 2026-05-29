@@ -62,10 +62,10 @@ class Report_Sample(models.Model):
     rna_seqc = models.ForeignKey(
         "RNA_seqc", on_delete=models.DO_NOTHING, blank=True, null=True
     )
-    # vcf level qc
-    somalier_data = models.ForeignKey(
-        "Somalier_data", on_delete=models.DO_NOTHING, blank=True, null=True
+    sex_check = models.ForeignKey(
+        "Sex_check", on_delete=models.DO_NOTHING, blank=True, null=True
     )
+    # vcf level qc
     sompy_data = models.ForeignKey(
         "Sompy_data", on_delete=models.DO_NOTHING, blank=True, null=True
     )
