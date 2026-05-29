@@ -40,8 +40,15 @@ app = DjangoDash("Plot", external_stylesheets=[dbc.themes.BOOTSTRAP])
 def define_layout(**kwargs):
     return dmc.MantineProvider(
         [
+            dcc.Store(id="save-message-store"),
+            dcc.Store(id="delete-message-store"),
             dcc.Store(id="message-store"),
-            dmc.Alert(id="alert-message", duration=5000, hide=True),
+            dmc.Alert(
+                id="alert-message",
+                duration=5000,
+                hide=True,
+                style={"padding": "10px"},
+            ),
             dmc.Stack(
                 [
                     dmc.Modal(
@@ -63,6 +70,7 @@ def define_layout(**kwargs):
                     ),
                     dcc.Store(id="auth-store"),
                     dcc.Store(id="filter-store", data=0),
+                    dcc.Store(id="filter-saved-store", data=0),
                     dcc.Store(id="applied-filter-store", data=None),
                     dcc.Interval(
                         id="auth-interval",
@@ -129,9 +137,38 @@ app.clientside_callback(
 )
 
 
-@app.callback(Output("alert-message", "style"), Input("message-store", "data"))
-def update_message(data):
-    return data
+@app.callback(
+    Output("message-store", "data"),
+    Input("save-message-store", "data"),
+    Input("delete-message-store", "data"),
+)
+def update_message_store(save_msg, delete_msg):
+    if save_msg:
+        return save_msg
+    if delete_msg:
+        return delete_msg
+    return {}
+
+
+@app.callback(
+    Output("alert-message", "hide"),
+    Output("alert-message", "children"),
+    Output("alert-message", "color"),
+    Input("save-message-store", "data"),
+    Input("delete-message-store", "data"),
+)
+def show_alert(save_msg, delete_msg, *args, **kwargs):
+    triggered = kwargs.get("callback_context").triggered[0]["prop_id"]
+    msg_data = save_msg if "save" in triggered else delete_msg
+
+    if not msg_data:
+        raise dash.exceptions.PreventUpdate
+
+    return (
+        False,
+        msg_data.get("attributes", {}).get("message", ""),
+        msg_data.get("color", "green"),
+    )
 
 
 @app.callback(
@@ -148,9 +185,9 @@ def toggle_filter_components(is_authenticated):
 
 @app.callback(
     Output("filter-table-container", "children"),
-    Input("submit-filter_name", "n_clicks"),
     Input("auth-interval", "n_intervals"),
-    Input("filter-store", "data"),  # triggers refresh after delete
+    Input("filter-store", "data"),
+    Input("filter-saved-store", "data"),  # triggers refresh after delete
 )
 def refresh_filter_table(*args, **kwargs):
     return get_filter_table()
@@ -158,7 +195,8 @@ def refresh_filter_table(*args, **kwargs):
 
 @app.callback(
     Output("filter-name-modal", "opened"),
-    Output("message-store", "data"),
+    Output("save-message-store", "data"),
+    Output("filter-saved-store", "data"),
     Input("save-filter-btn", "n_clicks"),
     Input("submit-filter_name", "n_clicks"),
     State("filter-name", "value"),
@@ -167,6 +205,7 @@ def refresh_filter_table(*args, **kwargs):
     State("dropdown-metric", "value"),
     State("radio-date", "value"),
     State("date-picker", "value"),
+    State("filter-saved-store", "data"),
     prevent_initial_call=True,
 )
 def save_filter(
@@ -178,6 +217,7 @@ def save_filter(
     metrics,
     days_back,
     date_range,
+    filter_saved,
     *args,
     **kwargs,
 ):
@@ -188,7 +228,7 @@ def save_filter(
     msg_data = {}
 
     if triggered == "save-filter-btn":
-        return True, msg_data
+        return True, msg_data, filter_saved
 
     if triggered == "submit-filter_name":
         form_data = {
@@ -214,14 +254,14 @@ def save_filter(
             }
             logger.info(msg)
 
-        return False, msg_data
+        return False, msg_data, filter_saved + 1
 
-    return opened, msg_data
+    return opened, msg_data, filter_saved
 
 
 @app.callback(
     Output("filter-store", "data"),
-    Output("message-store", "data"),
+    Output("delete-message-store", "data"),
     Input({"type": "delete-filter-btn", "index": ALL}, "n_clicks"),
     State("filter-store", "data"),
     prevent_initial_call=True,
@@ -233,9 +273,9 @@ def delete_filter(n_clicks, current, *args, **kwargs):
     triggered = kwargs.get("callback_context").triggered[0]["prop_id"]
     filter_id = json.loads(triggered.split(".")[0])["index"]
 
-    filter_to_delete = Filter.objects.filter(id=filter_id)
+    filter_to_delete = Filter.objects.get(id=filter_id)
     filter_name = filter_to_delete.name
-    delete_msg = Filter.objects.filter(id=filter_id).delete()
+    delete_msg = filter_to_delete.delete()
 
     msg = f"Filter '{filter_name}' has been successfully deleted"
     msg_data = {
