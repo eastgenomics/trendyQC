@@ -1,0 +1,8 @@
+{
+    "matched": "matched",
+    "reported_sex": "reported_sex",
+    "predicted_sex": "predicted_sex",
+    "score": "score",
+    "mapped_chrY": "mapped_chrY",
+    "mapped_chr1": "mapped_chr1"
+}
