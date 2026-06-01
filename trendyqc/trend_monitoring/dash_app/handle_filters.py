@@ -26,7 +26,7 @@ def import_filter(filter_name: str, username: str, data: dict) -> tuple:
         # no filter with that name was found
         pass
     else:
-        return f"Filter {filter_name} already exists", messages.ERROR
+        return f"Filter {filter_name} already exists", False
 
     filter_obj = Filter(
         name=filter_name,
@@ -35,7 +35,7 @@ def import_filter(filter_name: str, username: str, data: dict) -> tuple:
     )
     filter_obj.save()
 
-    return f"Filter {filter_name} has been created", messages.SUCCESS
+    return f"Filter {filter_name} has been created", True
 
 
 def serialize_date(obj):
