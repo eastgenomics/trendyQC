@@ -7,7 +7,7 @@ set -me
 python trendyqc/manage.py collectstatic --no-input
 
 # Start the primary process and put it in the background
-gunicorn -n trendyqc -c ./config/gunicorn/conf.py --bind :8006 --chdir /app/trendyqc trendyqc.wsgi:application &
+gunicorn -n trendyqc -c ./config/gunicorn/conf.py --bind :8006 --chdir /app/trendyqc trendyqc.wsgi:application --workers 8 &
 
 # Save the environment variables given using docker-compose for use in the cron job
 printenv | grep -v "no_proxy" >> /etc/environment
