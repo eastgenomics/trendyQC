@@ -10,7 +10,7 @@ from trend_monitoring.dash_app.setup_dash_elements.utils import (
 from trendyqc.settings import DISPLAY_DATA_JSON
 
 
-def get_assay():
+def get_assay(dropdown_id):
     assays = sorted(
         {
             assay
@@ -22,14 +22,14 @@ def get_assay():
     return [
         dmc.MultiSelect(
             data=assays,
-            id="dropdown-assay",
+            id=dropdown_id,
             clearable=True,
             placeholder="Select assay(s)...",
         )
     ]
 
 
-def get_metrics():
+def get_metrics(dropdown_id):
     plotable_metrics = {}
     module_content = bam_qc.__dict__ | fastq_qc.__dict__ | vcf_qc.__dict__
 
@@ -74,7 +74,7 @@ def get_metrics():
     return [
         dmc.MultiSelect(
             placeholder="Select a metric...",
-            id="dropdown-metric",
+            id=dropdown_id,
             searchable=True,
             clearable=True,
             nothingFoundMessage="Nothing found...",
