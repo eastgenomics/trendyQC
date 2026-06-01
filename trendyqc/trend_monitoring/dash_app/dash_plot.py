@@ -185,7 +185,7 @@ def save_filter(
                     "label": "Filter saved",
                     "message": msg,
                 },
-                "color": "green",
+                "color": "green" if msg_status else "red",
                 "hide": False,
             }
             logger.info(msg)
