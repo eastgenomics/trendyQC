@@ -3,6 +3,7 @@ from dash import dcc, html
 
 from trend_monitoring.dash_app.setup_dash_elements.individual_dropdowns import (
     get_assay,
+    get_projects,
     get_metrics,
     get_date_picker,
     get_filter_table,
@@ -94,7 +95,7 @@ def get_metric_over_time_tab_content():
                             },
                         ),
                         dcc.Graph(
-                            id="metric-over-time-output-graph",
+                            id="metric-over-time-graph",
                             style={"height": "75vh"},
                         ),
                     ]
@@ -115,7 +116,12 @@ def get_metric_vs_metric_tab_content():
                 dmc.Stack(
                     [
                         dmc.Group(
-                            get_assay("dropdown-assay-metric-v-metric")
+                            [
+                                dmc.Stack(
+                                    get_assay("dropdown-assay-metric-v-metric")
+                                    + get_projects()
+                                )
+                            ]
                             + get_metrics("dropdown-metric-x")
                             + get_metrics("dropdown-metric-y"),
                             justify="center",
