@@ -29,6 +29,7 @@ def get_tabs():
         ],
         id="tabs",
         value="metric-over-time",
+        style={"padding": "10px"},
     )
 
 
@@ -62,7 +63,9 @@ def get_metric_over_time_tab_content():
                 dmc.Stack(
                     [
                         dmc.Group(
-                            get_assay() + get_metrics() + get_date_picker(),
+                            get_assay("dropdown-assay")
+                            + get_metrics("dropdown-metric")
+                            + get_date_picker(),
                             justify="center",
                             gap="md",
                             grow=True,
@@ -72,11 +75,9 @@ def get_metric_over_time_tab_content():
                             id="save-filter-btn",
                             justify="center",
                         ),
-                    ]
-                    + [
                         html.Div(
                             get_filter_table(), id="filter-table-container"
-                        )
+                        ),
                     ],
                     align="stretch",
                     justify="center",
@@ -108,4 +109,44 @@ def get_metric_over_time_tab_content():
 
 
 def get_metric_vs_metric_tab_content():
-    pass
+    return (
+        dmc.Stack(
+            [
+                dmc.Stack(
+                    [
+                        dmc.Group(
+                            get_assay("dropdown-assay-metric-v-metric")
+                            + get_metrics("dropdown-metric-x")
+                            + get_metrics("dropdown-metric-y"),
+                            justify="center",
+                            gap="md",
+                            grow=True,
+                        ),
+                    ],
+                    align="stretch",
+                    justify="center",
+                    gap="sm",
+                ),
+                html.Div(
+                    [
+                        html.H5(
+                            "",
+                            id="metric-vs-metric-graph-title",
+                            style={
+                                "padding": "10px",
+                                "text-align": "center",
+                            },
+                        ),
+                        dcc.Graph(
+                            id="metric-vs-metric-output-graph",
+                            style={"height": "75vh"},
+                        ),
+                    ]
+                ),
+            ],
+            align="stretch",
+            justify="center",
+            gap="sm",
+            style={"padding": "10px"},
+        ),
+    )
