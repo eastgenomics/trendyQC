@@ -1,7 +1,7 @@
 import dash_mantine_components as dmc
 
 from trend_monitoring.models import bam_qc, fastq_qc, vcf_qc
-from trend_monitoring.models.metadata import Report_Sample
+from trend_monitoring.models.metadata import Report, Report_Sample
 from trend_monitoring.models.filters import Filter
 from trend_monitoring.dash_app.setup_dash_elements.utils import (
     build_filter_text,
@@ -25,6 +25,26 @@ def get_assay(dropdown_id):
             id=dropdown_id,
             clearable=True,
             placeholder="Select assay(s)...",
+        )
+    ]
+
+
+def get_projects(projects=None):
+    if not projects:
+        projects = sorted(
+            {
+                f"{project} - {file_id}"
+                for project, file_id in Report.objects.all()
+                .values_list("project_name", "dnanexus_file_id")
+                .distinct()
+            }
+        )
+
+    return [
+        dmc.Autocomplete(
+            placeholder="Select the report to view",
+            id="dropdown-project",
+            data=projects,
         )
     ]
 
