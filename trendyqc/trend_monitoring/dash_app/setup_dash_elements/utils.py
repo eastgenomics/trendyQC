@@ -31,6 +31,7 @@ def clean_filter_content(filter_content):
         "date_end": "Selected date end",
         "days_back": "Last x days",
         "metric": "Metric for the Y-axis",
+        "metric_x": "Metric for X-axis",
     }
 
     cleaned_form_data = {}
