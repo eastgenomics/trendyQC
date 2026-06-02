@@ -49,6 +49,8 @@ try:
 
     VERSION = os.environ.get("VERSION")
 
+    CONFIG_PATH = Path(os.environ.get("CONFIG_PATH", Path("")))
+
 except KeyError as e:
     key = e.args[0]
     raise KeyError(
@@ -75,13 +77,7 @@ WARNING_LOG = BASE_DIR / "logs" / "warning.log"
 DEBUG_LOG = BASE_DIR / "logs" / "debug.log"
 STORING_LOG = BASE_DIR / "logs" / "storing.log"
 
-with open(
-    BASE_DIR
-    / "trend_monitoring"
-    / "management"
-    / "configs"
-    / "displaying_data.json"
-) as f:
+with open(CONFIG_PATH / "backend_configs" / "displaying_data.json") as f:
     DISPLAY_DATA_JSON = json.loads(f.read())
 
 ###

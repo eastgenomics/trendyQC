@@ -10,6 +10,7 @@ import dxpy
 import regex
 
 from django.apps import apps
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Model
 from django.db.utils import IntegrityError
@@ -19,9 +20,7 @@ from ._parsing import load_assay_config
 from ._tool import Tool
 from ._utils import clean_value, clean_sample_naming
 
-# returns the /trendyqc/trend_monitoring/management folder
-BASE_DIR_MANAGEMENT = Path(__file__).resolve().parent.parent.parent
-CONFIG_DIR = BASE_DIR_MANAGEMENT / "configs"
+CONFIG_DIR = settings.CONFIG_PATH / "backend_configs"
 
 
 class MultiQC_report:
