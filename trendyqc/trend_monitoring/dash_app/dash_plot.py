@@ -14,10 +14,11 @@ import plotly.graph_objects as go
 from dash import dcc, Output, Input, State, ALL
 from django_plotly_dash import DjangoDash
 
+from trend_monitoring.dash_app.callbacks import metric_vs_metric
 from trend_monitoring.dash_app.get_data.filtering import (
     get_data_for_plotting,
     get_subset_queryset,
-    format_data_for_plotly_js,
+    format_data_for_boxplot,
 )
 from trend_monitoring.dash_app.setup_dash_elements.individual_dropdowns import (
     get_filter_table,
@@ -66,6 +67,8 @@ app.clientside_callback(
     Output("auth-store", "data"),
     Input("auth-interval", "n_intervals"),
 )
+
+metric_vs_metric.register_callback(app)
 
 
 @app.callback(
@@ -290,7 +293,7 @@ def callback_graph(applied_filter):
     df, projects_no_metrics, samples_no_metric = get_data_for_plotting(
         data, metrics
     )
-    json_plot_data, is_grouped = format_data_for_plotly_js(df)
+    json_plot_data, is_grouped = format_data_for_boxplot(df)
 
     fig = go.Figure()
 
