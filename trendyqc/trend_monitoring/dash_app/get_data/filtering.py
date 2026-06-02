@@ -267,7 +267,7 @@ def get_metric_filter(form_model: str, form_metric: str) -> str:
     return None
 
 
-def format_data_for_plotly_js(plot_data: pd.DataFrame) -> tuple:
+def format_data_for_boxplot(plot_data: pd.DataFrame) -> tuple:
     """Format the dataframe data for Plotly JS.
 
     Args:
@@ -524,6 +524,86 @@ def create_trace(**kwargs):
     }
 
     return trace
+
+
+def format_data_for_scatterplot(plot_data: pd.DataFrame) -> tuple:
+    """Format the dataframe data for a Plotly scatter plot.
+
+    Args:
+        plot_data (pd.DataFrame): Pandas Dataframe containing the data to plot.
+            Expected columns: sample_id, date, project_name, assay,
+            sequencer_id, metric_x, metric_y
+
+    Returns:
+        tuple: (list of trace dicts, is_grouped bool)
+    """
+
+    metric_x_col = plot_data.columns[5]
+    metric_y_col = plot_data.columns[6]
+
+    traces = []
+
+    for project_name in plot_data.sort_values("date")["project_name"].unique():
+        data_one_run = plot_data[
+            plot_data["project_name"] == project_name
+        ].copy()
+
+        assay_name = data_one_run["assay"].unique()[0]
+        sequencer_id = data_one_run["sequencer_id"].unique()[0]
+        legend_name = f"{assay_name} - {sequencer_id}"
+
+        trace = create_scatter_trace(
+            data=data_one_run,
+            metric_x_col=metric_x_col,
+            metric_y_col=metric_y_col,
+            project_name=project_name,
+            name=legend_name,
+        )
+        traces.append(trace)
+
+    return traces, False
+
+
+def create_scatter_trace(
+    data: pd.DataFrame,
+    metric_x_col: str,
+    metric_y_col: str,
+    project_name: str,
+    name: str,
+) -> dict:
+    """Create a scatter trace dict for Plotly.
+
+    Args:
+        data (pd.DataFrame): Dataframe for one project
+        metric_x_col (str): Column name for x-axis metric
+        metric_y_col (str): Column name for y-axis metric
+        project_name (str): Project name for hover text
+        name (str): Legend name
+
+    Returns:
+        dict: Plotly scatter trace dict
+    """
+
+    x_values = [float(v) for v in data[metric_x_col].values]
+    y_values = [float(v) for v in data[metric_y_col].values]
+    text_data = [
+        f"{sample} - {project_name}" for sample in data["sample_id"].values
+    ]
+
+    return {
+        "x": x_values,
+        "y": y_values,
+        "text": text_data,
+        "name": name,
+        "type": "scatter",
+        "mode": "markers",
+        "legendgroup": name,
+        "hovertemplate": (
+            f"<b>{metric_x_col}</b>: %{{x}}<br>"
+            f"<b>{metric_y_col}</b>: %{{y}}<br>"
+            "%{text}<extra></extra>"
+        ),
+    }
 
 
 def get_date_from_project_name(project_name):
