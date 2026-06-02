@@ -49,7 +49,7 @@ def get_projects(projects=None):
     ]
 
 
-def get_metrics(dropdown_id):
+def get_metrics(dropdown_id, placeholder="Select a metric..."):
     plotable_metrics = {}
     module_content = bam_qc.__dict__ | fastq_qc.__dict__ | vcf_qc.__dict__
 
@@ -93,7 +93,7 @@ def get_metrics(dropdown_id):
 
     return [
         dmc.MultiSelect(
-            placeholder="Select a metric...",
+            placeholder=placeholder,
             id=dropdown_id,
             searchable=True,
             clearable=True,
