@@ -2,7 +2,7 @@ import json
 import unittest
 
 from trend_monitoring.management.commands.utils._tool import Tool
-from trendyqc.settings import BASE_DIR
+from trendyqc.settings import BASE_DIR, CONFIG_PATH
 
 
 class TestTool(unittest.TestCase):
@@ -20,9 +20,7 @@ class TestTool(unittest.TestCase):
 
     def setUp(self):
         # config directory path
-        self.config_dir = (
-            BASE_DIR / "trend_monitoring" / "management" / "configs"
-        )
+        self.config_dir = CONFIG_PATH / "backend_configs"
 
         test_tool_data_file = (
             BASE_DIR

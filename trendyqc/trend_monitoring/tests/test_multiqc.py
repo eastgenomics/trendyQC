@@ -8,12 +8,8 @@ from django.core.exceptions import FieldError as Django_FieldError
 from django.test import TestCase
 from django.db import models
 
-from trend_monitoring.models.metadata import (
-    Report, Sample
-)
-from trend_monitoring.models.fastq_qc import (
-    Read_data, Bcl2fastq_data, Fastqc
-)
+from trend_monitoring.models.metadata import Report, Sample
+from trend_monitoring.models.fastq_qc import Read_data, Bcl2fastq_data, Fastqc
 from trend_monitoring.models.bam_qc import (
     VerifyBAMid_data,
     Samtools_data,
@@ -35,19 +31,19 @@ from trend_monitoring.models.vcf_qc import (
     Happy_indel_all,
     Happy_indel_pass,
     Happy_snp_all,
-    Happy_snp_pass
+    Happy_snp_pass,
 )
 
 from trend_monitoring.management.commands.utils._multiqc import MultiQC_report
 from trend_monitoring.management.commands.utils._dnanexus_utils import (
-    login_to_dnanexus
+    login_to_dnanexus,
 )
-from trendyqc.settings import BASE_DIR
+from trendyqc.settings import BASE_DIR, CONFIG_PATH
 from .custom_tests import CustomTests
 
 
 def get_reports_tar():
-    """ Get the report tar file
+    """Get the report tar file
 
     Returns:
         str: Name of the test report tar
@@ -60,15 +56,15 @@ def get_reports_tar():
 
     test_reports_tar = test_reports_tar[0]
 
-    assert test_reports_tar.name == "test_reports.tar.gz", (
-        "Name of report tar is not as expected"
-    )
+    assert (
+        test_reports_tar.name == "test_reports.tar.gz"
+    ), "Name of report tar is not as expected"
 
     return test_reports_tar
 
 
 def untar_stream_reports(tar):
-    """ Untar and uncompress the tar file to extract the JSON Multiqc file
+    """Untar and uncompress the tar file to extract the JSON Multiqc file
     and the metadata file associated with every report file
 
     Args:
@@ -104,14 +100,16 @@ def untar_stream_reports(tar):
 
 
 def import_tool_info():
-    """ Read the JSON containing tool information like the mapping between
+    """Read the JSON containing tool information like the mapping between
     the field names in the report and the field names in the models
 
     Returns:
         dict: Dict containing the JSON file content
     """
 
-    test_tool_file = BASE_DIR / "trend_monitoring" / "tests" / "test_data" / "tools.json"
+    test_tool_file = (
+        BASE_DIR / "trend_monitoring" / "tests" / "test_data" / "tools.json"
+    )
 
     with open(test_tool_file) as f:
         tool_data = json.loads(f.read())
@@ -120,7 +118,7 @@ def import_tool_info():
 
 
 def import_test_reports(reports):
-    """ Import the test reports
+    """Import the test reports
 
     Returns:
         list: List of MultiQC reports objects
@@ -133,7 +131,7 @@ def import_test_reports(reports):
             "multiqc_report_id": subkey["file_id"],
             "multiqc_project_id": subkey["project_id"],
             "multiqc_job_id": subkey["job_id"],
-            "data": subkey["data"]
+            "data": subkey["data"],
         }
 
         multiqc_report = MultiQC_report(**test_dict)
@@ -144,7 +142,7 @@ def import_test_reports(reports):
 
 
 def setUpModule():
-    """ Set up the data for the battery of tests by:
+    """Set up the data for the battery of tests by:
     - Logging into dnanexus
     - Getting the test tar and performing some checks
     - Untar-ing the reports
@@ -176,11 +174,11 @@ class TestMultiqc(TestCase):
             return "\n".join(doc) or None
 
     def test_multiqc_assay(self):
-        """ Test if the assay data i.e. the multiqc fields + tool/subtool name
+        """Test if the assay data i.e. the multiqc fields + tool/subtool name
         associated match the appropriate content of the assay file
         """
 
-        assay_file = BASE_DIR / "trend_monitoring" / "management" / "configs" / "assays.json"
+        assay_file = CONFIG_PATH / "backend_configs" / "assays.json"
 
         with open(assay_file) as f:
             assay_file_content = json.loads(f.read())
@@ -197,14 +195,14 @@ class TestMultiqc(TestCase):
                 self.assertEqual(test_data, expected_values)
 
     def test_import_already_in_db(self):
-        """ Test that the report is defined as being not importable """
+        """Test that the report is defined as being not importable"""
 
         assay, subkey = random.choice(list(reports.items()))
         test_dict = {
             "multiqc_report_id": subkey["file_id"],
             "multiqc_project_id": subkey["project_id"],
             "multiqc_job_id": subkey["job_id"],
-            "data": subkey["data"]
+            "data": subkey["data"],
         }
 
         test_report = MultiQC_report(**test_dict)
@@ -215,7 +213,7 @@ class TestMultiqc(TestCase):
         self.assertFalse(test_report.is_importable, test_msg)
 
     def test_import_not_in_db(self):
-        """ Test to check if the report will be imported """
+        """Test to check if the report will be imported"""
 
         # find the test CEN report to get its data for creating new fake report
         for report in multiqc_objects:
@@ -255,7 +253,7 @@ class TestMultiqc(TestCase):
             "multiqc_report_id": subkey["file_id"],
             "multiqc_project_id": subkey["project_id"],
             "multiqc_job_id": subkey["job_id"],
-            "data": test_data
+            "data": test_data,
         }
 
         test_report = MultiQC_report(**test_dict)
@@ -266,7 +264,7 @@ class TestMultiqc(TestCase):
         self.assertFalse(test_report.is_importable, test_msg)
 
     def test_assay_not_in_config(self):
-        """ Test that a report is not importable because the assay value in the
+        """Test that a report is not importable because the assay value in the
         MultiQC data doesn't exist in the assays.json file
         """
 
@@ -280,7 +278,7 @@ class TestMultiqc(TestCase):
             "multiqc_report_id": subkey["file_id"],
             "multiqc_project_id": subkey["project_id"],
             "multiqc_job_id": subkey["job_id"],
-            "data": test_data
+            "data": test_data,
         }
 
         test_msg = (
@@ -292,19 +290,21 @@ class TestMultiqc(TestCase):
         report = MultiQC_report(**test_dict)
         assert len(report.messages) == 1
         assert (
-            "Unknown assay is not present in the assay config file" in report.messages[0][0] and report.messages[0][1] == "error"
+            "Unknown assay is not present in the assay config file"
+            in report.messages[0][0]
+            and report.messages[0][1] == "error"
         ), test_msg
 
 
 class TestParsingAndImport(TestCase, CustomTests):
-    """ Organise the code so that it is structured.
+    """Organise the code so that it is structured.
     Contains all the tests for parsing and import the data
     """
 
     def _parsing_like_multiqc_report(
         self, tool_name: str, sample: str
     ) -> list:
-        """ Parse the sample name
+        """Parse the sample name
 
         Args:
             tool_name (str): Tool name
@@ -325,16 +325,14 @@ class TestParsingAndImport(TestCase, CustomTests):
             # look for the order, lane and read using regex
             match = re.search(
                 r"_(?P<order>S[0-9]+)_(?P<lane>L[0-9]+)_(?P<read>R[12])",
-                sample
+                sample,
             )
 
             if match:
                 # use the regex matching to get the sample id
-                potential_sample_id = sample[:match.start()]
+                potential_sample_id = sample[: match.start()]
                 # find every component of the sample id
-                matches = re.findall(
-                    r"([a-zA-Z0-9]+)", potential_sample_id
-                )
+                matches = re.findall(r"([a-zA-Z0-9]+)", potential_sample_id)
                 # and join them using dashes (to fix potential errors
                 # in the sample naming)
                 sample_id = "-".join(matches)
@@ -350,22 +348,19 @@ class TestParsingAndImport(TestCase, CustomTests):
 
             if match:
                 # and get the sample id remaining
-                potential_sample_id = sample[:match.start()]
+                potential_sample_id = sample[: match.start()]
             else:
                 # remove the happy suffixes, they were causing issues
                 # because it had a longer sample name breaking the
                 # merging of data under one sample id
                 sample = re.sub(
-                    "_INDEL_PASS|_INDEL_ALL|_SNP_PASS|_SNP_ALL", "",
-                    sample
+                    "_INDEL_PASS|_INDEL_ALL|_SNP_PASS|_SNP_ALL", "", sample
                 )
 
                 potential_sample_id = sample
 
             # same as before, find every element in the sample id
-            matches = re.findall(
-                r"([a-zA-Z0-9]+)", potential_sample_id
-            )
+            matches = re.findall(r"([a-zA-Z0-9]+)", potential_sample_id)
             # and join using dashes
             sample_id = "-".join(matches)
 
@@ -374,7 +369,7 @@ class TestParsingAndImport(TestCase, CustomTests):
     def _build_filter_dict(
         self, filter_dict: dict, template_dict: dict
     ) -> dict:
-        """ Build a filter dictionary to replpace the string formatting keys
+        """Build a filter dictionary to replpace the string formatting keys
         with the actual values
 
         Args:
@@ -427,7 +422,7 @@ class TestParsingAndImport(TestCase, CustomTests):
     def _get_data_for(
         self, tool_name: str, filter_dict: dict, model: models.Model
     ):
-        """ Generator function that yields the subtest info message and the
+        """Generator function that yields the subtest info message and the
         values to compare for a given tool
 
         Args:
@@ -489,7 +484,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                         "read": read,
                         "lane": lane,
                         "nb_lane": nb_lane,
-                        "sample_id": sample_id
+                        "sample_id": sample_id,
                     }
 
                     dynamic_filter_dict = self._build_filter_dict(
@@ -536,12 +531,14 @@ class TestParsingAndImport(TestCase, CustomTests):
                     )
 
                     yield (
-                        msg, db_field,
-                        data[json_field], db_data[0].__dict__[db_field]
+                        msg,
+                        db_field,
+                        data[json_field],
+                        db_data[0].__dict__[db_field],
                     )
 
     def test_import_reports(self):
-        """ Test whether the reports have been imported correctly.
+        """Test whether the reports have been imported correctly.
         Setup the Multiqc object as before and use its metadata to find the
         database row for that report.
         """
@@ -551,7 +548,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                 "multiqc_report_id": subkey["file_id"],
                 "multiqc_project_id": subkey["project_id"],
                 "multiqc_job_id": subkey["job_id"],
-                "data": subkey["data"]
+                "data": subkey["data"],
             }
 
             multiqc_obj = MultiQC_report(**setup_dict)
@@ -563,7 +560,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                 "date": multiqc_obj.date,
                 "sequencer_id": multiqc_obj.sequencer_id,
                 "job_date": multiqc_obj.datetime_job,
-                "dnanexus_file_id": multiqc_obj.multiqc_json_id
+                "dnanexus_file_id": multiqc_obj.multiqc_json_id,
             }
 
             report_obj = Report.objects.filter(**filter_dict)
@@ -574,7 +571,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                 self.assertEqual(len(report_obj), 1)
 
     def test_import_sample_ids(self):
-        """ Test whether the sample ids from the multiqc reports have been
+        """Test whether the sample ids from the multiqc reports have been
         imported correctly.
 
         The test goes through the test multiqc reports, parse the sample ids
@@ -680,16 +677,14 @@ class TestParsingAndImport(TestCase, CustomTests):
                         self.assertEqual(len(db_data), 1)
 
     def test_parse_bcl2fastq(self):
-        """ Test that the bcl2fastq data has been imported and imported
+        """Test that the bcl2fastq data has been imported and imported
         correctly
         """
 
         # name of the tool in the config
         tool_name = "bcl2fastq"
         # build a filter dict to have dynamic search of the sample id
-        filter_dict = {
-            "report_sample__sample__sample_id": "{sample_id}"
-        }
+        filter_dict = {"report_sample__sample__sample_id": "{sample_id}"}
         model = Bcl2fastq_data
 
         for msg, db_field, json_data, db_data in self._get_data_for(
@@ -704,8 +699,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_fastqc_data(self):
-        """ Test that the fastqc data has been imported and imported correctly
-        """
+        """Test that the fastqc data has been imported and imported correctly"""
 
         # name of the tool in the config
         tool_name = "fastqc"
@@ -713,7 +707,7 @@ class TestParsingAndImport(TestCase, CustomTests):
         filter_dict = {
             "sample_read": "{read}",
             "lane": "{lane}",
-            "read_data_{nb_lane}_{read}__report_sample__sample__sample_id": "{sample_id}"
+            "read_data_{nb_lane}_{read}__report_sample__sample__sample_id": "{sample_id}",
         }
         model = Read_data
 
@@ -729,7 +723,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_picard_alignment_summary_metrics_data(self):
-        """ Test that the picard_alignment_summary_metrics_data has been
+        """Test that the picard_alignment_summary_metrics_data has been
         imported and imported correctly
         """
 
@@ -757,7 +751,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_picard_hs_metrics(self):
-        """ Test that the picard_hs_metrics data has been imported and
+        """Test that the picard_hs_metrics data has been imported and
         imported correctly
         """
 
@@ -779,7 +773,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_picard_insertsize(self):
-        """ Test that the picard_insertsize data has been imported and
+        """Test that the picard_insertsize data has been imported and
         imported correctly
         """
 
@@ -801,7 +795,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_picard_base_content(self):
-        """ Test that the picard_base_content data has been imported and
+        """Test that the picard_base_content data has been imported and
         imported correctly
         """
 
@@ -811,7 +805,7 @@ class TestParsingAndImport(TestCase, CustomTests):
         filter_dict = {
             "sample_read": "{read}",
             "lane": "{lane}",
-            "base_distribution_by_cycle_metrics_{nb_lane}_{read}__report_sample__sample__sample_id": "{sample_id}"
+            "base_distribution_by_cycle_metrics_{nb_lane}_{read}__report_sample__sample__sample_id": "{sample_id}",
         }
         model = Base_distribution_by_cycle_metrics
 
@@ -827,7 +821,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_picard_duplication(self):
-        """ Test that the picard_duplication data has been imported and
+        """Test that the picard_duplication data has been imported and
         imported correctly
         """
 
@@ -849,7 +843,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_picard_gcbias(self):
-        """ Test that the picard_gcbias data has been imported and
+        """Test that the picard_gcbias data has been imported and
         imported correctly
         """
 
@@ -871,7 +865,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_picard_pcrmetrics(self):
-        """ Test that the picard_pcrmetrics data has been imported and
+        """Test that the picard_pcrmetrics data has been imported and
         imported correctly
         """
 
@@ -893,7 +887,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_picard_quality_yield(self):
-        """ Test that the picard_quality_yield data has been imported and
+        """Test that the picard_quality_yield data has been imported and
         imported correctly
         """
 
@@ -915,14 +909,12 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_custom_coverage(self):
-        """ Test that the custom coverage data has been imported and imported
+        """Test that the custom coverage data has been imported and imported
         correctly
         """
 
         tool_name = "custom_coverage"
-        filter_dict = {
-            "report_sample__sample__sample_id": "{sample_id}"
-        }
+        filter_dict = {"report_sample__sample__sample_id": "{sample_id}"}
         model = Custom_coverage
 
         for msg, db_field, json_data, db_data in self._get_data_for(
@@ -937,15 +929,12 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_vcfqc(self):
-        """ Test that the vcfqc data has been imported and imported correctly
-        """
+        """Test that the vcfqc data has been imported and imported correctly"""
 
         # name of the tool in the config
         tool_name = "vcfqc"
         # build a filter dict to have dynamic search of the sample id
-        filter_dict = {
-            "report_sample__sample__sample_id": "{sample_id}"
-        }
+        filter_dict = {"report_sample__sample__sample_id": "{sample_id}"}
         model = Vcfqc_data
 
         for msg, db_field, json_data, db_data in self._get_data_for(
@@ -960,16 +949,14 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_flagstat(self):
-        """ Test that the samtools flagstat data has been imported and imported
+        """Test that the samtools flagstat data has been imported and imported
         correctly
         """
 
         # name of the tool in the config
         tool_name = "flagstat"
         # build a filter dict to have dynamic search of the sample id
-        filter_dict = {
-            "report_sample__sample__sample_id": "{sample_id}"
-        }
+        filter_dict = {"report_sample__sample__sample_id": "{sample_id}"}
         model = Samtools_data
 
         for msg, db_field, json_data, db_data in self._get_data_for(
@@ -984,16 +971,14 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_somalier(self):
-        """ Test that the somalier data has been imported and imported
+        """Test that the somalier data has been imported and imported
         correctly
         """
 
         # name of the tool in the config
         tool_name = "somalier"
         # build a filter dict to have dynamic search of the sample id
-        filter_dict = {
-            "report_sample__sample__sample_id": "{sample_id}"
-        }
+        filter_dict = {"report_sample__sample__sample_id": "{sample_id}"}
         model = Somalier_data
 
         for msg, db_field, json_data, db_data in self._get_data_for(
@@ -1005,9 +990,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                 # need to check the paternal and maternal ids using the kinda
                 # equal as I expect a sample id type value but if not provided
                 # the field is equal to 0.0
-                if (
-                    isinstance(model_field_type, models.FloatField)
-                ) or (
+                if (isinstance(model_field_type, models.FloatField)) or (
                     isinstance(model_field_type, models.CharField)
                 ):
                     self.assertKindaEqual(json_data, db_data)
@@ -1015,16 +998,14 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_sompy(self):
-        """ Test that the sompy data has been imported and imported
+        """Test that the sompy data has been imported and imported
         correctly
         """
 
         # name of the tool in the config
         tool_name = "sompy"
         # build a filter dict to have dynamic search of the sample id
-        filter_dict = {
-            "report_sample__sample__sample_id": "{sample_id}"
-        }
+        filter_dict = {"report_sample__sample__sample_id": "{sample_id}"}
         model = Sompy_data
 
         for msg, db_field, json_data, db_data in self._get_data_for(
@@ -1039,16 +1020,14 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_verifybamid(self):
-        """ Test that the verifybamid data has been imported and imported
+        """Test that the verifybamid data has been imported and imported
         correctly
         """
 
         # name of the tool in the config
         tool_name = "verifybamid"
         # build a filter dict to have dynamic search of the sample id
-        filter_dict = {
-            "report_sample__sample__sample_id": "{sample_id}"
-        }
+        filter_dict = {"report_sample__sample__sample_id": "{sample_id}"}
         model = VerifyBAMid_data
 
         for msg, db_field, json_data, db_data in self._get_data_for(
@@ -1060,9 +1039,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                 # NA values are present which get converted in None if the
                 # model field is CharField. Using the kindaEqual function to
                 # assert their value
-                if (
-                    isinstance(model_field_type, models.FloatField)
-                ) or (
+                if (isinstance(model_field_type, models.FloatField)) or (
                     isinstance(model_field_type, models.CharField)
                 ):
                     self.assertKindaEqual(json_data, db_data)
@@ -1070,14 +1047,14 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_happy_indel_all(self):
-        """ Test that the Happy indel all data has been imported and imported
+        """Test that the Happy indel all data has been imported and imported
         correctly
         """
 
         tool_name = "happy_indel"
         filter_dict = {
             "happy__report_sample__sample__sample_id": "{sample_id}",
-            "filter_indel": "ALL"
+            "filter_indel": "ALL",
         }
         model = Happy_indel_all
 
@@ -1101,14 +1078,14 @@ class TestParsingAndImport(TestCase, CustomTests):
                         self.assertEqual(int(json_data), int(db_data))
 
     def test_parse_happy_indel_pass(self):
-        """ Test that the Happy indel pass data has been imported and imported
+        """Test that the Happy indel pass data has been imported and imported
         correctly
         """
 
         tool_name = "happy_indel"
         filter_dict = {
             "happy__report_sample__sample__sample_id": "{sample_id}",
-            "filter_indel": "PASS"
+            "filter_indel": "PASS",
         }
         model = Happy_indel_pass
 
@@ -1132,14 +1109,14 @@ class TestParsingAndImport(TestCase, CustomTests):
                         self.assertEqual(int(json_data), int(db_data))
 
     def test_parse_happy_snp_all(self):
-        """ Test that the Happy snp all data has been imported and imported
+        """Test that the Happy snp all data has been imported and imported
         correctly
         """
 
         tool_name = "happy_snp"
         filter_dict = {
             "happy__report_sample__sample__sample_id": "{sample_id}",
-            "filter_snp": "ALL"
+            "filter_snp": "ALL",
         }
         model = Happy_snp_all
 
@@ -1163,14 +1140,14 @@ class TestParsingAndImport(TestCase, CustomTests):
                         self.assertEqual(int(json_data), int(db_data))
 
     def test_parse_happy_snp_pass(self):
-        """ Test that the Happy snp pass data has been imported and imported
+        """Test that the Happy snp pass data has been imported and imported
         correctly
         """
 
         tool_name = "happy_snp"
         filter_dict = {
             "happy__report_sample__sample__sample_id": "{sample_id}",
-            "filter_snp": "PASS"
+            "filter_snp": "PASS",
         }
         model = Happy_snp_pass
 
@@ -1194,7 +1171,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                         self.assertEqual(int(json_data), int(db_data))
 
     def test_parse_sentieon_alignment_summary_metrics_data(self):
-        """ Test that the Sentieon alignment summary metrics data has been
+        """Test that the Sentieon alignment summary metrics data has been
         imported and imported correctly
         """
 
@@ -1216,7 +1193,7 @@ class TestParsingAndImport(TestCase, CustomTests):
                     self.assertEqual(json_data, db_data)
 
     def test_parse_sentieon_insertsize(self):
-        """ Test that the Sentieon insert size data has been imported and
+        """Test that the Sentieon insert size data has been imported and
         imported correctly
         """
 
