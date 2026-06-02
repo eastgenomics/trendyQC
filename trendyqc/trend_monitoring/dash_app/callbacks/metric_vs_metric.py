@@ -8,7 +8,7 @@ from dash import Output, Input
 from trend_monitoring.dash_app.get_data.filtering import (
     get_data_for_plotting,
     get_subset_queryset,
-    format_data_for_plotly_js,
+    format_data_for_scatterplot,
 )
 from trend_monitoring.dash_app.setup_dash_elements.individual_dropdowns import (
     get_projects,
@@ -23,10 +23,14 @@ logger = logging.getLogger("basic")
 
 def register_callback(app):
     @app.callback(
-        Output("dropdown-project", "options"),
-        Input("dropdown-assay", "value"),
+        Output("dropdown-project", "data"),
+        Input("dropdown-assay-metric-v-metric", "value"),
+        prevent_initial_call=True,
     )
-    def handle_assay_selection(assays):
+    def update_projects(assays):
+        if not assays:
+            return []
+
         projects = sorted(
             {
                 f"{project} - {file_id}"
@@ -37,36 +41,27 @@ def register_callback(app):
                 .distinct()
             }
         )
-        return projects
+        return [{"value": p, "label": p} for p in projects]
 
     @app.callback(
-        Output("dropdown-project", "data"),
-        Input("dropdown-project", "options"),
-    )
-    def handle_assay_selection(projects):
-        return get_projects(projects)
-
-    @app.callback(
-        Output("metric-over-time-graph", "figure"),
-        Output("metric-over-time-graph-title", "children"),
+        Output("metric-vs-metric-output-graph", "figure"),
+        Output("metric-vs-metric-graph-title", "children"),
         Input("dropdown-project", "value"),
         Input("dropdown-metric-x", "value"),
         Input("dropdown-metric-y", "value"),
         prevent_initial_call=True,
     )
-    def callback_graph(project, metric_x, metric_y, *args, **kwargs):
-        if not metric_x and metric_y:
+    def callback_graph_metric_vs_metric(
+        project, metric_x, metric_y, *args, **kwargs
+    ):
+        if not metric_x or not metric_y:
             return dash.no_update, dash.no_update
 
         data = get_subset_queryset(
-            {
-                "run": project,
-            }
+            {"run": [project.split(" - ")[0]] if project else []}
         )
-        df, projects_no_metrics, samples_no_metric = get_data_for_plotting(
-            data, [metric_x, metric_y]
-        )
-        json_plot_data, is_grouped = format_data_for_plotly_js(df)
+        df, _, _ = get_data_for_plotting(data, metric_x + metric_y)
+        json_plot_data, _ = format_data_for_scatterplot(df)
 
         fig = go.Figure()
 
@@ -74,7 +69,9 @@ def register_callback(app):
             fig.add_trace(go.Scatter(**json_data))
 
         plot_title = build_filter_text(
-            json.dumps({"metric": metric_y, "metric_x": metric_x})
+            json.dumps(
+                {"run": [project], "metric_x": metric_x, "metric": metric_y}
+            )
         )
 
         return fig, plot_title
