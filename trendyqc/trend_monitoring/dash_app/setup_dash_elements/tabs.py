@@ -120,10 +120,18 @@ def get_metric_vs_metric_tab_content():
                                 dmc.Stack(
                                     get_assay("dropdown-assay-metric-v-metric")
                                     + get_projects()
-                                )
-                            ]
-                            + get_metrics("dropdown-metric-x")
-                            + get_metrics("dropdown-metric-y"),
+                                ),
+                                dmc.Stack(
+                                    get_metrics(
+                                        "dropdown-metric-x",
+                                        "Select the metric for X",
+                                    )
+                                    + get_metrics(
+                                        "dropdown-metric-y",
+                                        "Select the metric for Y",
+                                    )
+                                ),
+                            ],
                             justify="center",
                             gap="md",
                             grow=True,
