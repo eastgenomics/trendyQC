@@ -66,7 +66,14 @@ def get_metric_over_time_tab_content():
                         dmc.Group(
                             get_assay("dropdown-assay")
                             + get_metrics("dropdown-metric")
-                            + get_date_picker(),
+                            + get_date_picker()
+                            + [
+                                dmc.Checkbox(
+                                    id="annotation-checkbox",
+                                    label="Add annotation",
+                                    checked=True,
+                                ),
+                            ],
                             justify="center",
                             gap="md",
                             grow=True,
