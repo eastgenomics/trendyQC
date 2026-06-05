@@ -14,6 +14,7 @@ from django_plotly_dash import DjangoDash
 from trend_monitoring.dash_app.callbacks import (
     metric_vs_metric,
     metric_over_time,
+    add_annotation,
 )
 from trend_monitoring.dash_app.setup_dash_elements.tabs import get_tabs
 
@@ -54,6 +55,7 @@ app.clientside_callback(
 
 metric_over_time.register_callback(app)
 metric_vs_metric.register_callback(app)
+add_annotation.register_callback(app)
 
 
 @app.callback(
