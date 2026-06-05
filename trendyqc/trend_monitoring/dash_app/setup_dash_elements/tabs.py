@@ -7,6 +7,7 @@ from trend_monitoring.dash_app.setup_dash_elements.individual_components import 
     get_metrics,
     get_date_picker,
     get_filter_table,
+    get_annotation_table,
 )
 
 
@@ -204,4 +205,26 @@ def get_metric_vs_metric_tab_content():
 
 
 def get_add_annotation_tab_content():
-    return dmc.Stack()
+    return dmc.Stack(
+        [
+            dcc.Store(id="annotation-store", data=0),
+            dcc.Store(id="annotation-saved-store", data=0),
+        ]
+        + get_annotation_table()
+        + [
+            dmc.Fieldset(
+                children=[
+                    dmc.TextInput(
+                        label="Date of the annotation",
+                        placeholder="e.g. 2026-06-05",
+                    ),
+                    dmc.TextInput(
+                        label="Label", placeholder="e.g. GRCh38 deployment"
+                    ),
+                    dmc.Group([dmc.Button("Send")], justify="flex-end"),
+                ],
+                legend="Annotation information",
+                disabled=True,
+            )
+        ]
+    )
