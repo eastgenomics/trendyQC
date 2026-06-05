@@ -68,11 +68,20 @@ def get_metric_over_time_tab_content():
                             + get_metrics("dropdown-metric")
                             + get_date_picker()
                             + [
-                                dmc.Checkbox(
-                                    id="annotation-checkbox",
-                                    label="Show annotations",
-                                    checked=True,
-                                ),
+                                dmc.Stack(
+                                    [
+                                        dmc.Checkbox(
+                                            id="annotation-checkbox",
+                                            label="Show annotations",
+                                            checked=True,
+                                        ),
+                                        dmc.Checkbox(
+                                            id="failed-runs-checkbox",
+                                            label="Hide failed runs",
+                                            checked=False,
+                                        ),
+                                    ]
+                                )
                             ],
                             justify="center",
                             gap="md",

@@ -179,9 +179,10 @@ def register_callback(app):
         Output("metric-over-time-graph-title", "children"),
         Input("applied-filter-store", "data"),
         Input("annotation-checkbox", "checked"),
+        Input("failed-runs-checkbox", "checked"),
         prevent_initial_call=True,
     )
-    def callback_graph(applied_filter, show_annotations):
+    def callback_graph(applied_filter, show_annotations, hide_failed_runs):
         if not applied_filter:
             return dash.no_update, dash.no_update
 
@@ -204,6 +205,9 @@ def register_callback(app):
                 "days_back": int(days_back) if days_back else None,
             }
         )
+
+        fig = go.Figure()
+
         df, projects_no_metrics, samples_no_metric = get_data_for_plotting(
             data, metrics
         )
@@ -212,24 +216,31 @@ def register_callback(app):
         run_names = df["project_name"].unique().tolist()
         failed_runs = get_failed_runs(run_names)
 
-        json_plot_data, is_grouped = format_data_for_boxplot(df)
-
-        fig = go.Figure()
-        for json_data in json_plot_data:
-            fig.add_trace(go.Box(**json_data))
+        projects_to_hide = []
 
         # add failed run annotations above the plot
         for project_name in df.sort_values("date")["project_name"].unique():
             if project_name in failed_runs:
-                fig.add_annotation(
-                    x=project_name,
-                    y=1,
-                    yref="paper",
-                    text="⚠ Failed",
-                    showarrow=False,
-                    font=dict(size=12, color="red"),
-                    yanchor="bottom",
-                )
+                if hide_failed_runs:
+                    projects_to_hide.append(project_name)
+                else:
+                    fig.add_annotation(
+                        x=project_name,
+                        y=1,
+                        yref="paper",
+                        text="⚠ Failed",
+                        showarrow=False,
+                        font=dict(size=12, color="red"),
+                        yanchor="bottom",
+                    )
+
+        if projects_to_hide:
+            df = df[~df["project_name"].isin(projects_to_hide)]
+
+        json_plot_data, is_grouped = format_data_for_boxplot(df)
+
+        for json_data in json_plot_data:
+            fig.add_trace(go.Box(**json_data))
 
         if show_annotations and not df.empty:
             fig = add_annotations(fig, df)
