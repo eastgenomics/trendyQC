@@ -24,8 +24,10 @@ app = DjangoDash("Plot", external_stylesheets=[dbc.themes.BOOTSTRAP])
 def define_layout(**kwargs):
     return dmc.MantineProvider(
         [
-            dcc.Store(id="save-message-store"),
-            dcc.Store(id="delete-message-store"),
+            dcc.Store(id="save-filter-message-store"),
+            dcc.Store(id="delete-filter-message-store"),
+            dcc.Store(id="save-annotation-message-store"),
+            dcc.Store(id="delete-annotation-message-store"),
             dcc.Store(id="message-store"),
             dmc.Alert(
                 id="alert-message",
