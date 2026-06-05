@@ -29,7 +29,7 @@ logger = logging.getLogger("basic")
 def register_callback(app):
     @app.callback(
         Output("save-filter-btn", "style"),
-        Output("filter-table", "style"),
+        Output("filter-table-container", "style"),
         Input("auth-store", "data"),
     )
     def toggle_filter_components(is_authenticated):
@@ -49,7 +49,7 @@ def register_callback(app):
 
     @app.callback(
         Output("filter-name-modal", "opened"),
-        Output("save-message-store", "data"),
+        Output("save-filter-message-store", "data"),
         Output("filter-saved-store", "data"),
         Input("save-filter-btn", "n_clicks"),
         Input("submit-filter_name", "n_clicks"),
@@ -116,7 +116,7 @@ def register_callback(app):
 
     @app.callback(
         Output("filter-store", "data"),
-        Output("delete-message-store", "data"),
+        Output("delete-filter-message-store", "data"),
         Input({"type": "delete-filter-btn", "index": ALL}, "n_clicks"),
         State("filter-store", "data"),
         prevent_initial_call=True,
