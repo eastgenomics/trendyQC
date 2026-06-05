@@ -202,3 +202,106 @@ def get_filter_table():
             id="filter-table",
         ),
     ]
+
+
+def get_missing_data_accordions(
+    projects_no_metrics: dict, samples_no_metric: dict
+):
+    if not projects_no_metrics and not samples_no_metric:
+        return []
+
+    result = []
+
+    # accordion for projects with no metrics
+    if projects_no_metrics:
+        items = [
+            dmc.AccordionItem(
+                [
+                    dmc.AccordionControl(
+                        f"{metric} ({len(projects)} projects)",
+                    ),
+                    dmc.AccordionPanel(
+                        dmc.Table(
+                            [
+                                dmc.TableThead(
+                                    dmc.TableTr([dmc.TableTh("Project")])
+                                ),
+                                dmc.TableTbody(
+                                    [
+                                        dmc.TableTr([dmc.TableTd(project)])
+                                        for project in sorted(projects)
+                                    ]
+                                ),
+                            ]
+                        )
+                    ),
+                ],
+                value=metric,
+            )
+            for metric, projects in sorted(projects_no_metrics.items())
+        ]
+
+        result.append(
+            dmc.Stack(
+                [
+                    dmc.Text("Projects with no data", fw=500, c="red"),
+                    dmc.Accordion(items),
+                ]
+            )
+        )
+
+    # accordion for projects with missing samples
+    if samples_no_metric:
+        items = [
+            dmc.AccordionItem(
+                [
+                    dmc.AccordionControl(
+                        f"{metric} ({len(projects)} projects)",
+                    ),
+                    dmc.AccordionPanel(
+                        dmc.Table(
+                            [
+                                dmc.TableThead(
+                                    dmc.TableTr(
+                                        [
+                                            dmc.TableTh("Project"),
+                                            dmc.TableTh("Samples"),
+                                        ]
+                                    )
+                                ),
+                                dmc.TableTbody(
+                                    [
+                                        dmc.TableTr(
+                                            [
+                                                dmc.TableTd(project),
+                                                dmc.TableTd(
+                                                    ", ".join(sorted(samples))
+                                                ),
+                                            ]
+                                        )
+                                        for project, samples in sorted(
+                                            projects.items()
+                                        )
+                                    ]
+                                ),
+                            ]
+                        )
+                    ),
+                ],
+                value=metric,
+            )
+            for metric, projects in sorted(samples_no_metric.items())
+        ]
+
+        result.append(
+            dmc.Stack(
+                [
+                    dmc.Text(
+                        "Projects with missing samples", fw=500, c="orange"
+                    ),
+                    dmc.Accordion(items),
+                ]
+            )
+        )
+
+    return result
