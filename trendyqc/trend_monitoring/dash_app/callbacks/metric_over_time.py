@@ -213,15 +213,8 @@ def register_callback(app):
         for json_data in json_plot_data:
             fig.add_trace(go.Box(**json_data))
 
-        if show_annotations and df:
-            # get date range from the data
-            all_dates = [
-                row["date"]
-                for df_metric in df
-                for _, row in df_metric.iterrows()
-            ]
-            if all_dates:
-                fig = add_annotations(fig, min(all_dates), max(all_dates))
+        if show_annotations and not df.empty:
+            fig = add_annotations(fig, df)
 
         plot_title = build_filter_text(
             json.dumps(
