@@ -3,6 +3,7 @@ import dash_mantine_components as dmc
 from trend_monitoring.models import bam_qc, fastq_qc, vcf_qc
 from trend_monitoring.models.metadata import Report, Report_Sample
 from trend_monitoring.models.filters import Filter
+from trend_monitoring.models.annotations import PlotAnnotation
 from trend_monitoring.dash_app.setup_dash_elements.utils import (
     build_filter_text,
 )
@@ -200,6 +201,63 @@ def get_filter_table():
             maxHeight=300,
             minWidth=600,
             id="filter-table",
+        ),
+    ]
+
+
+def get_annotation_table():
+    annotations = PlotAnnotation.objects.all()
+
+    if not annotations:
+        rows = dmc.TableTr(
+            [
+                dmc.TableTd("No annotations in the database"),
+                dmc.TableTd(),
+                dmc.TableTd(),
+                dmc.TableTd(),
+            ]
+        )
+    else:
+        rows = [
+            dmc.TableTr(
+                [
+                    dmc.TableTd(annotation.date),
+                    dmc.TableTd(annotation.label),
+                    dmc.TableTd(
+                        dmc.Button(
+                            "Delete",
+                            id={
+                                "type": "delete-annotation-btn",
+                                "index": annotation.id,
+                            },
+                            size="xs",
+                            color="red",
+                        )
+                    ),
+                ]
+            )
+            for annotation in annotations
+        ]
+
+    return [
+        dmc.TableScrollContainer(
+            dmc.Table(
+                [
+                    dmc.TableThead(
+                        dmc.TableTr(
+                            [
+                                dmc.TableTh("Date"),
+                                dmc.TableTh("Label"),
+                                dmc.TableTh(""),
+                            ]
+                        )
+                    ),
+                    dmc.TableTbody(rows),
+                ]
+            ),
+            maxHeight=300,
+            minWidth=600,
+            id="annotation-table",
         ),
     ]
 
