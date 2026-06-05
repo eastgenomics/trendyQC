@@ -10,6 +10,7 @@ from trend_monitoring.dash_app.get_data.filtering import (
     get_subset_queryset,
     format_data_for_boxplot,
 )
+from trend_monitoring.dash_app.get_data.jira import get_failed_runs
 from trend_monitoring.dash_app.get_data.annotations import add_annotations
 from trend_monitoring.dash_app.setup_dash_elements.individual_dropdowns import (
     get_filter_table,
@@ -207,11 +208,28 @@ def register_callback(app):
             data, metrics
         )
 
+        # fetch failed runs from JIRA
+        run_names = df["project_name"].unique().tolist()
+        failed_runs = get_failed_runs(run_names)
+
         json_plot_data, is_grouped = format_data_for_boxplot(df)
 
         fig = go.Figure()
         for json_data in json_plot_data:
             fig.add_trace(go.Box(**json_data))
+
+        # add failed run annotations above the plot
+        for project_name in df.sort_values("date")["project_name"].unique():
+            if project_name in failed_runs:
+                fig.add_annotation(
+                    x=project_name,
+                    y=1,
+                    yref="paper",
+                    text="⚠ Failed",
+                    showarrow=False,
+                    font=dict(size=12, color="red"),
+                    yanchor="bottom",
+                )
 
         if show_annotations and not df.empty:
             fig = add_annotations(fig, df)
