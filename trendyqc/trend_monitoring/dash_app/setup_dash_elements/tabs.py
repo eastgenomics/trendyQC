@@ -1,7 +1,7 @@
 import dash_mantine_components as dmc
 from dash import dcc, html
 
-from trend_monitoring.dash_app.setup_dash_elements.individual_dropdowns import (
+from trend_monitoring.dash_app.setup_dash_elements.individual_components import (
     get_assay,
     get_projects,
     get_metrics,
@@ -110,6 +110,7 @@ def get_metric_over_time_tab_content():
                                 "text-align": "center",
                             },
                         ),
+                        html.Div(id="metric-over-time-missing-data-accordion"),
                         dcc.Graph(
                             id="metric-over-time-graph",
                             style={"height": "75vh"},
@@ -167,6 +168,7 @@ def get_metric_vs_metric_tab_content():
                                 "text-align": "center",
                             },
                         ),
+                        html.Div(id="metric-vs-metric-missing-data-accordion"),
                         dcc.Graph(
                             id="metric-vs-metric-output-graph",
                             style={"height": "75vh"},
