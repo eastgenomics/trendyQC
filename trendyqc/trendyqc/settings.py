@@ -51,6 +51,11 @@ try:
 
     CONFIG_PATH = Path(os.environ.get("CONFIG_PATH", Path("")))
 
+    JIRA_URL = os.environ.get("JIRA_URL")
+    JIRA_TOKEN = os.environ.get("JIRA_TOKEN")
+    JIRA_EMAIL = os.environ.get("JIRA_EMAIL")
+    JIRA_PROJECT_KEY = os.environ.get("JIRA_PROJECT_KEY")
+
 except KeyError as e:
     key = e.args[0]
     raise KeyError(
