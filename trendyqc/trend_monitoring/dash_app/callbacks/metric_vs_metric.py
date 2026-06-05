@@ -10,8 +10,8 @@ from trend_monitoring.dash_app.get_data.filtering import (
     get_subset_queryset,
     format_data_for_scatterplot,
 )
-from trend_monitoring.dash_app.setup_dash_elements.individual_dropdowns import (
-    get_projects,
+from trend_monitoring.dash_app.setup_dash_elements.individual_components import (
+    get_missing_data_accordions,
 )
 from trend_monitoring.dash_app.setup_dash_elements.utils import (
     build_filter_text,
@@ -46,6 +46,7 @@ def register_callback(app):
     @app.callback(
         Output("metric-vs-metric-output-graph", "figure"),
         Output("metric-vs-metric-graph-title", "children"),
+        Output("metric-vs-metric-missing-data-accordion", "children"),
         Input("dropdown-project", "value"),
         Input("dropdown-metric-x", "value"),
         Input("dropdown-metric-y", "value"),
@@ -60,7 +61,9 @@ def register_callback(app):
         data = get_subset_queryset(
             {"run": [project.split(" - ")[0]] if project else []}
         )
-        df, _, _ = get_data_for_plotting(data, metric_x + metric_y)
+        df, projects_no_metrics, samples_no_metric = get_data_for_plotting(
+            data, metric_x + metric_y
+        )
         json_plot_data, _ = format_data_for_scatterplot(df)
 
         fig = go.Figure()
@@ -73,5 +76,8 @@ def register_callback(app):
                 {"run": [project], "metric_x": metric_x, "metric": metric_y}
             )
         )
+        accordion = get_missing_data_accordions(
+            projects_no_metrics, samples_no_metric
+        )
 
-        return fig, plot_title
+        return fig, plot_title, accordion

@@ -12,8 +12,9 @@ from trend_monitoring.dash_app.get_data.filtering import (
 )
 from trend_monitoring.dash_app.get_data.jira import get_failed_runs
 from trend_monitoring.dash_app.get_data.annotations import add_annotations
-from trend_monitoring.dash_app.setup_dash_elements.individual_dropdowns import (
+from trend_monitoring.dash_app.setup_dash_elements.individual_components import (
     get_filter_table,
+    get_missing_data_accordions,
 )
 from trend_monitoring.dash_app.setup_dash_elements.utils import (
     build_filter_text,
@@ -177,6 +178,7 @@ def register_callback(app):
     @app.callback(
         Output("metric-over-time-graph", "figure"),
         Output("metric-over-time-graph-title", "children"),
+        Output("metric-over-time-missing-data-accordion", "children"),
         Input("applied-filter-store", "data"),
         Input("annotation-checkbox", "checked"),
         Input("failed-runs-checkbox", "checked"),
@@ -257,4 +259,8 @@ def register_callback(app):
             )
         )
 
-        return fig, plot_title
+        accordion = get_missing_data_accordions(
+            projects_no_metrics, samples_no_metric
+        )
+
+        return fig, plot_title, accordion
