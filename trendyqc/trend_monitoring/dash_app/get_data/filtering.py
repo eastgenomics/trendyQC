@@ -267,7 +267,9 @@ def get_metric_filter(form_model: str, form_metric: str) -> str:
     return None
 
 
-def format_data_for_boxplot(plot_data: pd.DataFrame) -> tuple:
+def format_data_for_boxplot(
+    plot_data: pd.DataFrame, failed_runs: set = None
+) -> tuple:
     """Format the dataframe data for Plotly JS.
 
     Args:
@@ -363,9 +365,12 @@ def format_data_for_boxplot(plot_data: pd.DataFrame) -> tuple:
     seen_first_lane = False
     seen_second_lane = False
 
+    failed_runs = failed_runs or set()
+
     # for each project name, gather the necessary data to create the individual
     # boxplots
     for project_name in plot_data.sort_values("date")["project_name"].unique():
+        is_failed = project_name in failed_runs
         # get sub df with for the project name
         data_one_run = plot_data[
             plot_data["project_name"] == project_name
@@ -436,7 +441,9 @@ def format_data_for_boxplot(plot_data: pd.DataFrame) -> tuple:
                 if name == "Second lane":
                     seen_second_lane = True
 
-                traces.append(create_trace(**trace_args))
+                traces.append(
+                    create_boxplot_trace(**trace_args, is_failed=is_failed)
+                )
 
             is_grouped = True
 
@@ -462,13 +469,15 @@ def format_data_for_boxplot(plot_data: pd.DataFrame) -> tuple:
                 **legend_args,
             }
 
-            traces.append(create_trace(**trace_args))
+            traces.append(
+                create_boxplot_trace(**trace_args, is_failed=is_failed)
+            )
             is_grouped = False
 
     return traces, is_grouped
 
 
-def create_trace(**kwargs):
+def create_boxplot_trace(**kwargs):
     """Setup the trace according to given data
 
     Args:
@@ -522,6 +531,11 @@ def create_trace(**kwargs):
         "visible": kwargs.get("visible", True),
         "showlegend": kwargs["showlegend"],
     }
+
+    if kwargs.get("is_failed"):
+        trace["marker"]["symbol"] = "x"  # change marker symbol for outliers
+        # add annotation above the boxplot
+        trace["name"] = f"⚠ {kwargs['name']}"  # prefix name in legend
 
     return trace
 
