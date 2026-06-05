@@ -44,7 +44,7 @@ def clean_filter_content(filter_content):
             for value in values:
                 if key == "days_back":
                     today = datetime.date.today()
-                    value = f"{value} days: {today + relativedelta(days=int(value))} - {today}"
+                    value = f"{value} days -> {today + relativedelta(days=int(value))} - {today}"
 
                 cleaned_form_data.setdefault(new_key, []).append(value)
 
