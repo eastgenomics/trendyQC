@@ -63,28 +63,38 @@ def get_metric_over_time_tab_content():
                 ),
                 dmc.Stack(
                     [
-                        dmc.Group(
-                            get_assay("dropdown-assay")
-                            + get_metrics("dropdown-metric")
-                            + get_date_picker()
-                            + [
-                                dmc.Stack(
+                        dmc.Grid(
+                            children=[
+                                dmc.GridCol(
+                                    get_assay("dropdown-assay"), span=3
+                                ),
+                                dmc.GridCol(
+                                    get_metrics("dropdown-metric"), span=3
+                                ),
+                                dmc.GridCol(get_date_picker(), span=4),
+                                dmc.GridCol(
                                     [
-                                        dmc.Checkbox(
-                                            id="annotation-checkbox",
-                                            label="Show annotations",
-                                            checked=True,
-                                        ),
-                                        dmc.Checkbox(
-                                            id="failed-runs-checkbox",
-                                            label="Hide failed runs",
-                                            checked=False,
-                                        ),
-                                    ]
-                                )
+                                        dmc.Stack(
+                                            [
+                                                dmc.Checkbox(
+                                                    id="annotation-checkbox",
+                                                    label="Show annotations",
+                                                    checked=True,
+                                                ),
+                                                dmc.Checkbox(
+                                                    id="failed-runs-checkbox",
+                                                    label="Hide failed runs",
+                                                    checked=False,
+                                                ),
+                                            ],
+                                            justify="flex-end",
+                                        )
+                                    ],
+                                    span=1,
+                                ),
                             ],
                             justify="center",
-                            gap="md",
+                            align="center",
                             grow=True,
                         ),
                         dmc.Button(
