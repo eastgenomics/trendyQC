@@ -186,7 +186,7 @@ def register_callback(app):
     )
     def callback_graph(applied_filter, show_annotations, hide_failed_runs):
         if not applied_filter:
-            return dash.no_update, dash.no_update
+            return dash.no_update, dash.no_update, dash.no_update
 
         assays = applied_filter.get("assay")
         metrics = applied_filter.get("metric")
@@ -197,7 +197,7 @@ def register_callback(app):
         ]
 
         if not metrics:
-            return dash.no_update, dash.no_update
+            return dash.no_update, dash.no_update, dash.no_update
 
         data = get_subset_queryset(
             {
