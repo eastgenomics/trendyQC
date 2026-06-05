@@ -70,7 +70,7 @@ def get_metric_over_time_tab_content():
                             + [
                                 dmc.Checkbox(
                                     id="annotation-checkbox",
-                                    label="Add annotation",
+                                    label="Show annotations",
                                     checked=True,
                                 ),
                             ],
