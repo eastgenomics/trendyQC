@@ -17,6 +17,11 @@ def get_tabs():
                 [
                     dmc.TabsTab("Metrics over time", value="metric-over-time"),
                     dmc.TabsTab("Metric vs metric", value="metric-vs-metric"),
+                    dmc.TabsTab(
+                        "Add annotation",
+                        value="add-annotation",
+                        id="add-annotation",
+                    ),
                 ],
             ),
             dmc.TabsPanel(
@@ -26,6 +31,10 @@ def get_tabs():
             dmc.TabsPanel(
                 get_metric_vs_metric_tab_content(),
                 value="metric-vs-metric",
+            ),
+            dmc.TabsPanel(
+                get_add_annotation_tab_content(),
+                value="add-annotation",
             ),
         ],
         id="tabs",
@@ -192,3 +201,7 @@ def get_metric_vs_metric_tab_content():
             style={"padding": "10px"},
         ),
     )
+
+
+def get_add_annotation_tab_content():
+    return dmc.Stack()
