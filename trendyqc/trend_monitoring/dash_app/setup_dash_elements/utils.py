@@ -49,3 +49,7 @@ def clean_filter_content(filter_content):
                 cleaned_form_data.setdefault(new_key, []).append(value)
 
     return cleaned_form_data
+
+
+def remove_prefix_suffix_from_run_name(run_name):
+    return "_".join(run_name.replace("002_", "").split("_")[:4])
