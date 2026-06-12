@@ -208,7 +208,6 @@ def get_add_annotation_tab_content():
     return dmc.Stack(
         [
             dcc.Store(id="annotation-store", data=0),
-            dcc.Store(id="annotation-saved-store", data=0),
         ]
         + get_annotation_table()
         + [
@@ -217,14 +216,19 @@ def get_add_annotation_tab_content():
                     dmc.TextInput(
                         label="Date of the annotation",
                         placeholder="e.g. 2026-06-05",
+                        id="annotation-date",
                     ),
                     dmc.TextInput(
-                        label="Label", placeholder="e.g. GRCh38 deployment"
+                        label="Label",
+                        placeholder="e.g. GRCh38 deployment",
+                        id="annotation-label",
                     ),
-                    dmc.Group([dmc.Button("Send")], justify="flex-end"),
+                    dmc.Group(
+                        [dmc.Button("Send", id="submit-annotation-info")],
+                        justify="flex-end",
+                    ),
                 ],
                 legend="Annotation information",
-                disabled=True,
             )
         ]
     )
