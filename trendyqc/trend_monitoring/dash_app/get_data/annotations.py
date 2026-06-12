@@ -2,20 +2,11 @@ import datetime
 import json
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 import pandas as pd
 import plotly.graph_objects as go
 
-
-def load_annotations():
-    annotation_file = (
-        settings.CONFIG_PATH / "plotting_configs" / "annotations.json"
-    )
-
-    if not annotation_file.exists():
-        return None
-
-    with open(annotation_file) as f:
-        return json.load(f)
+from trend_monitoring.models.annotations import PlotAnnotation
 
 
 def add_annotations(fig: go.Figure, plot_data: pd.DataFrame) -> go.Figure:
@@ -28,7 +19,7 @@ def add_annotations(fig: go.Figure, plot_data: pd.DataFrame) -> go.Figure:
     Returns:
         go.Figure: Figure with annotations
     """
-    annotations = load_annotations()
+    annotations = PlotAnnotation.objects.all()
 
     if annotations is None:
         return fig
@@ -42,16 +33,12 @@ def add_annotations(fig: go.Figure, plot_data: pd.DataFrame) -> go.Figure:
     )
 
     project_order = project_dates["project_name"].tolist()
-    n_projects = len(project_order)
 
     for annotation in annotations:
-        annotation_date = annotation["date"]
+        annotation_date = annotation.date
 
         # find the index of the first project after the annotation date
-        later_projects = project_dates[
-            project_dates["date"]
-            > datetime.date.fromisoformat(annotation_date)
-        ]
+        later_projects = project_dates[project_dates["date"] > annotation_date]
 
         if later_projects.empty:
             continue
@@ -82,7 +69,7 @@ def add_annotations(fig: go.Figure, plot_data: pd.DataFrame) -> go.Figure:
             yref="paper",
             x=x_position,
             y=1,
-            text=annotation["label"],
+            text=annotation.label,
             showarrow=False,
             font=dict(size=12, color="red"),
             textangle=-90,
@@ -90,3 +77,21 @@ def add_annotations(fig: go.Figure, plot_data: pd.DataFrame) -> go.Figure:
         )
 
     return fig
+
+
+def import_annotation(**kwargs):
+    # attempt to find an existing annotation with the same name
+    try:
+        PlotAnnotation.objects.get(
+            date=kwargs.get("date"), label=kwargs.get("label")
+        )
+    except ObjectDoesNotExist:
+        # no filter with that name was found
+        pass
+    else:
+        return f"Annotation with the same data already exists: {kwargs}", False
+
+    annotation_obj = PlotAnnotation(**kwargs)
+    annotation_obj.save()
+
+    return f"Annotation has been created: {kwargs}", True
