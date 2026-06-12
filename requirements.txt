@@ -24,4 +24,5 @@ python-ldap==3.4.4
 pytz==2024.2
 regex==2024.9.11
 requests==2.32.3
+scipy==1.17.1
 sqlparse==0.5.1
