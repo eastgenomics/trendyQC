@@ -10,6 +10,10 @@ def load_annotations():
     annotation_file = (
         settings.CONFIG_PATH / "plotting_configs" / "annotations.json"
     )
+
+    if not annotation_file.exists():
+        return None
+
     with open(annotation_file) as f:
         return json.load(f)
 
@@ -25,6 +29,9 @@ def add_annotations(fig: go.Figure, plot_data: pd.DataFrame) -> go.Figure:
         go.Figure: Figure with annotations
     """
     annotations = load_annotations()
+
+    if annotations is None:
+        return fig
 
     # get the sorted list of (date, project_name) pairs
     project_dates = (
