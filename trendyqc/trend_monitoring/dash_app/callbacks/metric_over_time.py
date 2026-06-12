@@ -42,7 +42,7 @@ def register_callback(app):
         Output("filter-table-container", "children"),
         Input("filter-store", "data"),
     )
-    def refresh_filter_table(*args, **kwargs):
+    def refresh_filter_table(_):
         return get_filter_table()
 
     @app.callback(
@@ -70,14 +70,10 @@ def register_callback(app):
         days_back,
         date_range,
         filter_saved,
-        *args,
-        **kwargs,
+        callback_context=None,
+        request=None,
     ):
-        triggered = (
-            kwargs.get("callback_context")
-            .triggered[0]["prop_id"]
-            .split(".")[0]
-        )
+        triggered = callback_context.triggered[0]["prop_id"].split(".")[0]
 
         msg_data = {}
 
@@ -93,20 +89,18 @@ def register_callback(app):
                 "date_end": date_range[1] if date_range else None,
             }
 
-            if kwargs.get("request"):
-                request = kwargs["request"]
-                msg, msg_status = import_filter(
-                    filter_name, request.user.username, form_data
-                )
-                msg_data = {
-                    "attributes": {
-                        "label": "Filter saved",
-                        "message": msg,
-                    },
-                    "color": "green" if msg_status else "red",
-                    "hide": False,
-                }
-                logger.info(msg)
+            msg, msg_status = import_filter(
+                filter_name, request.user.username, form_data
+            )
+            msg_data = {
+                "attributes": {
+                    "label": "Filter saved",
+                    "message": msg,
+                },
+                "color": "green" if msg_status else "red",
+                "hide": False,
+            }
+            logger.info(msg)
 
             return False, msg_data, filter_saved + 1
 
@@ -119,11 +113,11 @@ def register_callback(app):
         State("filter-store", "data"),
         prevent_initial_call=True,
     )
-    def delete_filter(n_clicks, current, *args, **kwargs):
-        if not any(n_clicks):
+    def delete_filter(n_clicks, current, callback_context=None):
+        if not n_clicks or not any(n_clicks):
             raise dash.exceptions.PreventUpdate
 
-        triggered = kwargs.get("callback_context").triggered[0]["prop_id"]
+        triggered = callback_context.triggered[0]["prop_id"]
         filter_id = json.loads(triggered.split(".")[0])["index"]
 
         filter_to_delete = Filter.objects.get(id=filter_id)
@@ -153,9 +147,9 @@ def register_callback(app):
         prevent_initial_call=True,
     )
     def update_filter_store(
-        assays, metrics, days_back, date_range, n_clicks, *args, **kwargs
+        assays, metrics, days_back, date_range, n_clicks, callback_context=None
     ):
-        context = kwargs.get("callback_context")
+        context = callback_context
         if not context.triggered:
             return {}
 
