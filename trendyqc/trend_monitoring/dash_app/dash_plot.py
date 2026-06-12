@@ -14,7 +14,7 @@ from django_plotly_dash import DjangoDash
 from trend_monitoring.dash_app.callbacks import (
     metric_vs_metric,
     metric_over_time,
-    add_annotation,
+    annotations,
 )
 from trend_monitoring.dash_app.setup_dash_elements.tabs import get_tabs
 
@@ -24,11 +24,11 @@ app = DjangoDash("Plot", external_stylesheets=[dbc.themes.BOOTSTRAP])
 def define_layout(**kwargs):
     return dmc.MantineProvider(
         [
-            dcc.Store(id="save-filter-message-store"),
-            dcc.Store(id="delete-filter-message-store"),
-            dcc.Store(id="save-annotation-message-store"),
-            dcc.Store(id="delete-annotation-message-store"),
+            dcc.Store(id="auth-store"),
             dcc.Store(id="message-store"),
+            dcc.Store(id="annotation-store", data=0),
+            dcc.Store(id="filter-store", data=0),
+            dcc.Store(id="applied-filter-store", data=None),
             dmc.Alert(
                 id="alert-message",
                 duration=5000,
@@ -57,43 +57,26 @@ app.clientside_callback(
 
 metric_over_time.register_callback(app)
 metric_vs_metric.register_callback(app)
-add_annotation.register_callback(app)
-
-
-@app.callback(
-    Output("message-store", "data"),
-    Input("save-message-store", "data"),
-    Input("delete-message-store", "data"),
-)
-def update_message_store(save_msg, delete_msg):
-    if save_msg:
-        return save_msg
-    if delete_msg:
-        return delete_msg
-    return {}
+annotations.register_callback(app)
 
 
 @app.callback(
     Output("alert-message", "hide"),
     Output("alert-message", "children"),
     Output("alert-message", "color"),
-    Input("save-message-store", "data"),
-    Input("delete-message-store", "data"),
+    Input("message-store", "data"),
 )
-def show_alert(save_msg, delete_msg, *args, **kwargs):
+def show_alert(msg, *args, **kwargs):
     triggered_list = kwargs.get("callback_context").triggered
 
     if not triggered_list:
         raise dash.exceptions.PreventUpdate
 
-    triggered = triggered_list[0]["prop_id"]
-    msg_data = save_msg if "save" in triggered else delete_msg
-
-    if not msg_data:
+    if not msg:
         raise dash.exceptions.PreventUpdate
 
     return (
         False,
-        msg_data.get("attributes", {}).get("message", ""),
-        msg_data.get("color", "green"),
+        msg.get("attributes", {}).get("message", ""),
+        msg.get("color", "green"),
     )
