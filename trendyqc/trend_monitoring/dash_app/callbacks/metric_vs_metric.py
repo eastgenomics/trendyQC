@@ -52,9 +52,7 @@ def register_callback(app):
         Input("dropdown-metric-y", "value"),
         prevent_initial_call=True,
     )
-    def callback_graph_metric_vs_metric(
-        project, metric_x, metric_y, *args, **kwargs
-    ):
+    def callback_graph_metric_vs_metric(project, metric_x, metric_y):
         if not metric_x or not metric_y:
             return dash.no_update, dash.no_update, dash.no_update
 
