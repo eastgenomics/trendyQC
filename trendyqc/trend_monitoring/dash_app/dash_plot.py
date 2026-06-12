@@ -66,17 +66,12 @@ annotations.register_callback(app)
     Output("alert-message", "color"),
     Input("message-store", "data"),
 )
-def show_alert(msg, *args, **kwargs):
-    triggered_list = kwargs.get("callback_context").triggered
-
-    if not triggered_list:
-        raise dash.exceptions.PreventUpdate
-
+def show_alert(msg):
     if not msg:
         raise dash.exceptions.PreventUpdate
 
     return (
-        False,
+        msg.get("hide", True),
         msg.get("attributes", {}).get("message", ""),
-        msg.get("color", "green"),
+        msg.get("color", "blue"),
     )
