@@ -40,17 +40,15 @@ def register_callback(app):
 
     @app.callback(
         Output("filter-table-container", "children"),
-        Input("auth-interval", "n_intervals"),
         Input("filter-store", "data"),
-        Input("filter-saved-store", "data"),  # triggers refresh after delete
     )
     def refresh_filter_table(*args, **kwargs):
         return get_filter_table()
 
     @app.callback(
         Output("filter-name-modal", "opened"),
-        Output("save-filter-message-store", "data"),
-        Output("filter-saved-store", "data"),
+        Output("message-store", "data"),
+        Output("filter-store", "data"),
         Input("save-filter-btn", "n_clicks"),
         Input("submit-filter_name", "n_clicks"),
         State("filter-name", "value"),
@@ -59,7 +57,7 @@ def register_callback(app):
         State("dropdown-metric", "value"),
         State("radio-date", "value"),
         State("date-picker", "value"),
-        State("filter-saved-store", "data"),
+        State("filter-store", "data"),
         prevent_initial_call=True,
     )
     def save_filter(
@@ -116,7 +114,7 @@ def register_callback(app):
 
     @app.callback(
         Output("filter-store", "data"),
-        Output("delete-filter-message-store", "data"),
+        Output("message-store", "data"),
         Input({"type": "delete-filter-btn", "index": ALL}, "n_clicks"),
         State("filter-store", "data"),
         prevent_initial_call=True,
@@ -157,11 +155,16 @@ def register_callback(app):
     def update_filter_store(
         assays, metrics, days_back, date_range, n_clicks, *args, **kwargs
     ):
-        triggered = kwargs.get("callback_context").triggered[0]["prop_id"]
+        context = kwargs.get("callback_context")
+        if not context.triggered:
+            return {}
+
+        triggered = context.triggered[0]["prop_id"]
 
         if "use-filter-btn" in triggered:
             if not any(n_clicks):
                 raise dash.exceptions.PreventUpdate
+
             filter_id = json.loads(triggered.split(".")[0])["index"]
             filter_obj = Filter.objects.get(id=filter_id)
             return json.loads(filter_obj.content)
@@ -182,7 +185,6 @@ def register_callback(app):
         Input("applied-filter-store", "data"),
         Input("annotation-checkbox", "checked"),
         Input("failed-runs-checkbox", "checked"),
-        prevent_initial_call=True,
     )
     def callback_graph(applied_filter, show_annotations, hide_failed_runs):
         if not applied_filter:
