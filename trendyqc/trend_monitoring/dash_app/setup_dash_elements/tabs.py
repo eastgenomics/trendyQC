@@ -86,6 +86,11 @@ def get_metric_over_time_tab_content():
                                                     label="Hide failed runs",
                                                     checked=False,
                                                 ),
+                                                dmc.Checkbox(
+                                                    id="show_trend",
+                                                    label="Show trend line",
+                                                    checked=True,
+                                                ),
                                             ],
                                             justify="flex-end",
                                         )
