@@ -56,7 +56,7 @@ def register_callback(app):
         project, metric_x, metric_y, *args, **kwargs
     ):
         if not metric_x or not metric_y:
-            return dash.no_update, dash.no_update
+            return dash.no_update, dash.no_update, dash.no_update
 
         data = get_subset_queryset(
             {"run": [project.split(" - ")[0]] if project else []}
