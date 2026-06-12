@@ -29,39 +29,8 @@ def register_callback(app):
         Output("annotation-table-container", "children"),
         Input("annotation-store", "data"),
     )
-    def refresh_annotation_table(*args, **kwargs):
+    def refresh_annotation_table(annotation_added):
         return get_annotation_table()
-
-    @app.callback(
-        Output("annotation-store", "data"),
-        Output("message-store", "data"),
-        Input({"type": "delete-annotation-btn", "index": ALL}, "n_clicks"),
-        State("annotation-store", "data"),
-        prevent_initial_call=True,
-    )
-    def delete_annotation(n_clicks, current, *args, **kwargs):
-        if not any(n_clicks):
-            raise dash.exceptions.PreventUpdate
-
-        triggered = kwargs.get("callback_context").triggered[0]["prop_id"]
-
-        annotation_id = json.loads(triggered.split(".")[0])["index"]
-        annotation_to_delete = PlotAnnotation.objects.get(id=annotation_id)
-        annotation_label = annotation_to_delete.label
-        delete_msg = annotation_to_delete.delete()
-
-        msg = f"Annotation '{annotation_label}' has been successfully deleted"
-        msg_data = {
-            "attributes": {
-                "label": "Annotation deleted",
-                "message": msg,
-            },
-            "color": "green",
-            "hide": False,
-        }
-        logger.info(f"{msg}: {delete_msg}")
-
-        return (current + 1, msg_data)  # increment to trigger refresh
 
     @app.callback(
         Output("annotation-store", "data"),
@@ -72,17 +41,15 @@ def register_callback(app):
         State("annotation-store", "data"),
         prevent_initial_call=True,
     )
-    def save_annotation(n_clicks, date, label, current, *args, **kwargs):
-        triggered = (
-            kwargs.get("callback_context")
-            .triggered[0]["prop_id"]
-            .split(".")[0]
-        )
+    def save_annotation(
+        n_clicks, date, label, current, callback_context=None, request=None
+    ):
+        triggered = callback_context.triggered[0]["prop_id"].split(".")[0]
 
         msg_data = {}
 
         if triggered == "submit-annotation-info":
-            request = kwargs["request"]
+            request = request
 
             msg, msg_status = import_annotation(
                 date=date,
@@ -100,6 +67,37 @@ def register_callback(app):
                 "hide": False,
             }
 
-            return (current + 1, msg_data)
+            return current + 1, msg_data
 
         return current, msg_data
+
+    @app.callback(
+        Output("message-store", "data"),
+        Output("annotation-store", "data"),
+        Input({"type": "delete-annotation-btn", "index": ALL}, "n_clicks"),
+        State("annotation-store", "data"),
+        prevent_initial_call=True,
+    )
+    def delete_annotation(n_clicks, current, callback_context=None):
+        if not n_clicks or not any(n_clicks):
+            raise dash.exceptions.PreventUpdate
+
+        triggered = callback_context.triggered[0]["prop_id"]
+
+        annotation_id = json.loads(triggered.split(".")[0])["index"]
+        annotation_to_delete = PlotAnnotation.objects.get(id=annotation_id)
+        annotation_label = annotation_to_delete.label
+        delete_msg = annotation_to_delete.delete()
+
+        msg = f"Annotation '{annotation_label}' has been successfully deleted"
+        msg_data = {
+            "attributes": {
+                "label": "Annotation deleted",
+                "message": msg,
+            },
+            "color": "green",
+            "hide": False,
+        }
+        logger.info(f"{msg}: {delete_msg}")
+
+        return msg_data, current + 1  # increment to trigger refresh
