@@ -61,16 +61,6 @@ def get_metric_over_time_tab_content():
                         ),
                     ],
                 ),
-                dcc.Store(id="auth-store"),
-                dcc.Store(id="filter-store", data=0),
-                dcc.Store(id="filter-saved-store", data=0),
-                dcc.Store(id="applied-filter-store", data=None),
-                dcc.Interval(
-                    id="auth-interval",
-                    interval=500,
-                    n_intervals=0,
-                    max_intervals=1,
-                ),
                 dmc.Stack(
                     [
                         dmc.Grid(
@@ -206,7 +196,7 @@ def get_metric_vs_metric_tab_content():
 
 def get_annotation_tab_content():
     return dmc.Stack(
-        get_annotation_table()
+        [html.Div(get_annotation_table(), id="annotation-table-container")]
         + [
             dmc.Fieldset(
                 children=[
