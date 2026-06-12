@@ -54,7 +54,11 @@ def get_failed_runs(run_names: list) -> set:
         f'summary ~ "{remove_prefix_suffix_from_run_name(name)}*"'
         for name in run_names
     )
-    jql = f'project = {project_key} AND ({run_name_conditions}) AND type = "Sequencing Run"'
+    jql = (
+        f"project = {project_key} AND "
+        f"({run_name_conditions}) AND "
+        'type = "Sequencing Run"'
+    )
 
     all_issues = []
     next_page_token = None
