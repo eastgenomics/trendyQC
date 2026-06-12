@@ -2,7 +2,7 @@ import json
 import logging
 
 import dash
-from dash import Output, Input, ALL
+from dash import Output, Input, ALL, State
 from trend_monitoring.models.annotations import PlotAnnotation
 
 from trend_monitoring.dash_app.setup_dash_elements.individual_components import (
@@ -35,8 +35,9 @@ def register_callback(app):
 
     @app.callback(
         Output("annotation-store", "data"),
-        Output("delete-annotation-message-store", "data"),
+        Output("message-store", "data", allow_duplicate=True),
         Input({"type": "delete-annotation-btn", "index": ALL}, "n_clicks"),
+        State("annotation-store", "data"),
         prevent_initial_call=True,
     )
     def delete_annotation(n_clicks, current, *args, **kwargs):
@@ -62,3 +63,23 @@ def register_callback(app):
         logger.info(f"{msg}: {delete_msg}")
 
         return (current + 1, msg_data)  # increment to trigger refresh
+
+    @app.callback(
+        Output("annotation-store", "data"),
+        Output("message-store", "data", allow_duplicate=True),
+        Input("submit-annotation-info", "n_clicks"),
+        State("annotation-date", "value"),
+        State("annotation-label", "value"),
+        State("annotation-store", "data"),
+        prevent_initial_call=True,
+    )
+    def save_annotation(n_clicks, date, label, current):
+        print(n_clicks)
+        if not any(n_clicks):
+            raise dash.exceptions.PreventUpdate
+
+        print(date, label)
+
+        msg_data = ""
+
+        return (current + 1, msg_data)
