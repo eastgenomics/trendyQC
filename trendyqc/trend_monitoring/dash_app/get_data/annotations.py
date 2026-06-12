@@ -1,7 +1,3 @@
-import datetime
-import json
-
-from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 import pandas as pd
 import plotly.graph_objects as go
