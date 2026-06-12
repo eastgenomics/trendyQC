@@ -12,6 +12,10 @@ from trend_monitoring.dash_app.get_data.filtering import (
 )
 from trend_monitoring.dash_app.get_data.jira import get_failed_runs
 from trend_monitoring.dash_app.get_data.annotations import add_annotations
+from trend_monitoring.dash_app.get_data.statistical_analysis import (
+    get_metric_value_column,
+    add_trend_line_and_ci,
+)
 from trend_monitoring.dash_app.setup_dash_elements.individual_components import (
     get_filter_table,
     get_missing_data_accordions,
@@ -242,6 +246,30 @@ def register_callback(app):
 
         if show_annotations and not df.empty:
             fig = add_annotations(fig, df)
+
+        show_trend_line = True
+        show_confidence_band = True
+
+        if show_trend_line and not df.empty:
+            value_col = get_metric_value_column(df)
+
+            possible_group_cols = ["assay", "sequencer_id", "date"]
+
+            group_col = None
+            for col in possible_group_cols:
+                if col in df.columns:
+                    group_col = col
+                    break
+
+            fig = add_trend_line_and_ci(
+                fig=fig,
+                df=df,
+                value_col=value_col,
+                project_col="project_name",
+                date_col="date",
+                group_col=group_col,
+                show_confidence_band=show_confidence_band,
+            )
 
         plot_title = build_filter_text(
             json.dumps(
