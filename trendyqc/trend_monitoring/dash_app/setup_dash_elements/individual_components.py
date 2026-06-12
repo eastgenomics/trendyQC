@@ -212,9 +212,6 @@ def get_annotation_table():
         rows = dmc.TableTr(
             [
                 dmc.TableTd("No annotations in the database"),
-                dmc.TableTd(),
-                dmc.TableTd(),
-                dmc.TableTd(),
             ]
         )
     else:
