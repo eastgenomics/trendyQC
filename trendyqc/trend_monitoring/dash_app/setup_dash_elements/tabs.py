@@ -19,9 +19,9 @@ def get_tabs():
                     dmc.TabsTab("Metrics over time", value="metric-over-time"),
                     dmc.TabsTab("Metric vs metric", value="metric-vs-metric"),
                     dmc.TabsTab(
-                        "Add annotation",
-                        value="add-annotation",
-                        id="add-annotation",
+                        "Annotations",
+                        value="annotation",
+                        id="annotation",
                     ),
                 ],
             ),
@@ -34,8 +34,8 @@ def get_tabs():
                 value="metric-vs-metric",
             ),
             dmc.TabsPanel(
-                get_add_annotation_tab_content(),
-                value="add-annotation",
+                get_annotation_tab_content(),
+                value="annotation",
             ),
         ],
         id="tabs",
@@ -204,12 +204,9 @@ def get_metric_vs_metric_tab_content():
     )
 
 
-def get_add_annotation_tab_content():
+def get_annotation_tab_content():
     return dmc.Stack(
-        [
-            dcc.Store(id="annotation-store", data=0),
-        ]
-        + get_annotation_table()
+        get_annotation_table()
         + [
             dmc.Fieldset(
                 children=[
@@ -224,7 +221,12 @@ def get_add_annotation_tab_content():
                         id="annotation-label",
                     ),
                     dmc.Group(
-                        [dmc.Button("Send", id="submit-annotation-info")],
+                        [
+                            dmc.Button(
+                                "Create new annotation",
+                                id="submit-annotation-info",
+                            )
+                        ],
                         justify="flex-end",
                     ),
                 ],
